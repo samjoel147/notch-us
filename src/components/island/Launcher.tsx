@@ -24,7 +24,7 @@ export function Launcher({ entries, onSelect }: { entries: ModuleEntry[]; onSele
 			{entries.map(({ module, view }, i) => (
 				<motion.button
 					key={module.id}
-					className="relative flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-2xl bg-white/5 px-2 text-text-dim shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] transition-[background,color,box-shadow] duration-200 hover:bg-white/10 hover:text-text hover:shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--tab-accent)_55%,transparent)]"
+					className="relative flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-2xl bg-card px-2 text-text-dim shadow-[inset_0_0_0_1px_var(--hairline)] transition-[background,color,box-shadow] duration-200 hover:bg-white/10 hover:text-text hover:shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--tab-accent)_55%,transparent)]"
 					style={{ "--tab-accent": view.accent ?? "#fff" } as CSSProperties}
 					initial={{ opacity: 0, scale: 0.92 }}
 					animate={{ opacity: 1, scale: 1 }}

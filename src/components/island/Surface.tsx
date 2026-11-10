@@ -29,7 +29,7 @@ export function Surface({
 		<motion.div
 			data-glass
 			className={cn(
-				"absolute inset-0 overflow-hidden bg-island shadow-[var(--island-shadow)] backdrop-blur-xl transition-[box-shadow,background-color] duration-400 ease-[ease]",
+				"absolute inset-0 overflow-hidden bg-island shadow-[var(--island-shadow)] backdrop-blur-2xl transition-[box-shadow,background-color] duration-400 ease-[ease]",
 				big && "shadow-[var(--island-shadow-big)]",
 			)}
 			style={windows ? glowStyle(look) : undefined}
@@ -37,6 +37,12 @@ export function Surface({
 			animate={cornerRadius(g, windows)}
 			transition={transition}
 		>
+			{/* Liquid Glass optical top sheen layer */}
+			<div
+				className="pointer-events-none absolute inset-x-0 top-0 h-[48%] rounded-t-[inherit] transition-opacity duration-300"
+				style={{ background: "var(--glass-sheen)" }}
+			/>
+
 			<AnimatePresence mode="popLayout" initial={false}>
 				<motion.div
 					key={contentKey}

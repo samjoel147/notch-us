@@ -74,6 +74,7 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 									}}
 								>
 									{themeDef.isGlass && <div className="absolute inset-0 bg-white/10 backdrop-blur-[4px]" />}
+									<div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent" />
 									<div
 										className="relative flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
 										style={{

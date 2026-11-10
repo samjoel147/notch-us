@@ -89,6 +89,11 @@ function Bubble({
 				onOpen(id);
 			}}
 		>
+			{/* Liquid Glass optical top sheen */}
+			<div
+				className="pointer-events-none absolute inset-x-0 top-0 h-[48%] rounded-t-full transition-opacity duration-300"
+				style={{ background: "var(--glass-sheen)" }}
+			/>
 			{children}
 			{rim}
 			<div className="pointer-events-none absolute inset-0 rounded-full shadow-[var(--specular)] transition-all duration-300" />

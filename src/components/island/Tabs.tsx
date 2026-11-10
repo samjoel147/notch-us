@@ -12,7 +12,7 @@ const tabs = tv({
 		/** Room on the right for the pin, which sits apart from the tabs at the far edge. */
 		base: "relative mb-2.5 flex gap-1 pr-9.5",
 		tab: "relative flex h-7.5 items-center gap-1.75 rounded-[15px] pr-3 pl-2 text-[13px] font-semibold text-text-dim transition-colors duration-200 hover:text-text",
-		pill: "absolute inset-0 rounded-[inherit] bg-white/10",
+		pill: "absolute inset-0 rounded-[inherit] bg-white/10 shadow-[inset_0_0_0_1px_var(--hairline)]",
 		part: "relative grid place-items-center",
 		dot: "relative size-1.25 rounded-full bg-ok",
 		extra: "ml-auto flex items-center gap-1.5",
@@ -21,7 +21,7 @@ const tabs = tv({
 	},
 	variants: {
 		active: { true: { tab: "text-text" } },
-		pinned: { true: { pin: "bg-white/10 text-text" } },
+		pinned: { true: { pin: "bg-white/10 text-text shadow-[inset_0_0_0_1px_var(--hairline)]" } },
 		/** The launcher's grid button, pushed right with the gear. */
 		launcher: { true: { tab: "ml-auto w-7.5 justify-center p-0" } },
 		/** Windows Island: round icon tabs, ringed in the module's color. */
