@@ -48,7 +48,7 @@ export function SecondaryBubble({ entry, ...bubble }: BubbleProps & { entry: Mod
 }
 
 const bubble = tv({
-	base: "absolute top-0 left-[calc(100%+10px)] grid size-9.5 place-items-center rounded-full bg-island shadow-[var(--island-shadow)] transition-[box-shadow,background-color] duration-400",
+	base: "absolute top-0 left-[calc(100%+10px)] grid size-9.5 place-items-center rounded-full bg-island shadow-[var(--island-shadow)] backdrop-blur-xl transition-[box-shadow,background-color] duration-400",
 	variants: {
 		ambient: { true: "pointer-events-auto relative left-auto flex-none origin-top" },
 	},

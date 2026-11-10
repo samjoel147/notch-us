@@ -163,4 +163,3 @@ export function useActiveTheme(): ThemeDef {
 	const themeId = (readSetting(s, appearanceSettings.theme) as ThemeId) || "dark";
 	return useThemeSync(themeId);
 }
-

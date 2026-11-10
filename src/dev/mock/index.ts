@@ -7,6 +7,7 @@
 import { handleLocalCalls } from "../../core/bridge";
 import { activities } from "./activities";
 import { antigravity, claude, codex } from "./agents";
+import { appearanceMock } from "./appearance";
 import { ask } from "./ask";
 import { calendarMock } from "./calendar";
 import { clipboard } from "./clipboard";
@@ -22,6 +23,7 @@ import { system } from "./system";
 
 /** In DevTools order. */
 export const mocks: Mock[] = [
+	appearanceMock,
 	system,
 	music,
 	claude.mock,

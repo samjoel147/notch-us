@@ -29,7 +29,7 @@ export function Surface({
 		<motion.div
 			data-glass
 			className={cn(
-				"absolute inset-0 overflow-hidden bg-island shadow-[var(--island-shadow)] transition-[box-shadow,background-color] duration-400 ease-[ease]",
+				"absolute inset-0 overflow-hidden bg-island shadow-[var(--island-shadow)] backdrop-blur-xl transition-[box-shadow,background-color] duration-400 ease-[ease]",
 				big && "shadow-[var(--island-shadow-big)]",
 			)}
 			style={windows ? glowStyle(look) : undefined}
