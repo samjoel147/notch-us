@@ -535,6 +535,28 @@
   // 外观页面（设置）：灵动岛样式与边框
   appearance: {
     title: "外观",
+    theme: {
+      label: "主题风格",
+      desc: "灵动岛的材质与色彩方案。",
+      glassDark: "流体暗光玻璃 (Liquid Glass Dark)",
+      glassDarkDesc: "半透明暗色磨砂玻璃，伴随高光镜面反射",
+      glassLight: "流体高光玻璃 (Liquid Glass Light)",
+      glassLightDesc: "晶莹剔透的透光磨砂玻璃，文字清晰锐利",
+      dark: "经典暗黑 (Normal Dark)",
+      darkDesc: "纯黑深邃质感，经典耐看",
+      light: "极简素白 (Normal Light)",
+      lightDesc: "素雅明亮白调，搭配深色对比字体",
+      cyberpunk: "赛博朋克 (Cyberpunk)",
+      cyberpunkDesc: "黑曜石底色搭配电光青与霓虹品红",
+      midnight: "午夜蓝宝石 (Midnight Sapphire)",
+      midnightDesc: "深海群青色调，散发蓝宝石幽光",
+      sunset: "落日余晖 (Sunset Solar)",
+      sunsetDesc: "浓缩咖啡底蕴，映衬温润琥珀与暖橙",
+      aurora: "翡翠极光 (Emerald Aurora)",
+      auroraDesc: "沉稳墨绿基调，点缀极光翠影",
+      auto: "跟随系统 (System Auto)",
+      autoDesc: "自动匹配 Windows 系统的深色或浅色模式",
+    },
     style: {
       label: "样式",
       desc: "灵动岛在屏幕上的展现风格。",

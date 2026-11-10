@@ -6,6 +6,7 @@ import { cn } from "../core/cn";
 import { useSyncLocale } from "../core/i18n";
 import { type IslandApi, IslandContext } from "../core/island";
 import { setIslandControls } from "../core/plugins/host";
+import { useThemeSync } from "../core/theme";
 import { useGlass } from "../core/useGlass";
 import { useHitRects } from "../core/useHitRects";
 import { useIslandController } from "../core/useIslandController";
@@ -27,6 +28,7 @@ export function Island() {
 	const ctl = useIslandController(modules);
 	const { mode, primary, secondary, focused } = ctl;
 	const look = useAppearance();
+	useThemeSync(look.theme);
 	const windows = look.style === "windows";
 	const v = variantOf(look);
 	useHitRects();

@@ -29,8 +29,8 @@ export function Surface({
 		<motion.div
 			data-glass
 			className={cn(
-				"absolute inset-0 overflow-hidden bg-island shadow-[0_14px_34px_-14px_rgba(0,0,0,0.7)] transition-shadow duration-400 ease-[ease]",
-				big && "shadow-[0_26px_60px_-18px_rgba(0,0,0,0.85),inset_0_-1px_0_rgba(255,255,255,0.06)]",
+				"absolute inset-0 overflow-hidden bg-island shadow-[var(--island-shadow)] transition-[box-shadow,background-color] duration-400 ease-[ease]",
+				big && "shadow-[var(--island-shadow-big)]",
 			)}
 			style={windows ? glowStyle(look) : undefined}
 			initial={false}
@@ -60,6 +60,7 @@ export function Surface({
 				</motion.div>
 			</AnimatePresence>
 			{rim}
+			<div className="pointer-events-none absolute inset-0 rounded-[inherit] shadow-[var(--specular)] transition-all duration-300" />
 			<GlassProbes />
 		</motion.div>
 	);

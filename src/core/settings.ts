@@ -242,6 +242,23 @@ export const ISLAND_HIDDEN_KEY = "island.hidden";
 export type IslandStyle = "dynamic" | "windows";
 
 export const appearanceSettings = {
+	theme: {
+		key: "appearance.theme",
+		label: "appearance.theme.label",
+		description: "appearance.theme.desc",
+		default: "dark" as
+			| "dark"
+			| "light"
+			| "glass-dark"
+			| "glass-light"
+			| "cyberpunk"
+			| "midnight"
+			| "sunset"
+			| "aurora"
+			| "auto",
+	} as SettingDef<
+		"dark" | "light" | "glass-dark" | "glass-light" | "cyberpunk" | "midnight" | "sunset" | "aurora" | "auto"
+	>,
 	style: {
 		key: "appearance.style",
 		label: "appearance.style.label",

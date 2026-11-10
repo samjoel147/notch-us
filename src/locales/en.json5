@@ -539,6 +539,28 @@
   // Appearance page (settings): island style and rim
   appearance: {
     title: "Appearance",
+    theme: {
+      label: "Theme",
+      desc: "Material and color scheme of the island.",
+      glassDark: "Liquid Glass Dark",
+      glassDarkDesc: "Smoky translucent glass with specular highlights",
+      glassLight: "Liquid Glass Light",
+      glassLightDesc: "Frosted crystal glass with crisp typography",
+      dark: "Normal Dark",
+      darkDesc: "Deep black island with subtle hairlines",
+      light: "Normal Light",
+      lightDesc: "Crisp white island with dark typography",
+      cyberpunk: "Cyberpunk",
+      cyberpunkDesc: "Obsidian base with electric cyan and magenta neon",
+      midnight: "Midnight Sapphire",
+      midnightDesc: "Deep navy blue with sapphire glow",
+      sunset: "Sunset Solar",
+      sunsetDesc: "Espresso base with warm amber and coral glow",
+      aurora: "Emerald Aurora",
+      auroraDesc: "Deep forest dark with radiant emerald highlights",
+      auto: "System Auto",
+      autoDesc: "Matches your Windows dark or light color mode",
+    },
     style: {
       label: "Style",
       desc: "How the island looks on your screen.",

@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import { useSyncLocale, useT } from "../core/i18n";
 import { useSettings } from "../core/settings";
+import { useActiveTheme } from "../core/theme";
 import { NavItem, NavSection } from "./components/NavItem";
 import { TitleBar } from "./components/TitleBar";
 import { AboutPage } from "./pages/AboutPage";
@@ -34,6 +35,7 @@ export function SettingsApp() {
 	const values = useSettings();
 	const t = useT();
 	useSyncLocale();
+	useActiveTheme();
 
 	return (
 		<MemoryRouter>

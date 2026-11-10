@@ -12,6 +12,7 @@ import {
 	readSetting,
 	useSettings,
 } from "./settings";
+import type { ThemeId } from "./theme";
 
 export interface BorderPreset {
 	id: string;
@@ -49,6 +50,7 @@ export const THICKNESSES = [1, 2, 3] as const;
 
 export interface Appearance {
 	style: IslandStyle;
+	theme: ThemeId;
 	tabsPosition: "top" | "bottom";
 	/** Gradient stops; empty = classic hairline. */
 	rim: string[];
@@ -69,14 +71,18 @@ export function useAppearance(): Appearance {
 	const s = useSettings();
 	const style = readSetting(s, appearanceSettings.style) === "windows" ? "windows" : "dynamic";
 	const tabsPosition = readSetting(s, appearanceSettings.tabsPosition) === "top" ? "top" : "bottom";
+	const theme = (readSetting(s, appearanceSettings.theme) as ThemeId) || "dark";
+	const rawGlass = glassLevel(readSetting(s, appearanceSettings.glass));
+	const glass = theme === "glass-dark" || theme === "glass-light" ? "strong" : rawGlass;
 	return {
 		style,
+		theme,
 		tabsPosition,
 		rim: borderColors(readSetting(s, appearanceSettings.border), readSetting(s, appearanceSettings.customColors)),
 		thickness: Math.min(3, Math.max(1, Number(readSetting(s, appearanceSettings.thickness)) || 2)),
 		animate: readSetting(s, appearanceSettings.animate),
 		glow: readSetting(s, appearanceSettings.glow),
-		glass: glassLevel(readSetting(s, appearanceSettings.glass)),
+		glass,
 		idleClock: readSetting(s, appearanceSettings.idleClock),
 	};
 }

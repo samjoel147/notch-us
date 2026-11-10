@@ -21,6 +21,7 @@ import {
 	readSetting,
 	setSetting,
 } from "../../core/settings";
+import { THEMES, type ThemeId } from "../../core/theme";
 import { useGlassSupported } from "../../core/useGlass";
 import { Title } from "../components/Heading";
 import { Toggle, ToggleRow } from "../components/Toggle";
@@ -38,6 +39,7 @@ const STYLES: {
 export function AppearancePage({ values }: { values: Record<string, unknown> }) {
 	const t = useT();
 	const glassSupported = useGlassSupported();
+	const theme = (readSetting(values, appearanceSettings.theme) as ThemeId) || "dark";
 	const style = readSetting(values, appearanceSettings.style);
 	const border = readSetting(values, appearanceSettings.border);
 	const custom = readSetting(values, appearanceSettings.customColors);
@@ -49,6 +51,50 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 	return (
 		<>
 			<Title>{t("appearance.title")}</Title>
+
+			<Card>
+				<Block>
+					<Row label={t("appearance.theme.label")} desc={t("appearance.theme.desc")} />
+					<div className="grid grid-cols-3 gap-2.5">
+						{THEMES.map((themeDef) => (
+							<button
+								type="button"
+								key={themeDef.id}
+								className={cn(
+									"group relative flex flex-col items-center gap-2 rounded-xl bg-white/3 p-2.5 text-center shadow-[inset_0_0_0_1px_var(--hairline)] transition-[box-shadow,background] duration-200 hover:bg-white/5",
+									theme === themeDef.id && "shadow-[inset_0_0_0_2px_var(--accent)]",
+								)}
+								onClick={() => setSetting(appearanceSettings.theme, themeDef.id)}
+							>
+								<div
+									className="relative flex h-9.5 w-full items-center justify-center rounded-lg overflow-hidden shadow-sm transition-transform duration-200 group-hover:scale-[1.02]"
+									style={{
+										background: themeDef.previewBg,
+										border: `1px solid ${themeDef.previewBorder}`,
+									}}
+								>
+									{themeDef.isGlass && <div className="absolute inset-0 bg-white/10 backdrop-blur-[4px]" />}
+									<div
+										className="relative flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
+										style={{
+											color: themeDef.isLight ? "#111" : "#fff",
+											background: themeDef.isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.15)",
+											boxShadow: themeDef.isGlass ? "inset 0 1px 1px rgba(255,255,255,0.4)" : undefined,
+										}}
+									>
+										<span className="size-1.5 rounded-full" style={{ backgroundColor: themeDef.previewAccent }} />
+										<span>12:45</span>
+									</div>
+								</div>
+								<div className="flex flex-col items-center">
+									<span className="text-[12.5px] font-[650] leading-snug">{t(themeDef.name)}</span>
+									<span className="text-[10.5px] text-text-dim line-clamp-1 mt-0.5">{t(themeDef.desc)}</span>
+								</div>
+							</button>
+						))}
+					</div>
+				</Block>
+			</Card>
 
 			<Card>
 				<Block>

@@ -85,9 +85,16 @@ export function useGlass(level: GlassLevel) {
 	}, [enabled, level]);
 
 	useEffect(() => {
-		const root = document.documentElement.style;
-		if (enabled) root.setProperty("--island", GLASS_TINT);
-		if (!isTauri) return () => root.removeProperty("--island");
+		const root = document.documentElement;
+		if (enabled && root.dataset.glassTheme !== "true") {
+			root.style.setProperty("--island", GLASS_TINT);
+		}
+		if (!isTauri)
+			return () => {
+				if (root.dataset.glassTheme !== "true") {
+					root.style.removeProperty("--island");
+				}
+			};
 
 		let raf = 0;
 		let last = "";
@@ -122,7 +129,9 @@ export function useGlass(level: GlassLevel) {
 		}
 		return () => {
 			cancelAnimationFrame(raf);
-			root.removeProperty("--island");
+			if (root.dataset.glassTheme !== "true") {
+				root.style.removeProperty("--island");
+			}
 			if (enabled) command("set_glass_shapes", { shapes: [] });
 		};
 	}, [enabled]);
