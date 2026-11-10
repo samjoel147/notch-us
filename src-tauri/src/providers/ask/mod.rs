@@ -73,8 +73,9 @@ struct Status {
 #[derive(Debug, Clone, PartialEq, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 struct State {
-    /// The Claude Code CLI was found.
+    /// The Claude Code CLI or Ollama was found.
     available: bool,
+    backend: Option<String>,
     messages: Vec<Message>,
     running: bool,
     status: Option<Status>,
@@ -121,10 +122,22 @@ impl Provider for AskProvider {
     }
 
     fn start(self: Arc<Self>, hub: Arc<Hub>) {
+        let has_claude = find_claude().is_some();
+        let ollama_model = if !has_claude { check_ollama() } else { None };
+        let available = has_claude || ollama_model.is_some();
+        let backend = if has_claude {
+            Some("claude".to_string())
+        } else if ollama_model.is_some() {
+            Some("ollama".to_string())
+        } else {
+            None
+        };
+
         let ctx = Arc::new(Ctx {
             hub,
             state: Mutex::new(State {
-                available: find_claude().is_some(),
+                available,
+                backend,
                 ..Default::default()
             }),
             session_id: Mutex::default(),
@@ -267,10 +280,36 @@ fn send(ctx: &Arc<Ctx>, text: String, attachments: Vec<Attachment>) {
         s.unread = false;
     });
 
-    let Some(claude) = find_claude() else {
+    let claude = find_claude();
+    let ollama_model = if claude.is_none() { check_ollama() } else { None };
+
+    if claude.is_none() && ollama_model.is_none() {
+        fail(ctx, i18n::t(&app, "ask.notFound"));
+        return;
+    }
+
+    if let Some(model) = ollama_model {
+        ctx.update(|s| {
+            s.backend = Some("ollama".to_string());
+        });
+        let ctx = ctx.clone();
+        let prompt = prompt.clone();
+        let attachments = attachments.clone();
+        std::thread::spawn(move || {
+            if let Err(e) = send_ollama(&ctx, &model, &prompt, &attachments) {
+                fail(&ctx, e);
+            }
+        });
+        return;
+    }
+
+    let Some(claude) = claude else {
         fail(ctx, i18n::t(&app, "ask.notFound"));
         return;
     };
+    ctx.update(|s| {
+        s.backend = Some("claude".to_string());
+    });
     let input = match build_input(&prompt, &attachments) {
         Ok(input) => input,
         Err(e) => {
@@ -573,9 +612,11 @@ fn build_input(prompt: &str, attachments: &[Attachment]) -> Result<String, Strin
 pub fn find_claude() -> Option<PathBuf> {
     if let Some(path) = std::env::var_os("PATH") {
         for dir in std::env::split_paths(&path) {
-            let candidate = dir.join("claude.exe");
-            if candidate.is_file() {
-                return Some(candidate);
+            for ext in ["exe", "cmd", "bat"] {
+                let candidate = dir.join(format!("claude.{ext}"));
+                if candidate.is_file() {
+                    return Some(candidate);
+                }
             }
         }
     }
@@ -600,4 +641,142 @@ pub fn find_claude() -> Option<PathBuf> {
         })
         .filter(|p| p.is_file())
         .max_by_key(|p| std::fs::metadata(p).and_then(|m| m.modified()).ok())
+}
+
+/// Checks if an Ollama instance is available locally and returns the first model name.
+pub fn check_ollama() -> Option<String> {
+    let agent: ureq::Agent = ureq::Agent::config_builder()
+        .proxy(None)
+        .max_redirects(0)
+        .timeout_global(Some(Duration::from_millis(600)))
+        .build()
+        .into();
+    let mut response = agent
+        .get("http://127.0.0.1:11434/api/tags")
+        .send(b"")
+        .ok()?;
+    let body = response
+        .body_mut()
+        .with_config()
+        .limit(64 * 1024)
+        .read_to_string()
+        .ok()?;
+    let val: Value = serde_json::from_str(&body).ok()?;
+    let models = val["models"].as_array()?;
+    let first = models.first()?;
+    first["name"].as_str().map(|s| s.to_string())
+}
+
+fn send_ollama(
+    ctx: &Arc<Ctx>,
+    model: &str,
+    prompt: &str,
+    attachments: &[Attachment],
+) -> Result<(), String> {
+    let app = ctx.hub.app().clone();
+    let mut images = Vec::new();
+    for a in attachments.iter().filter(|a| a.is_image) {
+        let path = Path::new(&a.path);
+        if let Ok(bytes) = std::fs::read(path) {
+            images.push(base64::engine::general_purpose::STANDARD.encode(bytes));
+        }
+    }
+
+    let language = i18n::t(&app, "language.name");
+    let system = SYSTEM_PROMPT.replace("{language}", &language);
+
+    let payload = json!({
+        "model": model,
+        "prompt": prompt,
+        "system": system,
+        "stream": true,
+        "images": images,
+    });
+
+    let agent: ureq::Agent = ureq::Agent::config_builder()
+        .proxy(None)
+        .max_redirects(0)
+        .timeout_global(Some(Duration::from_secs(60)))
+        .build()
+        .into();
+
+    let mut response = agent
+        .post("http://127.0.0.1:11434/api/generate")
+        .header("Content-Type", "application/json")
+        .send(payload.to_string().as_bytes())
+        .map_err(|e| format!("Ollama request failed: {e}"))?;
+
+    ctx.update(|s| {
+        s.running = true;
+        s.status = Some(Status {
+            kind: "thinking",
+            arg: None,
+        });
+    });
+
+    let reader = BufReader::new(response.body_mut().as_reader());
+    let mut last_published = Instant::now();
+    let mut full_text = String::new();
+
+    for line in reader.lines() {
+        let Ok(line) = line else { break };
+        let line = line.trim();
+        if line.is_empty() {
+            continue;
+        }
+        if let Ok(val) = serde_json::from_str::<Value>(line) {
+            if let Some(chunk) = val["response"].as_str() {
+                full_text.push_str(chunk);
+                if last_published.elapsed() >= PUBLISH_EVERY {
+                    let text = full_text.clone();
+                    ctx.update(|s| {
+                        if let Some(reply) = s.messages.last_mut() {
+                            reply.text = text;
+                        }
+                        s.status = Some(Status {
+                            kind: "writing",
+                            arg: None,
+                        });
+                    });
+                    last_published = Instant::now();
+                }
+            }
+            if val["done"].as_bool() == Some(true) {
+                break;
+            }
+        }
+    }
+
+    ctx.update(|s| {
+        if let Some(reply) = s.messages.last_mut() {
+            reply.text = full_text.clone();
+        }
+        s.running = false;
+        s.status = None;
+        s.unread = !*ctx.viewing.lock().unwrap();
+    });
+
+    if !*ctx.viewing.lock().unwrap() && let Some(activities) = activities::handle() {
+        let flat = full_text
+            .replace("**", "")
+            .replace('`', "")
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ");
+        let mut preview: String = flat.chars().take(140).collect();
+        if flat.chars().count() > 140 {
+            preview.push('…');
+        }
+        let mut alert = Activity::alert("ask.answer", "ask", Duration::from_secs(8));
+        alert.caption = Some("Ollama".into());
+        alert.title = i18n::t(&app, "ask.answered");
+        alert.subtitle = Some(preview);
+        alert.icon = Some("code".into());
+        alert.color = Some(crate::providers::activities::BLUE.into());
+        alert.priority = 70;
+        alert.expand = true;
+        activities.upsert(alert);
+    }
+
+    Ok(())
 }

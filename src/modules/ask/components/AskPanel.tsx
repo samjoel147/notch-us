@@ -1,4 +1,4 @@
-import { ArrowUpIcon, CameraIcon, FolderIcon } from "lucide-react";
+import { ArrowUpIcon, BotIcon, CameraIcon, FolderIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { type KeyboardEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { IconButton, TextButton } from "../../../components/ui/button";
@@ -132,13 +132,13 @@ export function AskPanel({ state }: { state: AskState | undefined }) {
 		<div className="flex h-full flex-col gap-2" onClick={(e) => e.stopPropagation()}>
 			<div className="flex items-center gap-2">
 				<motion.span
-					className="grid text-[#d97757]"
+					className={cn("grid", state?.backend === "ollama" ? "text-[#0a84ff]" : "text-[#d97757]")}
 					animate={running ? { rotate: 360 } : { rotate: 0 }}
 					transition={running ? { duration: 2.4, repeat: Infinity, ease: "linear" } : { duration: 0.3 }}
 				>
-					<ClaudeIcon size={16} />
+					{state?.backend === "ollama" ? <BotIcon size={16} /> : <ClaudeIcon size={16} />}
 				</motion.span>
-				<span className="text-[14px] font-[650]">Claude</span>
+				<span className="text-[14px] font-[650]">{state?.backend === "ollama" ? "Ollama" : "Claude"}</span>
 				{running && state?.status && <span className="text-[12px] text-text-dim">{statusText(t, state.status)}</span>}
 				<span className="flex-1" />
 				{messages.length > 0 && !running && (
@@ -241,7 +241,7 @@ export function AskPanel({ state }: { state: AskState | undefined }) {
 				<button
 					type="button"
 					className="grid size-7 flex-none place-items-center rounded-full text-white disabled:opacity-35"
-					style={{ background: CLAUDE_ORANGE }}
+					style={{ background: state?.backend === "ollama" ? "#0A84FF" : CLAUDE_ORANGE }}
 					title={running ? t("ask.stop") : t("ask.send")}
 					disabled={!running && !draft.trim() && !attachments.length}
 					onClick={() => (running ? providerAction(ASK_PROVIDER, "cancel") : send())}

@@ -20,6 +20,7 @@ export interface AskMessage {
 
 export interface AskState {
 	available: boolean;
+	backend?: "claude" | "ollama" | string | null;
 	messages: AskMessage[];
 	running: boolean;
 	status: { kind: "thinking" | "writing" | "tool"; arg: string | null } | null;
