@@ -15,3 +15,10 @@ website/.astro/
 
 # Built plugin packages (`island-plugin index`); published as release assets, not committed
 examples/plugins/packages/
+
+# Local build artifacts
+*.dll
+.xwin-cache/
+.xwin/
+package-lock.json
+
