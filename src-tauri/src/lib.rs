@@ -46,7 +46,11 @@ pub fn run() {
                     {
                         match target {
                             providers::shortcuts::ShortcutTarget::Event(event) => {
-                                open_page(app, event)
+                                if event == "island://toggle-mute" {
+                                    providers::activities::privacy::toggle_mic_mute();
+                                } else {
+                                    open_page(app, event)
+                                }
                             }
                             providers::shortcuts::ShortcutTarget::Module(id) => {
                                 open_module(app, &id)

@@ -29,7 +29,7 @@ struct Action {
     fallback: Option<&'static str>,
 }
 
-const BUILTIN_ACTIONS: [Action; 2] = [
+const BUILTIN_ACTIONS: [Action; 3] = [
     Action {
         id: "ask",
         default: "Ctrl+Alt+Space",
@@ -38,6 +38,11 @@ const BUILTIN_ACTIONS: [Action; 2] = [
     Action {
         id: "find",
         default: "Ctrl+Alt+F",
+        fallback: None,
+    },
+    Action {
+        id: "mute",
+        default: "Ctrl+Alt+M",
         fallback: None,
     },
 ];
@@ -70,6 +75,7 @@ pub fn event_for(shortcut: &Shortcut) -> Option<ShortcutTarget> {
     match id.as_str() {
         "ask" => Some(ShortcutTarget::Event("island://ask")),
         "find" => Some(ShortcutTarget::Event("island://find")),
+        "mute" => Some(ShortcutTarget::Event("island://toggle-mute")),
         _ => {
             if let Some((plugin, shortcut)) =
                 id.strip_prefix("plugin:").and_then(|p| p.split_once(':'))

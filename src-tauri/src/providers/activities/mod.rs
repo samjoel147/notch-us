@@ -10,6 +10,7 @@
 mod api;
 mod battery;
 mod bluetooth;
+pub mod privacy;
 mod volume;
 
 use std::collections::HashMap;
@@ -222,6 +223,8 @@ impl Provider for ActivitiesProvider {
         std::thread::spawn(move || volume::watch(watcher));
         let watcher = activities.clone();
         std::thread::spawn(move || battery::watch(watcher));
+        let watcher = activities.clone();
+        std::thread::spawn(move || privacy::watch(watcher));
         std::thread::spawn(move || bluetooth::watch(activities));
     }
 
@@ -237,6 +240,9 @@ impl Provider for ActivitiesProvider {
                 if let Some(target) = activities.get(id).and_then(|a| a.action) {
                     crate::settings::open_url(&target);
                 }
+            }
+            "toggleMic" => {
+                privacy::toggle_mic_mute();
             }
             _ => return Err(format!("{ID}: unknown action '{action}'")),
         }
