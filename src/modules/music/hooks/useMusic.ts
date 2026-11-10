@@ -25,6 +25,16 @@ export interface MusicState {
 	appIcon: string | null;
 	/** Spotify playing on another device: its name (the app volume is that device's). */
 	appDevice: string | null;
+	/** Every active application with an audio session. */
+	apps?: AppVolumeSession[];
+}
+
+export interface AppVolumeSession {
+	pid: number;
+	name: string;
+	icon: string | null;
+	level: number;
+	muted: boolean;
 }
 
 export interface Volume {
@@ -43,8 +53,9 @@ const PAUSE_GRACE_MS = 15_000;
 export const musicAction = (action: "toggle" | "next" | "previous" | "seek" | "focus", payload?: number) =>
 	providerAction(MUSIC_PROVIDER, action, payload);
 
-export const setVolume = (change: ({ target: "system" } | { target: "app"; appId: string }) & Partial<Volume>) =>
-	providerAction(MUSIC_PROVIDER, "volume", change);
+export const setVolume = (
+	change: ({ target: "system" } | { target: "app"; appId: string } | { target: "pid"; pid: number }) & Partial<Volume>,
+) => providerAction(MUSIC_PROVIDER, "volume", change);
 
 export function useMusic() {
 	const music = useProvider<MusicState>(MUSIC_PROVIDER);

@@ -51,6 +51,8 @@ pub struct MusicState {
     /// Spotify playing on another device (Spotify Connect): its name. The
     /// app volume is then that device's, through the Web API (`spotify.rs`).
     pub app_device: Option<String>,
+    /// Every active application with an audio session.
+    pub apps: Vec<volume::AppVolumeSession>,
 }
 
 #[derive(Default)]

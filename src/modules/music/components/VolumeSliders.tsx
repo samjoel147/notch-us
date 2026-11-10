@@ -1,4 +1,4 @@
-import { MonitorIcon, MusicIcon } from "lucide-react";
+import { MonitorIcon, MusicIcon, SlidersHorizontalIcon } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { cn } from "../../../core/cn";
 import { useT } from "../../../core/i18n";
@@ -9,12 +9,21 @@ import { type MusicState, setVolume, type Volume } from "../hooks/useMusic";
 const HOLD_MS = 1500;
 const KEY_STEP = 0.05;
 
-/** Two small sliders for the panel's footer: the player's, then the computer's. */
+/** Two small sliders for the panel's footer: the player's, then the computer's, plus other apps mixer. */
 export function VolumeSliders({ music }: { music: MusicState | undefined }) {
 	const t = useT();
+	const [showMixer, setShowMixer] = useState(false);
 	if (!music?.available) return null;
+
+	const otherApps = (music.apps ?? []).filter((app) => {
+		const appName = music.appName?.toLowerCase() || "";
+		const currentStem = music.appId?.toLowerCase() || "";
+		const targetName = app.name.toLowerCase();
+		return !appName.includes(targetName) && !currentStem.includes(targetName);
+	});
+
 	return (
-		<>
+		<div className="relative flex items-center gap-1.5">
 			{music.appVolume && (
 				<VolumeSlider
 					name={music.appDevice ? `${music.appName} · ${music.appDevice}` : music.appName}
@@ -32,11 +41,46 @@ export function VolumeSliders({ music }: { music: MusicState | undefined }) {
 					onChange={(change) => setVolume({ target: "system", ...change })}
 				/>
 			)}
-		</>
+
+			{otherApps.length > 0 && (
+				<button
+					type="button"
+					className={cn(
+						"grid size-6.5 place-items-center rounded-[11px] bg-white/6 text-text-dim transition-[opacity,color,background,transform] duration-200 hover:bg-white/12 hover:text-text active:scale-92",
+						showMixer && "bg-white/16 text-text",
+					)}
+					title={t("music.mixer") || "Audio mixer"}
+					onClick={() => setShowMixer((v) => !v)}
+				>
+					<SlidersHorizontalIcon size={12} />
+				</button>
+			)}
+
+			{showMixer && otherApps.length > 0 && (
+				<div className="absolute right-0 bottom-full mb-2 flex max-h-48 w-56 flex-col gap-1.5 overflow-y-auto rounded-2xl bg-[#1c1c1f]/95 p-2 shadow-2xl backdrop-blur-xl border border-white/10 z-50">
+					<span className="px-1.5 text-[11px] font-semibold text-text-faint">{t("music.otherApps") || "Other apps"}</span>
+					{otherApps.map((app) => (
+						<VolumeSlider
+							key={app.pid}
+							name={app.name}
+							volume={{ level: app.level, muted: app.muted }}
+							icon={
+								app.icon ? (
+									<img src={app.icon} alt="" draggable={false} className="size-3.5" />
+								) : (
+									<MusicIcon size={12} />
+								)
+							}
+							onChange={(change) => setVolume({ target: "pid", pid: app.pid, ...change })}
+						/>
+					))}
+				</div>
+			)}
+		</div>
 	);
 }
 
-function VolumeSlider({
+export function VolumeSlider({
 	name,
 	volume,
 	icon,

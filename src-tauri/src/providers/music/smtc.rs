@@ -65,6 +65,7 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
                     state.youtube_id = youtube.video_id(&state);
                 }
                 state.volume = super::volume::system();
+                state.apps = super::volume::all_apps();
                 let local = super::volume::app(&state.app_id);
                 spotify.set_wanted(local.is_none() && spotify::is_spotify(&state.app_id));
                 if let Some((volume, exe)) = local {
@@ -83,11 +84,17 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
             }
             Some(Ok(None)) => {
                 spotify.set_wanted(false);
-                MusicState::default()
+                let mut state = MusicState::default();
+                state.volume = super::volume::system();
+                state.apps = super::volume::all_apps();
+                state
             }
             Some(Err(_)) | None => {
                 manager = None;
-                MusicState::default()
+                let mut state = MusicState::default();
+                state.volume = super::volume::system();
+                state.apps = super::volume::all_apps();
+                state
             }
         };
         playing_flag.store(state.playing, Ordering::Relaxed);

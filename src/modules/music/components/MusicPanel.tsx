@@ -1,15 +1,15 @@
-import { MusicIcon } from "lucide-react";
+import { MonitorIcon, MusicIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { Marquee } from "../../../components/Marquee";
 import { useT } from "../../../core/i18n";
 import { useSetting } from "../../../core/settings";
-import { formatTime, type MusicState, musicAction, useLivePosition } from "../hooks/useMusic";
+import { formatTime, type MusicState, musicAction, setVolume, useLivePosition } from "../hooks/useMusic";
 import { closePip, openPip, usePipOpen } from "../hooks/usePip";
 import { musicSettings } from "../settings";
 import { Artwork } from "./Artwork";
 import { Controls } from "./Controls";
 import { Visualizer } from "./Visualizer";
-import { VolumeSliders } from "./VolumeSliders";
+import { VolumeSlider, VolumeSliders } from "./VolumeSliders";
 import { useMirrorVideo, YouTubeMirror } from "./YouTubeMirror";
 
 /** Expanded now-playing panel. */
@@ -31,10 +31,50 @@ export function MusicPanel({
 	const video = videoEnabled && !pinned ? mirror : null;
 
 	if (!music?.available) {
+		const activeApps = music?.apps ?? [];
 		return (
-			<div className="flex h-full items-center justify-center gap-2.5 text-[14px] font-semibold text-text-faint">
-				<MusicIcon size={26} />
-				<span>{t("music.nothingPlaying")}</span>
+			<div className="flex h-full flex-col justify-between py-1">
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-2.5 text-[14px] font-semibold text-text-faint">
+						<MusicIcon size={22} />
+						<span>{t("music.nothingPlaying")}</span>
+					</div>
+					{music?.volume && (
+						<div data-no-drag>
+							<VolumeSlider
+								name={t("music.computer")}
+								volume={music.volume}
+								icon={<MonitorIcon size={13} />}
+								onChange={(change) => setVolume({ target: "system", ...change })}
+							/>
+						</div>
+					)}
+				</div>
+
+				{activeApps.length > 0 ? (
+					<div className="flex flex-col gap-1.5 border-t border-white/8 pt-2" data-no-drag>
+						<span className="text-[11px] font-semibold text-text-faint">{t("music.mixer") || "Audio mixer"}</span>
+						<div className="flex flex-wrap items-center gap-2 max-h-16 overflow-y-auto">
+							{activeApps.map((app) => (
+								<VolumeSlider
+									key={app.pid}
+									name={app.name}
+									volume={{ level: app.level, muted: app.muted }}
+									icon={
+										app.icon ? (
+											<img src={app.icon} alt="" draggable={false} className="size-3.5" />
+										) : (
+											<MusicIcon size={12} />
+										)
+									}
+									onChange={(change) => setVolume({ target: "pid", pid: app.pid, ...change })}
+								/>
+							))}
+						</div>
+					</div>
+				) : (
+					<div className="text-[12px] text-text-faint">{t("music.noAudioApps") || "No applications currently playing sound"}</div>
+				)}
 			</div>
 		);
 	}
