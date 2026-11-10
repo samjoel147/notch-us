@@ -18,6 +18,8 @@ examples/plugins/packages/
 
 # Local build artifacts
 *.dll
+*.exe
+Run-Dynamic-Island.cmd
 .xwin-cache/
 .xwin/
 package-lock.json
