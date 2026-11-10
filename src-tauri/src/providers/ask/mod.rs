@@ -653,7 +653,7 @@ pub fn check_ollama() -> Option<String> {
         .into();
     let mut response = agent
         .get("http://127.0.0.1:11434/api/tags")
-        .send(b"")
+        .call()
         .ok()?;
     let body = response
         .body_mut()

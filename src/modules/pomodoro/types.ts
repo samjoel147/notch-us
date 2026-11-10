@@ -15,4 +15,3 @@ export interface PomodoroTimer {
 	done: boolean;
 	doneAt: number | null;
 }
-

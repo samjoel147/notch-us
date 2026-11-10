@@ -73,7 +73,9 @@ export function MusicPanel({
 						</div>
 					</div>
 				) : (
-					<div className="text-[12px] text-text-faint">{t("music.noAudioApps") || "No applications currently playing sound"}</div>
+					<div className="text-[12px] text-text-faint">
+						{t("music.noAudioApps") || "No applications currently playing sound"}
+					</div>
 				)}
 			</div>
 		);

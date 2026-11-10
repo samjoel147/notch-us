@@ -382,7 +382,7 @@ fn parse_transcript(
                 } else {
                     status = Status::Idle;
                 }
-                summary = last["content"].as_str().map(|s| preview(s, 100));
+                summary = last["content"].as_str().map(preview);
             }
         }
     }
@@ -467,9 +467,7 @@ impl AntigravityProvider {
     /// Publishes the current state; `true` when the quota could be read.
     fn refresh(&self, hub: &Hub, check_quota: bool) -> bool {
         let exe = executable(hub);
-        let mut connected = false;
-
-        if check_quota {
+        let connected = if check_quota {
             let cached = self.server.lock().unwrap().clone();
             let mut pids = None;
             let found = cached
@@ -479,14 +477,15 @@ impl AntigravityProvider {
                         .into_iter()
                         .find_map(|s| quota(&s).map(|limits| (s, limits)))
                 });
-            connected = found.is_some();
+            let ok = found.is_some();
             if let Some((server, limits)) = found {
                 *self.server.lock().unwrap() = Some(server);
                 *self.cached_limits.lock().unwrap() = Some(limits);
             }
+            ok
         } else {
-            connected = self.cached_limits.lock().unwrap().is_some();
-        }
+            self.cached_limits.lock().unwrap().is_some()
+        };
 
         let limits = self.cached_limits.lock().unwrap().clone().unwrap_or_default();
         let (sessions, tokens_today) = scan_sessions();

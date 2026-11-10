@@ -58,7 +58,9 @@ export function VolumeSliders({ music }: { music: MusicState | undefined }) {
 
 			{showMixer && otherApps.length > 0 && (
 				<div className="absolute right-0 bottom-full mb-2 flex max-h-48 w-56 flex-col gap-1.5 overflow-y-auto rounded-2xl bg-[#1c1c1f]/95 p-2 shadow-2xl backdrop-blur-xl border border-white/10 z-50">
-					<span className="px-1.5 text-[11px] font-semibold text-text-faint">{t("music.otherApps") || "Other apps"}</span>
+					<span className="px-1.5 text-[11px] font-semibold text-text-faint">
+						{t("music.otherApps") || "Other apps"}
+					</span>
 					{otherApps.map((app) => (
 						<VolumeSlider
 							key={app.pid}

@@ -97,7 +97,7 @@ function DurationRow({
 			<span className="flex flex-none items-center gap-2">
 				{custom && (
 					<NumberField
-						unit={unit || undefined}
+						unit={unit}
 						min={1}
 						max={MAX_MINUTES}
 						step={1}
@@ -128,4 +128,3 @@ function DurationRow({
 		</Row>
 	);
 }
-

@@ -31,5 +31,7 @@ export interface ClipboardState {
 export const CLIPBOARD_PROVIDER = "clipboard";
 export const CLIPBOARD_YELLOW = "#FFD60A";
 
-export const clipAction = <T = unknown>(action: "copy" | "remove" | "drag" | "open" | "keep" | "text" | "pin", id: number) =>
-	providerAction<T>(CLIPBOARD_PROVIDER, action, id);
+export const clipAction = <T = unknown>(
+	action: "copy" | "remove" | "drag" | "open" | "keep" | "text" | "pin",
+	id: number,
+) => providerAction<T>(CLIPBOARD_PROVIDER, action, id);

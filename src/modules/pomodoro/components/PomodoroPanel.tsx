@@ -1,12 +1,4 @@
-import {
-	FlameIcon,
-	PauseIcon,
-	PlayIcon,
-	RotateCcwIcon,
-	SkipForwardIcon,
-	SparklesIcon,
-	TimerIcon,
-} from "lucide-react";
+import { FlameIcon, PauseIcon, PlayIcon, RotateCcwIcon, SkipForwardIcon } from "lucide-react";
 import { cn } from "../../../core/cn";
 import { useT } from "../../../core/i18n";
 import type { PomodoroPhase, PomodoroTimer } from "../types";
@@ -81,15 +73,8 @@ export function PomodoroPanel({
 				{/* Progress Ring with Time Center */}
 				<div className="relative flex items-center gap-4">
 					<div className="relative grid size-24 place-items-center flex-none">
-						<svg className="size-24 -rotate-90 transform" viewBox="0 0 96 96">
-							<circle
-								cx="48"
-								cy="48"
-								r={radius}
-								className="stroke-white/10"
-								strokeWidth="5"
-								fill="transparent"
-							/>
+						<svg className="size-24 -rotate-90 transform" viewBox="0 0 96 96" aria-hidden="true">
+							<circle cx="48" cy="48" r={radius} className="stroke-white/10" strokeWidth="5" fill="transparent" />
 							<circle
 								cx="48"
 								cy="48"
@@ -119,16 +104,13 @@ export function PomodoroPanel({
 									: t("pomodoro.status.resting")}
 						</span>
 						<span className="text-[12px] text-text-dim">
-							{timer.done
-								? t("pomodoro.readyNext")
-								: timer.running
-									? t("pomodoro.inProgress")
-									: t("pomodoro.paused")}
+							{timer.done ? t("pomodoro.readyNext") : timer.running ? t("pomodoro.inProgress") : t("pomodoro.paused")}
 						</span>
 						{timer.rounds > 0 && (
 							<div className="mt-1 flex items-center gap-1">
 								{Array.from({ length: 4 }).map((_, i) => (
 									<span
+										// biome-ignore lint/suspicious/noArrayIndexKey: fixed 4-step round progress dots
 										key={i}
 										className={cn(
 											"size-1.5 rounded-full",
@@ -139,7 +121,7 @@ export function PomodoroPanel({
 									/>
 								))}
 								<span className="ml-1 text-[10.5px] text-text-faint">
-									{t("pomodoro.cycleProgress", { cur: (timer.rounds % 4) || 4, total: 4 })}
+									{t("pomodoro.cycleProgress", { cur: timer.rounds % 4 || 4, total: 4 })}
 								</span>
 							</div>
 						)}
@@ -220,4 +202,3 @@ function PhaseButton({
 		</button>
 	);
 }
-

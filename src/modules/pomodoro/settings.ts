@@ -54,4 +54,3 @@ export const pomodoroRoundsBeforeLongBreak: SettingDef<number> = {
 	description: "pomodoro.roundsBeforeLongBreak.desc",
 	default: 4,
 };
-

@@ -199,6 +199,7 @@ fn read_state(manager: &SessionManager) -> Result<Option<(MusicState, Session)>>
         app_volume: None,
         app_icon: None,
         app_device: None,
+        apps: Vec::new(),
     };
     Ok(Some((state, session)))
 }

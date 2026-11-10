@@ -39,4 +39,3 @@ export function PomodoroBubble({ timer }: { timer: PomodoroTimer }) {
 		</span>
 	);
 }
-

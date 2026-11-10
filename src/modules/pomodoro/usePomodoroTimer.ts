@@ -29,7 +29,8 @@ function saveRounds(rounds: number) {
 
 function playChime() {
 	try {
-		const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+		const AudioCtx =
+			window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
 		if (!AudioCtx) return;
 		const ctx = new AudioCtx();
 		const now = ctx.currentTime;
@@ -186,11 +187,7 @@ export function usePomodoroTimer(
 
 	const skip = useCallback(() => {
 		const isWork = phase === "work";
-		const nextPhase: PomodoroPhase = isWork
-			? (rounds + 1) % roundsBeforeLong === 0
-				? "longBreak"
-				: "break"
-			: "work";
+		const nextPhase: PomodoroPhase = isWork ? ((rounds + 1) % roundsBeforeLong === 0 ? "longBreak" : "break") : "work";
 
 		const dur = getDuration(nextPhase);
 		setPhase(nextPhase);
@@ -235,4 +232,3 @@ export function usePomodoroTimer(
 		selectPhase,
 	};
 }
-

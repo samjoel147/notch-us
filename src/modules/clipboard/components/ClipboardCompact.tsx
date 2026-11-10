@@ -21,7 +21,7 @@ export function ClipboardCompactLeft({ item }: { item: ClipItem }) {
 				<span
 					className={cn(
 						"grid size-6 flex-none place-items-center rounded-[7px]",
-						isSecret ? "bg-[rgba(255,159,10,0.18)]" : "bg-[rgba(255,214,10,0.16)]"
+						isSecret ? "bg-[rgba(255,159,10,0.18)]" : "bg-[rgba(255,214,10,0.16)]",
 					)}
 				>
 					{item.kind === "files" ? (
@@ -35,10 +35,7 @@ export function ClipboardCompactLeft({ item }: { item: ClipItem }) {
 			)}
 			<Marquee
 				text={clipTitle(t, item, maskSecrets)}
-				className={cn(
-					"max-w-50 min-w-0 text-[13px] font-semibold",
-					isSecret && "font-mono text-[#FF9F0A]"
-				)}
+				className={cn("max-w-50 min-w-0 text-[13px] font-semibold", isSecret && "font-mono text-[#FF9F0A]")}
 			/>
 		</>
 	);

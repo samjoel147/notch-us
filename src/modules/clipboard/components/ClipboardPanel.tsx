@@ -35,15 +35,16 @@ export interface SecretInfo {
 /** Identifies sensitive API tokens, private keys, and authorization secrets. */
 export function detectSecret(text: string | null | undefined): SecretInfo | null {
 	if (!text) return null;
-	if (/sk-ant-[a-zA-Z0-9_\-]{10,}/i.test(text)) return { type: "anthropic", label: "Anthropic API Key" };
-	if (/sk-[a-zA-Z0-9_\-]{20,}/i.test(text)) return { type: "openai", label: "OpenAI API Key" };
+	if (/sk-ant-[a-zA-Z0-9_-]{10,}/i.test(text)) return { type: "anthropic", label: "Anthropic API Key" };
+	if (/sk-[a-zA-Z0-9_-]{20,}/i.test(text)) return { type: "openai", label: "OpenAI API Key" };
 	if (/(?:ghp|gho|ghu|ghs|ghr)_[a-zA-Z0-9]{20,}/.test(text)) return { type: "github", label: "GitHub Token" };
 	if (/(?:AKIA|ABIA|ACCA|ASIA)[0-9A-Z]{16}/.test(text)) return { type: "aws", label: "AWS Key" };
-	if (/eyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]+/.test(text)) return { type: "jwt", label: "JWT Token" };
+	if (/eyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]+/.test(text))
+		return { type: "jwt", label: "JWT Token" };
 	if (/xox[baprs]-[0-9a-zA-Z]{10,48}/.test(text)) return { type: "slack", label: "Slack Token" };
 	if (/-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----/.test(text)) return { type: "private_key", label: "Private Key" };
-	if (/(?:bearer\s+[a-zA-Z0-9_\-\.]{25,})/i.test(text)) return { type: "bearer", label: "Bearer Token" };
-	if (/(?:api[_-]?key|secret[_-]?key|auth[_-]?token)[\s:=]+['"]?[a-zA-Z0-9_\-]{16,}['"]?/i.test(text))
+	if (/(?:bearer\s+[a-zA-Z0-9_\-.]{25,})/i.test(text)) return { type: "bearer", label: "Bearer Token" };
+	if (/(?:api[_-]?key|secret[_-]?key|auth[_-]?token)[\s:=]+['"]?[a-zA-Z0-9_-]{16,}['"]?/i.test(text))
 		return { type: "token", label: "API Secret" };
 	return null;
 }
@@ -210,7 +211,7 @@ function Visual({ item, size, isMasked }: { item: ClipItem; size: number; isMask
 		<span
 			className={cn(
 				"grid flex-none place-items-center rounded-[9px]",
-				isMasked ? "bg-[rgba(255,159,10,0.15)]" : "bg-white/7"
+				isMasked ? "bg-[rgba(255,159,10,0.15)]" : "bg-white/7",
 			)}
 			style={{ width: size, height: size }}
 		>
@@ -266,11 +267,9 @@ function Row({
 			<div className="flex min-w-0 flex-1 flex-col gap-px">
 				<div className="flex items-center gap-1.5 min-w-0">
 					{item.pinned && (
-						<PinIcon
-							size={11}
-							className="flex-none fill-[currentColor] text-[#FFD60A]"
-							title={t("clipboard.pinned")}
-						/>
+						<span title={t("clipboard.pinned")} className="inline-flex">
+							<PinIcon size={11} className="flex-none fill-[currentColor] text-[#FFD60A]" />
+						</span>
 					)}
 					{isMasked ? (
 						<span className="truncate text-[12.5px] font-mono tracking-wider text-[#FF9F0A]">
@@ -334,11 +333,9 @@ function Hero({ item }: { item: ClipItem }) {
 			<div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
 				<div className="flex items-center gap-1.5 min-w-0">
 					{item.pinned && (
-						<PinIcon
-							size={11}
-							className="flex-none fill-[currentColor] text-[#FFD60A]"
-							title={t("clipboard.pinned")}
-						/>
+						<span title={t("clipboard.pinned")} className="inline-flex">
+							<PinIcon size={11} className="flex-none fill-[currentColor] text-[#FFD60A]" />
+						</span>
 					)}
 					<span className="truncate text-[13px] font-semibold">{clipTitle(t, item)}</span>
 				</div>
@@ -362,7 +359,7 @@ function Hero({ item }: { item: ClipItem }) {
 						type="button"
 						className={cn(
 							"inline-flex items-center gap-1.25 rounded-full px-2.5 py-1 text-[11.5px] font-semibold hover:bg-white/18",
-							item.pinned ? "bg-[#FFD60A]/20 text-[#FFD60A]" : "bg-white/10"
+							item.pinned ? "bg-[#FFD60A]/20 text-[#FFD60A]" : "bg-white/10",
 						)}
 						title={t(item.pinned ? "clipboard.unpin" : "clipboard.pin")}
 						onClick={a.pin}
