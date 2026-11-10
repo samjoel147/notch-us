@@ -1,0 +1,17 @@
+node_modules
+dist
+src-tauri/target
+src-tauri/gen
+*.log
+.playwright-mcp
+
+.env
+
+*.tsbuildinfo
+
+website/.astro/
+
+.astro
+
+# Built plugin packages (`island-plugin index`); published as release assets, not committed
+examples/plugins/packages/
