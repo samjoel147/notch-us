@@ -179,11 +179,13 @@ fn pid_sessions(target_pid: u32) -> Vec<ISimpleAudioVolume> {
                 let Ok(control) = session.cast::<IAudioSessionControl2>() else {
                     continue;
                 };
-                if control.GetProcessId().ok() == Some(target_pid) {
-                    if let Ok(volume) = session.cast::<ISimpleAudioVolume>() {
-                        found.push(volume);
-                    }
+                if control.GetProcessId().ok() != Some(target_pid) {
+                    continue;
                 }
+                let Ok(volume) = session.cast::<ISimpleAudioVolume>() else {
+                    continue;
+                };
+                found.push(volume);
             }
         }
     }

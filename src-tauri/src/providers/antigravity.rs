@@ -433,7 +433,7 @@ fn scan_sessions() -> (Vec<Session>, Option<TokenStats>) {
         }
     }
 
-    files.sort_by(|a, b| b.0.cmp(&a.0));
+    files.sort_by_key(|a| std::cmp::Reverse(a.0));
 
     let mut sessions = Vec::new();
     let mut total_tokens = TokenStats::default();

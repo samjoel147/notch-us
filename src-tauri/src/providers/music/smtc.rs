@@ -84,17 +84,19 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
             }
             Some(Ok(None)) => {
                 spotify.set_wanted(false);
-                let mut state = MusicState::default();
-                state.volume = super::volume::system();
-                state.apps = super::volume::all_apps();
-                state
+                MusicState {
+                    volume: super::volume::system(),
+                    apps: super::volume::all_apps(),
+                    ..Default::default()
+                }
             }
             Some(Err(_)) | None => {
                 manager = None;
-                let mut state = MusicState::default();
-                state.volume = super::volume::system();
-                state.apps = super::volume::all_apps();
-                state
+                MusicState {
+                    volume: super::volume::system(),
+                    apps: super::volume::all_apps(),
+                    ..Default::default()
+                }
             }
         };
         playing_flag.store(state.playing, Ordering::Relaxed);
