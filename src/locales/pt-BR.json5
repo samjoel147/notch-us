@@ -150,6 +150,9 @@
     unpin: "Trazer o vídeo de volta para a ilha",
     backToIsland: "Voltar para a ilha",
     computer: "Computador",
+    mixer: "Mixer de áudio",
+    otherApps: "Outros aplicativos",
+    noAudioApps: "Nenhum aplicativo reproduzindo som no momento",
     volume: "Volume: {name}",
     mute: "Silenciar {name}",
     unmute: "Reativar o som de {name}",
@@ -219,6 +222,74 @@
       label: "Tempo para adiar",
       desc: "Quanto tempo esperar após escolher Adiar.",
       action: "Adiar",
+    },
+  },
+
+  // Módulo Pomodoro e Foco
+  pomodoro: {
+    title: "Foco e Pomodoro",
+    phase: {
+      work: "Foco",
+      break: "Pausa curta",
+      longBreak: "Pausa longa",
+    },
+    compact: {
+      work: "Sessão de foco",
+      break: "Pausa curta",
+      longBreak: "Pausa longa",
+      done: "Tempo esgotado!",
+      takeBreak: "Faça uma pausa",
+    },
+    status: {
+      focusing: "Hora de focar",
+      resting: "Descanse um pouco",
+    },
+    inProgress: "Contagem em andamento",
+    paused: "Timer pausado",
+    phaseCompleted: "Ciclo concluído!",
+    readyNext: "Pronto para o próximo intervalo?",
+    roundsCount: "{n} ciclos hoje",
+    cycleProgress: "{cur} de {total} até a pausa longa",
+    actions: {
+      start: "Iniciar",
+      pause: "Pausar",
+      resume: "Retomar",
+      reset: "Reiniciar",
+      skip: "Pular",
+    },
+    minutes: "{n} min",
+    custom: "Personalizado",
+    workDuration: {
+      label: "Duração do foco",
+      desc: "Quanto tempo dura cada sessão de foco profundo.",
+    },
+    breakDuration: {
+      label: "Duração da pausa curta",
+      desc: "Quanto tempo dura cada intervalo de descanso curto.",
+    },
+    longBreakDuration: {
+      label: "Duração da pausa longa",
+      desc: "Quanto tempo dura o descanso estendido após completar um ciclo de rodadas.",
+    },
+    roundsBeforeLongBreak: {
+      label: "Rodadas até a pausa longa",
+      desc: "Número de ciclos de foco necessários antes da pausa longa.",
+    },
+    autoStartBreak: {
+      label: "Iniciar pausas automaticamente",
+      desc: "Inicia a contagem da pausa assim que o foco terminar.",
+    },
+    autoStartWork: {
+      label: "Iniciar foco automaticamente",
+      desc: "Inicia a contagem de foco assim que a pausa terminar.",
+    },
+    showBubble: {
+      label: "Exibir bolha com tempo",
+      desc: "Exibe o timer ou número de ciclos ao lado da ilha recolhida.",
+    },
+    soundChime: {
+      label: "Sinal sonoro",
+      desc: "Toca um sino suave quando uma sessão termina.",
     },
   },
 
@@ -552,6 +623,7 @@
     label: "Atalho de teclado",
     ask: "Abrir Pergunte ao Claude",
     find: "Abrir Procurar na tela",
+    mute: "Alternar mudo do microfone",
     desc: "Funciona de qualquer lugar. Clique e pressione as novas teclas; Esc cancela.",
     press: "Pressione as teclas…",
     off: "Desligado",
@@ -637,6 +709,16 @@
       label: "Abrir em capturas de tela",
       desc: "Abre a ilha com a imagem quando você tira um print (Win+Shift+S, Print Screen…).",
     },
+    maskSecrets: {
+      label: "Ocultar chaves e tokens",
+      desc: "Oculta chaves de API, chaves privadas e tokens de segurança da pré-visualização até que sejam revelados.",
+    },
+    pin: "Fixar no topo",
+    unpin: "Desafixar",
+    pinned: "Fixado",
+    secretMasked: "Token sensível ({type})",
+    showSecret: "Mostrar segredo",
+    hideSecret: "Ocultar segredo",
   },
 
   find: {

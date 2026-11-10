@@ -10,6 +10,7 @@ import { hydrationModule } from "./hydration";
 import { monitorModule } from "./monitor";
 import { musicModule } from "./music";
 import { notificationsModule } from "./notifications";
+import { pomodoroModule } from "./pomodoro";
 import { shelfModule } from "./shelf";
 
 /**
@@ -30,6 +31,7 @@ export const modules: IslandModule[] = [
 	shelfModule,
 	clipboardModule,
 	githubModule,
+	pomodoroModule,
 	hydrationModule,
 	monitorModule,
 	clockModule,

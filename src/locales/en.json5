@@ -167,6 +167,9 @@
     backToIsland: "Back to the island",
     // Volume sliders: the player's and the whole computer's
     computer: "Computer",
+    mixer: "Audio mixer",
+    otherApps: "Other apps",
+    noAudioApps: "No applications currently playing sound",
     volume: "{name} volume",
     mute: "Mute {name}",
     unmute: "Unmute {name}",
@@ -237,6 +240,74 @@
       label: "Snooze time",
       desc: "How long to wait after choosing Snooze.",
       action: "Snooze",
+    },
+  },
+
+  // Pomodoro & Focus Assist module
+  pomodoro: {
+    title: "Focus & Pomodoro",
+    phase: {
+      work: "Focus",
+      break: "Short Break",
+      longBreak: "Long Break",
+    },
+    compact: {
+      work: "Focus Session",
+      break: "Short Break",
+      longBreak: "Long Break",
+      done: "Time's up!",
+      takeBreak: "Take a break",
+    },
+    status: {
+      focusing: "Time to focus",
+      resting: "Take a restful break",
+    },
+    inProgress: "Countdown running",
+    paused: "Timer paused",
+    phaseCompleted: "Round completed!",
+    readyNext: "Ready to start the next interval?",
+    roundsCount: "{n} rounds today",
+    cycleProgress: "{cur} of {total} to long break",
+    actions: {
+      start: "Start",
+      pause: "Pause",
+      resume: "Resume",
+      reset: "Reset",
+      skip: "Skip",
+    },
+    minutes: "{n} min",
+    custom: "Custom",
+    workDuration: {
+      label: "Focus duration",
+      desc: "How long each deep focus interval lasts.",
+    },
+    breakDuration: {
+      label: "Short break duration",
+      desc: "How long each short rest interval lasts.",
+    },
+    longBreakDuration: {
+      label: "Long break duration",
+      desc: "How long the extended break lasts after finishing a set of rounds.",
+    },
+    roundsBeforeLongBreak: {
+      label: "Rounds before long break",
+      desc: "Number of completed focus rounds before triggering a long break.",
+    },
+    autoStartBreak: {
+      label: "Auto-start breaks",
+      desc: "Automatically begin break countdowns when focus sessions conclude.",
+    },
+    autoStartWork: {
+      label: "Auto-start focus sessions",
+      desc: "Automatically begin focus countdowns when breaks conclude.",
+    },
+    showBubble: {
+      label: "Show countdown bubble",
+      desc: "Shows the live timer or round count beside the collapsed island.",
+    },
+    soundChime: {
+      label: "Play audio chime",
+      desc: "Plays a gentle notification chime when a session finishes.",
     },
   },
 
@@ -591,6 +662,7 @@
     label: "Keyboard shortcut",
     ask: "Open Ask Claude",
     find: "Open Find on screen",
+    mute: "Toggle microphone mute",
     desc: "Works from anywhere. Click and press the new keys; Esc cancels.",
     press: "Press the keys…",
     off: "Off",
@@ -691,6 +763,16 @@
       label: "Open on screenshots",
       desc: "Opens the island with the picture when you take a screenshot (Win+Shift+S, Print Screen…).",
     },
+    maskSecrets: {
+      label: "Mask secrets and tokens",
+      desc: "Hides API keys, private keys, and security tokens from previews until revealed.",
+    },
+    pin: "Pin to top",
+    unpin: "Unpin",
+    pinned: "Pinned",
+    secretMasked: "Sensitive token ({type})",
+    showSecret: "Show secret",
+    hideSecret: "Hide secret",
   },
 
   // Find on screen module (src-tauri/src/providers/find)

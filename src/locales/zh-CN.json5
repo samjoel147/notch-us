@@ -163,6 +163,9 @@
     backToIsland: "返回灵动岛",
     // 音量滑块：播放器音量与系统总音量
     computer: "电脑",
+    mixer: "音频混音器",
+    otherApps: "其他应用",
+    noAudioApps: "当前没有播放声音的应用",
     volume: "{name} 音量",
     mute: "静音 {name}",
     unmute: "取消静音 {name}",
@@ -233,6 +236,74 @@
       label: "稍后提醒时长",
       desc: "点击“稍后提醒”后的等待时间。",
       action: "稍后提醒",
+    },
+  },
+
+  // 番茄钟与专注模块
+  pomodoro: {
+    title: "专注与番茄钟",
+    phase: {
+      work: "专注",
+      break: "短休息",
+      longBreak: "长休息",
+    },
+    compact: {
+      work: "专注计时",
+      break: "短休息",
+      longBreak: "长休息",
+      done: "时间到！",
+      takeBreak: "休息一下吧",
+    },
+    status: {
+      focusing: "保持专注",
+      resting: "稍作放松休息",
+    },
+    inProgress: "倒计时进行中",
+    paused: "计时已暂停",
+    phaseCompleted: "阶段完成！",
+    readyNext: "准备好开始下一阶段了吗？",
+    roundsCount: "今日已专注 {n} 轮",
+    cycleProgress: "距长休息还有 {cur}/{total} 轮",
+    actions: {
+      start: "开始",
+      pause: "暂停",
+      resume: "继续",
+      reset: "重置",
+      skip: "跳过",
+    },
+    minutes: "{n} 分钟",
+    custom: "自定义",
+    workDuration: {
+      label: "专注时长",
+      desc: "单次深度专注周期的持续时间。",
+    },
+    breakDuration: {
+      label: "短休息时长",
+      desc: "每次短休息的持续时间。",
+    },
+    longBreakDuration: {
+      label: "长休息时长",
+      desc: "完成多轮专注后延长休息的持续时间。",
+    },
+    roundsBeforeLongBreak: {
+      label: "长休息间隔轮数",
+      desc: "触发长休息前需要完成的专注轮次数量。",
+    },
+    autoStartBreak: {
+      label: "自动开始休息",
+      desc: "专注阶段结束后自动开始休息倒计时。",
+    },
+    autoStartWork: {
+      label: "自动开始专注",
+      desc: "休息阶段结束后自动开始下一轮专注倒计时。",
+    },
+    showBubble: {
+      label: "显示倒计时气泡",
+      desc: "在折叠灵动岛旁显示专注倒计时或完成轮数。",
+    },
+    soundChime: {
+      label: "结束提示音",
+      desc: "倒计时结束时播放温和的提示音。",
     },
   },
 
@@ -587,6 +658,7 @@
     label: "全局快捷键",
     ask: "打开 Ask Claude",
     find: "打开 屏幕查找",
+    mute: "切换麦克风静音",
     desc: "在任何界面随时生效。点击并按下新快捷键；按 Esc 取消。",
     press: "请按下快捷键组合…",
     off: "已关闭",
@@ -687,6 +759,16 @@
       label: "截图时自动唤出",
       desc: "使用快捷键截图（Win+Shift+S、Print Screen 等）时，在灵动岛中弹出显示该截图。",
     },
+    maskSecrets: {
+      label: "遮蔽密钥与令牌",
+      desc: "在点击显示前，隐藏预览中的 API Key、私钥及安全令牌。",
+    },
+    pin: "置顶",
+    unpin: "取消置顶",
+    pinned: "已置顶",
+    secretMasked: "敏感凭据 ({type})",
+    showSecret: "显示明文",
+    hideSecret: "隐藏明文",
   },
 
   // 屏幕查找模块 (src-tauri/src/providers/find)
