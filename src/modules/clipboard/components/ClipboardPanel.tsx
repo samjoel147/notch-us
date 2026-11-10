@@ -1,21 +1,61 @@
-import { ClipboardIcon, CopyIcon, ExternalLinkIcon, FolderIcon, MessageCircleIcon, TextIcon } from "lucide-react";
+import {
+	ClipboardIcon,
+	CopyIcon,
+	ExternalLinkIcon,
+	EyeIcon,
+	EyeOffIcon,
+	FolderIcon,
+	LockIcon,
+	MessageCircleIcon,
+	PinIcon,
+	TextIcon,
+} from "lucide-react";
 import { type PointerEvent, type ReactNode, useRef, useState } from "react";
 import { TextButton } from "../../../components/ui/button";
 import { providerAction } from "../../../core/bridge";
 import { cn } from "../../../core/cn";
 import { type Translate, useT } from "../../../core/i18n";
 import { useIsland } from "../../../core/island";
+import { useSetting } from "../../../core/settings";
 import { formatAgo, useNow } from "../../ai-agents/common/format";
 import { attachFiles, draftRequest, requestAskFocus, useAskEnabled } from "../../ask/store";
 import { addToShelf } from "../../shelf/actions";
+import { clipboardSettings } from "../settings";
 import { CLIPBOARD_PROVIDER, CLIPBOARD_YELLOW, type ClipboardState, type ClipItem, clipAction } from "../types";
 
 const DRAG_THRESHOLD = 5;
 /** How long "Copied!" / "Kept" stays on a row. */
 const FEEDBACK_MS = 1400;
 
+export interface SecretInfo {
+	type: string;
+	label: string;
+}
+
+/** Identifies sensitive API tokens, private keys, and authorization secrets. */
+export function detectSecret(text: string | null | undefined): SecretInfo | null {
+	if (!text) return null;
+	if (/sk-ant-[a-zA-Z0-9_\-]{10,}/i.test(text)) return { type: "anthropic", label: "Anthropic API Key" };
+	if (/sk-[a-zA-Z0-9_\-]{20,}/i.test(text)) return { type: "openai", label: "OpenAI API Key" };
+	if (/(?:ghp|gho|ghu|ghs|ghr)_[a-zA-Z0-9]{20,}/.test(text)) return { type: "github", label: "GitHub Token" };
+	if (/(?:AKIA|ABIA|ACCA|ASIA)[0-9A-Z]{16}/.test(text)) return { type: "aws", label: "AWS Key" };
+	if (/eyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]+/.test(text)) return { type: "jwt", label: "JWT Token" };
+	if (/xox[baprs]-[0-9a-zA-Z]{10,48}/.test(text)) return { type: "slack", label: "Slack Token" };
+	if (/-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----/.test(text)) return { type: "private_key", label: "Private Key" };
+	if (/(?:bearer\s+[a-zA-Z0-9_\-\.]{25,})/i.test(text)) return { type: "bearer", label: "Bearer Token" };
+	if (/(?:api[_-]?key|secret[_-]?key|auth[_-]?token)[\s:=]+['"]?[a-zA-Z0-9_\-]{16,}['"]?/i.test(text))
+		return { type: "token", label: "API Secret" };
+	return null;
+}
+
 /** What the item is, on one line ("Picture 1920×1080", "3 files", the text). */
-export function clipTitle(t: Translate, item: ClipItem): string {
+export function clipTitle(t: Translate, item: ClipItem, maskSecret = false): string {
+	if (maskSecret && item.kind === "text") {
+		const secret = detectSecret(item.preview);
+		if (secret) {
+			return `•••••••••••••••• (${t("clipboard.secretMasked", { type: secret.label })})`;
+		}
+	}
 	if (item.kind === "image") {
 		return item.screenshot
 			? t("clipboard.screenshot")
@@ -33,8 +73,17 @@ export function clipTitle(t: Translate, item: ClipItem): string {
  */
 export function ClipboardPanel({ state, hero }: { state: ClipboardState | undefined; hero: boolean }) {
 	const t = useT();
+	const maskSecrets = useSetting(clipboardSettings.maskSecrets);
+	const [unmasked, setUnmasked] = useState<Record<number, boolean>>({});
+
+	const toggleUnmask = (id: number) => {
+		setUnmasked((prev) => ({ ...prev, [id]: !prev[id] }));
+	};
+
 	const items = state?.items ?? [];
-	const [first, ...rest] = items;
+	const heroItem = hero && items[0]?.kind === "image" ? items[0] : null;
+	const listItems = heroItem ? items.slice(1) : items;
+	const sorted = [...listItems].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
 
 	return (
 		<div className="flex h-full flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
@@ -44,19 +93,31 @@ export function ClipboardPanel({ state, hero }: { state: ClipboardState | undefi
 					<TextButton onClick={() => providerAction(CLIPBOARD_PROVIDER, "clear")}>{t("clipboard.clear")}</TextButton>
 				)}
 			</div>
-			{hero && first ? (
+			{heroItem ? (
 				<>
-					<Hero item={first} />
+					<Hero item={heroItem} />
 					<ul className="min-h-0 flex-1 list-none overflow-y-auto [scrollbar-width:none]" data-scroll>
-						{rest.map((item) => (
-							<Row key={item.id} item={item} />
+						{sorted.map((item) => (
+							<Row
+								key={item.id}
+								item={item}
+								maskSecrets={maskSecrets}
+								unmasked={!!unmasked[item.id]}
+								onToggleUnmask={() => toggleUnmask(item.id)}
+							/>
 						))}
 					</ul>
 				</>
 			) : (
 				<ul className="min-h-0 flex-1 list-none overflow-y-auto [scrollbar-width:none]" data-scroll>
-					{items.map((item) => (
-						<Row key={item.id} item={item} />
+					{sorted.map((item) => (
+						<Row
+							key={item.id}
+							item={item}
+							maskSecrets={maskSecrets}
+							unmasked={!!unmasked[item.id]}
+							onToggleUnmask={() => toggleUnmask(item.id)}
+						/>
 					))}
 					{!items.length && (
 						<li className="grid h-full place-items-center text-text-faint">
@@ -84,6 +145,7 @@ function useItemActions(item: ClipItem) {
 	return {
 		done,
 		copy: () => clipAction("copy", item.id).then(() => flash("copied")),
+		pin: () => clipAction("pin", item.id),
 		keep: async () => {
 			const paths = await clipAction<string[]>("keep", item.id);
 			if (paths?.length) {
@@ -132,7 +194,7 @@ function useDragOut(item: ClipItem) {
 	};
 }
 
-function Visual({ item, size }: { item: ClipItem; size: number }) {
+function Visual({ item, size, isMasked }: { item: ClipItem; size: number; isMasked?: boolean }) {
 	if (item.kind === "image" && item.thumb) {
 		return (
 			<img
@@ -145,9 +207,17 @@ function Visual({ item, size }: { item: ClipItem; size: number }) {
 		);
 	}
 	return (
-		<span className="grid flex-none place-items-center rounded-[9px] bg-white/7" style={{ width: size, height: size }}>
+		<span
+			className={cn(
+				"grid flex-none place-items-center rounded-[9px]",
+				isMasked ? "bg-[rgba(255,159,10,0.15)]" : "bg-white/7"
+			)}
+			style={{ width: size, height: size }}
+		>
 			{item.kind === "files" ? (
 				<FolderIcon size={size * 0.42} color="#64D2FF" />
+			) : isMasked ? (
+				<LockIcon size={size * 0.42} color="#FF9F0A" />
 			) : (
 				<TextIcon size={size * 0.42} color={CLIPBOARD_YELLOW} />
 			)}
@@ -167,10 +237,22 @@ function Meta({ item }: { item: ClipItem }) {
 	return <span className="truncate text-[11.5px] text-text-dim">{parts.join(" · ")}</span>;
 }
 
-function Row({ item }: { item: ClipItem }) {
+function Row({
+	item,
+	maskSecrets,
+	unmasked,
+	onToggleUnmask,
+}: {
+	item: ClipItem;
+	maskSecrets: boolean;
+	unmasked: boolean;
+	onToggleUnmask: () => void;
+}) {
 	const t = useT();
 	const a = useItemActions(item);
 	const drag = useDragOut(item);
+	const secret = item.kind === "text" ? detectSecret(item.preview) : null;
+	const isMasked = Boolean(maskSecrets && secret && !unmasked);
 
 	return (
 		<li
@@ -180,11 +262,29 @@ function Row({ item }: { item: ClipItem }) {
 			onClick={a.copy}
 			{...drag}
 		>
-			<Visual item={item} size={36} />
+			<Visual item={item} size={36} isMasked={isMasked} />
 			<div className="flex min-w-0 flex-1 flex-col gap-px">
-				<span className={cn("truncate text-[13px] font-semibold", item.kind === "text" && "font-medium")}>
-					{clipTitle(t, item)}
-				</span>
+				<div className="flex items-center gap-1.5 min-w-0">
+					{item.pinned && (
+						<PinIcon
+							size={11}
+							className="flex-none fill-[currentColor] text-[#FFD60A]"
+							title={t("clipboard.pinned")}
+						/>
+					)}
+					{isMasked ? (
+						<span className="truncate text-[12.5px] font-mono tracking-wider text-[#FF9F0A]">
+							••••••••••••••••{" "}
+							<span className="font-sans text-[11px] font-normal text-text-dim">
+								({t("clipboard.secretMasked", { type: secret?.label ?? "Secret" })})
+							</span>
+						</span>
+					) : (
+						<span className={cn("truncate text-[13px] font-semibold", item.kind === "text" && "font-medium")}>
+							{clipTitle(t, item)}
+						</span>
+					)}
+				</div>
 				{a.done ? (
 					<span className="truncate text-[11.5px] font-semibold text-[#30d158]">
 						✓ {t(a.done === "copied" ? "clipboard.copiedAgain" : "clipboard.kept")}
@@ -194,6 +294,18 @@ function Row({ item }: { item: ClipItem }) {
 				)}
 			</div>
 			<div className="hidden gap-1 group-hover:flex">
+				{secret && (
+					<RowAction
+						icon={isMasked ? <EyeIcon size={11} /> : <EyeOffIcon size={11} />}
+						label={t(isMasked ? "clipboard.showSecret" : "clipboard.hideSecret")}
+						onClick={onToggleUnmask}
+					/>
+				)}
+				<RowAction
+					icon={<PinIcon size={11} className={item.pinned ? "fill-[currentColor] text-[#FFD60A]" : ""} />}
+					label={t(item.pinned ? "clipboard.unpin" : "clipboard.pin")}
+					onClick={a.pin}
+				/>
 				{a.ask && <RowAction icon={<MessageCircleIcon size={11} />} label={t("clipboard.ask")} onClick={a.ask} />}
 				{item.kind !== "text" && (
 					<RowAction icon={<FolderIcon size={11} />} label={t("clipboard.keep")} onClick={a.keep} />
@@ -220,7 +332,16 @@ function Hero({ item }: { item: ClipItem }) {
 				/>
 			)}
 			<div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
-				<span className="truncate text-[13px] font-semibold">{clipTitle(t, item)}</span>
+				<div className="flex items-center gap-1.5 min-w-0">
+					{item.pinned && (
+						<PinIcon
+							size={11}
+							className="flex-none fill-[currentColor] text-[#FFD60A]"
+							title={t("clipboard.pinned")}
+						/>
+					)}
+					<span className="truncate text-[13px] font-semibold">{clipTitle(t, item)}</span>
+				</div>
 				{a.done ? (
 					<span className="truncate text-[11.5px] font-semibold text-[#30d158]">
 						✓ {t(a.done === "copied" ? "clipboard.copiedAgain" : "clipboard.kept")}
@@ -236,6 +357,18 @@ function Hero({ item }: { item: ClipItem }) {
 						onClick={a.copy}
 					>
 						<CopyIcon size={11} /> {t("clipboard.short.copy")}
+					</button>
+					<button
+						type="button"
+						className={cn(
+							"inline-flex items-center gap-1.25 rounded-full px-2.5 py-1 text-[11.5px] font-semibold hover:bg-white/18",
+							item.pinned ? "bg-[#FFD60A]/20 text-[#FFD60A]" : "bg-white/10"
+						)}
+						title={t(item.pinned ? "clipboard.unpin" : "clipboard.pin")}
+						onClick={a.pin}
+					>
+						<PinIcon size={11} className={item.pinned ? "fill-[currentColor]" : ""} />{" "}
+						{t(item.pinned ? "clipboard.unpin" : "clipboard.pin")}
 					</button>
 					{a.ask && (
 						<button

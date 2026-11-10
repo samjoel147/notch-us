@@ -71,6 +71,8 @@ struct ItemView {
     copied_at: u64,
     /// Copied again from the island itself: no "copied" pill for it.
     quiet: bool,
+    #[serde(default)]
+    pinned: bool,
 }
 
 enum Content {
@@ -117,12 +119,29 @@ impl Ctx {
             .unwrap_or(true)
     }
 
-    /// Forgets everything. True if there was something.
+    /// Forgets unpinned items. True if any unpinned item was removed.
     fn clear(&self) -> bool {
         let mut entries = self.entries.lock().unwrap();
-        let had = !entries.is_empty();
-        entries.drain(..).for_each(delete_file);
-        had
+        let had_unpinned = entries.iter().any(|e| !e.view.pinned);
+        let mut kept = Vec::new();
+        for e in entries.drain(..) {
+            if e.view.pinned {
+                kept.push(e);
+            } else {
+                delete_file(e);
+            }
+        }
+        *entries = kept;
+        had_unpinned
+    }
+
+    fn toggle_pin(&self, id: u64) {
+        let mut entries = self.entries.lock().unwrap();
+        if let Some(entry) = entries.iter_mut().find(|e| e.view.id == id) {
+            entry.view.pinned = !entry.view.pinned;
+            drop(entries);
+            self.publish();
+        }
     }
 
     fn add(&self, copied: Copied, quiet: bool) {
@@ -161,10 +180,16 @@ impl Ctx {
         entries.insert(0, entry);
         let mut pictures = 0;
         let mut kept = Vec::with_capacity(entries.len());
-        for (i, e) in entries.drain(..).enumerate() {
+        let mut unpinned = 0;
+        for e in entries.drain(..) {
+            if e.view.pinned {
+                kept.push(e);
+                continue;
+            }
             let is_picture = matches!(e.content, Content::Picture { .. });
             pictures += is_picture as usize;
-            if i < MAX_ITEMS && (!is_picture || pictures <= MAX_PICTURES) {
+            if unpinned < MAX_ITEMS && (!is_picture || pictures <= MAX_PICTURES) {
+                unpinned += 1;
                 kept.push(e);
             } else {
                 delete_file(e);
@@ -190,6 +215,7 @@ impl Ctx {
             source: copied.source,
             copied_at: 0,
             quiet: false,
+            pinned: false,
         };
         let content = match copied.clip {
             Clip::Text(text) => {
@@ -507,6 +533,7 @@ impl Provider for ClipboardProvider {
                 ctx.clear();
                 ctx.publish();
             }
+            "pin" => ctx.toggle_pin(id()?),
             // Drag a picture or files out to any app.
             "drag" => crate::providers::shelf::start_drag(ctx.hub.app(), ctx.paths(id()?)?),
             "open" => {
@@ -532,5 +559,26 @@ mod tests {
         assert_eq!(preview("  hello \n\n  world\t!  "), "hello world !");
         let long = "word ".repeat(200);
         assert_eq!(preview(&long).chars().count(), PREVIEW_CHARS);
+    }
+
+    #[test]
+    fn test_pinned_item_view_default() {
+        let view = ItemView {
+            id: 1,
+            kind: Kind::Text,
+            preview: Some("test".into()),
+            chars: Some(4),
+            thumb: None,
+            width: None,
+            height: None,
+            path: None,
+            names: Vec::new(),
+            screenshot: false,
+            source: None,
+            copied_at: 0,
+            quiet: false,
+            pinned: false,
+        };
+        assert!(!view.pinned);
     }
 }

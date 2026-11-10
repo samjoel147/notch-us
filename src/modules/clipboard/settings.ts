@@ -13,4 +13,10 @@ export const clipboardSettings = {
 		description: "clipboard.peekOnScreenshot.desc",
 		default: true,
 	},
+	maskSecrets: {
+		key: "clipboard.maskSecrets",
+		label: "clipboard.maskSecrets.label",
+		description: "clipboard.maskSecrets.desc",
+		default: true,
+	},
 } satisfies Record<string, SettingDef>;

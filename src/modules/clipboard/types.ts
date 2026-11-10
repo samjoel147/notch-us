@@ -20,6 +20,8 @@ export interface ClipItem {
 	copiedAt: number;
 	/** Copied again from the island: no "copied" pill. */
 	quiet: boolean;
+	/** Pinned to top of history, preserved on clear. */
+	pinned?: boolean;
 }
 
 export interface ClipboardState {
@@ -29,5 +31,5 @@ export interface ClipboardState {
 export const CLIPBOARD_PROVIDER = "clipboard";
 export const CLIPBOARD_YELLOW = "#FFD60A";
 
-export const clipAction = <T = unknown>(action: "copy" | "remove" | "drag" | "open" | "keep" | "text", id: number) =>
+export const clipAction = <T = unknown>(action: "copy" | "remove" | "drag" | "open" | "keep" | "text" | "pin", id: number) =>
 	providerAction<T>(CLIPBOARD_PROVIDER, action, id);
