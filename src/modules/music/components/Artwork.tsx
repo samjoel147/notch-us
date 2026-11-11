@@ -1,7 +1,8 @@
 import { MusicIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useMusicTheme } from "../themes/theme.provider";
 
-/** Album art with optical glass sheen and atmospheric glow. */
+/** Album art with optical glass sheen, theme-aware atmosphere, and specular rim. */
 export function Artwork({
 	src,
 	size,
@@ -15,16 +16,21 @@ export function Artwork({
 	trackKey?: string;
 	glow?: string;
 }) {
+	const theme = useMusicTheme();
+
+	const shadow = glow
+		? `0 14px 34px -6px ${glow}70, 0 4px 12px -2px ${glow}40, inset 0 0 0 1px ${theme.border}`
+		: theme.artworkShadow;
+
 	return (
 		<div
-			className="group/art relative flex-none overflow-hidden bg-[#1c1c1f] transition-all duration-500 ease-[ease]"
+			className="group/art relative flex-none overflow-hidden transition-all duration-500 ease-[ease]"
 			style={{
 				width: size,
 				height: size,
 				borderRadius: radius,
-				boxShadow: glow
-					? `0 14px 34px -6px ${glow}70, 0 4px 12px -2px ${glow}40, inset 0 0 0 1px rgba(255, 255, 255, 0.15)`
-					: "0 10px 24px -6px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.12)",
+				backgroundColor: theme.mode === "light" ? "#f4f4f6" : "#1c1c1f",
+				boxShadow: shadow,
 			}}
 		>
 			<AnimatePresence initial={false}>
@@ -44,14 +50,19 @@ export function Artwork({
 			{/* Optical glass sheen reflection layer */}
 			<div
 				className="pointer-events-none absolute inset-x-0 top-0 h-[52%] rounded-t-[inherit] opacity-70 transition-opacity duration-300 group-hover/art:opacity-90"
-				style={{
-					background:
-						"linear-gradient(180deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.08) 42%, transparent 100%)",
-				}}
+				style={{ background: theme.sheenGradient }}
 			/>
 
 			{/* Inset perimeter highlight */}
-			<div className="pointer-events-none absolute inset-0 rounded-[inherit] shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.35),inset_0_-1px_1px_0_rgba(0,0,0,0.25)]" />
+			<div
+				className="pointer-events-none absolute inset-0 rounded-[inherit]"
+				style={{
+					boxShadow:
+						theme.mode === "light"
+							? "inset 0 1px 1px 0 rgba(255,255,255,0.9), inset 0 -1px 1px 0 rgba(0,0,0,0.08)"
+							: "inset 0 1px 1px 0 rgba(255,255,255,0.35), inset 0 -1px 1px 0 rgba(0,0,0,0.25)",
+				}}
+			/>
 		</div>
 	);
 }

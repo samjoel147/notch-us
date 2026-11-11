@@ -3,15 +3,14 @@ import { type MouseEvent, useEffect, useState } from "react";
 import { Marquee } from "../../../components/Marquee";
 import { useT } from "../../../core/i18n";
 import { useSetting } from "../../../core/settings";
-import { useActiveTheme } from "../../../core/theme";
 import { normalizeMediaSession } from "../core/MediaSessionNormalizer";
 import { selectActiveSession } from "../core/SessionPriorityEngine";
 import { type MusicState, musicAction, setVolume, useLivePosition } from "../hooks/useMusic";
 import { closePip, openPip, usePipOpen } from "../hooks/usePip";
 import { getProviderDefinition } from "../providers/registry";
 import { musicSettings } from "../settings";
+import { MusicThemeProvider, useMusicTheme } from "../themes/theme.provider";
 import { type ArtworkPalette, extractArtworkPalette } from "../visuals/ArtworkPaletteEngine";
-import { composeAtmosphere } from "../visuals/AtmosphereComposer";
 import { Artwork } from "./Artwork";
 import { MusicControls } from "./MusicControls";
 import { MusicProgress } from "./MusicProgress";
@@ -35,17 +34,9 @@ export function MusicPanel({
 	mode = "immersive",
 }: MusicPanelProps) {
 	const position = useLivePosition(music);
-	const t = useT();
 	const pinned = usePipOpen();
-	const videoEnabled = useSetting(musicSettings.video);
-	const mirror = useMirrorVideo(music?.youtubeId);
-	const video = videoEnabled && !pinned ? mirror : null;
-	const theme = useActiveTheme();
-
-	// Normalize session state and resolve provider identity
 	const normalized = normalizeMediaSession(music, position);
 	const session = selectActiveSession(normalized, pinned);
-
 	const provider = getProviderDefinition(session?.source.providerId ?? "generic");
 
 	// Asynchronously extract and harmonize artwork palette
@@ -72,14 +63,54 @@ export function MusicPanel({
 		};
 	}, [session?.metadata.artwork, provider.brandColor]);
 
-	const atmosphere = composeAtmosphere(theme, palette, provider);
+	return (
+		<MusicThemeProvider
+			providerBrandColor={provider.brandColor}
+			providerGlowColor={provider.glowColor}
+			artworkVibrant={palette.vibrant}
+			artworkMuted={palette.muted}
+			isPlaying={session?.playback.status === "playing"}
+		>
+			<MusicPanelContent
+				music={music}
+				session={session}
+				provider={provider}
+				showVisualizer={showVisualizer}
+				mode={mode}
+			/>
+		</MusicThemeProvider>
+	);
+}
+
+function MusicPanelContent({
+	music,
+	session,
+	provider,
+	showVisualizer,
+	mode,
+}: {
+	music: MusicState | undefined;
+	session: ReturnType<typeof selectActiveSession>;
+	provider: ReturnType<typeof getProviderDefinition>;
+	showVisualizer: boolean;
+	mode: MusicExperienceMode;
+}) {
+	const theme = useMusicTheme();
+	const t = useT();
+	const pinned = usePipOpen();
+	const videoEnabled = useSetting(musicSettings.video);
+	const mirror = useMirrorVideo(music?.youtubeId);
+	const video = videoEnabled && !pinned ? mirror : null;
 
 	if (!music?.available || !session) {
 		const activeApps = music?.apps ?? [];
 		return (
-			<div className="flex h-full flex-col justify-between py-1">
+			<div className="flex h-full flex-col justify-between py-1 transition-colors duration-300">
 				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2.5 text-[14px] font-semibold text-text-faint">
+					<div
+						className="flex items-center gap-2.5 text-[14px] font-semibold transition-colors duration-300"
+						style={{ color: theme.textMuted }}
+					>
 						<MusicIcon size={22} />
 						<span>{t("music.nothingPlaying")}</span>
 					</div>
@@ -96,8 +127,17 @@ export function MusicPanel({
 				</div>
 
 				{activeApps.length > 0 ? (
-					<div className="flex flex-col gap-1.5 border-t border-white/8 pt-2" data-no-drag>
-						<span className="text-[11px] font-semibold text-text-faint">{t("music.mixer") || "Audio mixer"}</span>
+					<div
+						className="flex flex-col gap-1.5 border-t pt-2 transition-colors duration-300"
+						style={{ borderColor: theme.border }}
+						data-no-drag
+					>
+						<span
+							className="text-[11px] font-semibold transition-colors duration-300"
+							style={{ color: theme.textMuted }}
+						>
+							{t("music.mixer") || "Audio mixer"}
+						</span>
 						<div className="flex max-h-16 flex-wrap items-center gap-2 overflow-y-auto">
 							{activeApps.map((app) => (
 								<VolumeSlider
@@ -117,7 +157,7 @@ export function MusicPanel({
 						</div>
 					</div>
 				) : (
-					<div className="text-[12px] text-text-faint">
+					<div className="text-[12px] transition-colors duration-300" style={{ color: theme.textMuted }}>
 						{t("music.noAudioApps") || "No applications currently playing sound"}
 					</div>
 				)}
@@ -136,20 +176,15 @@ export function MusicPanel({
 		"";
 
 	return (
-		<div
-			className="relative flex h-full items-center gap-4.5"
-			style={
-				{
-					"--accent": palette.vibrant,
-					"--source-color": provider.brandColor,
-				} as React.CSSProperties
-			}
-		>
+		<div className="relative flex h-full items-center gap-4.5 transition-colors duration-300">
 			{/* Ambient atmospheric backdrop glow (Mode: Immersive) */}
 			{mode === "immersive" && (
 				<div
-					className="pointer-events-none absolute -inset-5 -z-10 rounded-[28px] blur-2xl transition-all duration-700"
-					style={atmosphere.backdropStyle}
+					className="pointer-events-none absolute -inset-5 -z-10 rounded-[28px] blur-2xl transition-all duration-500"
+					style={{
+						background: theme.ambientGlow,
+						opacity: theme.mode === "light" ? 0.14 : 0.38,
+					}}
 				/>
 			)}
 
@@ -188,11 +223,15 @@ export function MusicPanel({
 						glow={provider.brandColor}
 					/>
 
-					{/* Provider Emblem Badge pinned on bottom-right */}
+					{/* Provider Emblem Badge pinned on bottom-right of artwork */}
 					{!pinned && (
 						<span
-							className="pointer-events-none absolute -right-1 -bottom-1 grid size-7 place-items-center rounded-[10px] bg-[#141417]/95 shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.2)] transition-transform duration-200 group-hover/thumb:scale-110"
-							style={{ color: provider.brandColor }}
+							className="pointer-events-none absolute -right-1 -bottom-1 grid size-7 place-items-center rounded-[10px] shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.2)] transition-transform duration-200 group-hover/thumb:scale-110"
+							style={{
+								backgroundColor: theme.mode === "light" ? "#ffffff" : "#141417",
+								color: provider.brandColor,
+								border: `1px solid ${theme.border}`,
+							}}
 						>
 							{session.appIcon ? (
 								<img src={session.appIcon} alt="" draggable={false} className="size-4" />
@@ -223,7 +262,11 @@ export function MusicPanel({
 				<div className="flex items-center justify-between gap-2">
 					<div
 						className="inline-flex max-w-[280px] items-center gap-1.5 rounded-full px-2.25 py-0.5 text-[11px] font-semibold shadow-xs transition-colors duration-300"
-						style={atmosphere.badgeStyle}
+						style={{
+							backgroundColor: provider.badgeBg,
+							color: provider.badgeText,
+							border: `1px solid ${provider.badgeBorder}`,
+						}}
 					>
 						{provider.renderIcon({ size: 12 })}
 						<span className="truncate">
@@ -253,10 +296,17 @@ export function MusicPanel({
 					>
 						<Marquee
 							text={session.metadata.title}
-							className="text-[16.5px]/[1.25] font-[650] tracking-[-0.015em] text-text"
+							className="text-[16.5px]/[1.25] font-[650] tracking-[-0.015em] transition-colors duration-300"
+							style={{ color: theme.textPrimary }}
 						/>
 					</button>
-					{subtitle && <Marquee text={subtitle} className="text-[13px]/[1.3] text-text-dim font-medium" />}
+					{subtitle && (
+						<Marquee
+							text={subtitle}
+							className="text-[13px]/[1.3] font-medium transition-colors duration-300"
+							style={{ color: theme.textSecondary }}
+						/>
+					)}
 				</div>
 
 				{/* Progress Scrubber */}
@@ -264,7 +314,7 @@ export function MusicPanel({
 					position={session.playback.position}
 					duration={session.playback.duration}
 					canSeek={session.capabilities.canSeek}
-					accentGradient={atmosphere.accentGradient}
+					accentGradient={theme.progressFill}
 				/>
 
 				{/* Bottom Action Deck */}
@@ -272,7 +322,6 @@ export function MusicPanel({
 					<MusicControls
 						playing={session.playback.status === "playing"}
 						capabilities={session.capabilities}
-						accent={provider.brandColor}
 						onOpenSource={openPlayer}
 					/>
 

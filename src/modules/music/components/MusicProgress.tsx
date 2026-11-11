@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { type MouseEvent, useRef, useState } from "react";
 import { formatTime, musicAction } from "../hooks/useMusic";
+import { useMusicTheme } from "../themes/theme.provider";
 
 interface MusicProgressProps {
 	position: number;
@@ -9,12 +10,8 @@ interface MusicProgressProps {
 	accentGradient?: string;
 }
 
-export function MusicProgress({
-	position,
-	duration,
-	canSeek,
-	accentGradient = "linear-gradient(90deg, #8b92ff, #1ed760)",
-}: MusicProgressProps) {
+export function MusicProgress({ position, duration, canSeek, accentGradient }: MusicProgressProps) {
+	const theme = useMusicTheme();
 	const [hovering, setHovering] = useState(false);
 	const [dragging, setDragging] = useState(false);
 	const trackRef = useRef<HTMLDivElement>(null);
@@ -28,6 +25,8 @@ export function MusicProgress({
 		musicAction("seek", Math.round(ratio * duration));
 	};
 
+	const fill = accentGradient || theme.progressFill;
+
 	return (
 		<div
 			className="group/progress flex items-center gap-2.5 py-0.5"
@@ -38,14 +37,20 @@ export function MusicProgress({
 			}}
 		>
 			{/* Elapsed Time */}
-			<span className="min-w-9 text-[11px] font-medium text-text-faint tabular-nums">{formatTime(position)}</span>
+			<span
+				className="min-w-9 text-[11px] font-medium tabular-nums transition-colors duration-300"
+				style={{ color: theme.textMuted }}
+			>
+				{formatTime(position)}
+			</span>
 
 			{/* Progress Track */}
 			<div
 				ref={trackRef}
-				className={`relative h-1.5 flex-1 rounded-full bg-white/12 transition-all duration-200 ${
+				className={`relative h-1.5 flex-1 rounded-full transition-all duration-200 ${
 					canSeek ? "cursor-pointer group-hover/progress:h-2" : "cursor-default"
 				}`}
+				style={{ backgroundColor: theme.progressTrack }}
 				onClick={handleSeek}
 				onMouseDown={() => canSeek && setDragging(true)}
 				onMouseUp={() => setDragging(false)}
@@ -53,7 +58,7 @@ export function MusicProgress({
 				{/* Progress Fill */}
 				<motion.div
 					className="absolute inset-y-0 left-0 origin-left rounded-full"
-					style={{ background: accentGradient }}
+					style={{ background: fill }}
 					initial={false}
 					animate={{ scaleX: progress }}
 					transition={{ type: "tween", ease: "linear", duration: 0.2 }}
@@ -75,7 +80,10 @@ export function MusicProgress({
 			</div>
 
 			{/* Remaining Time */}
-			<span className="min-w-9 text-right text-[11px] font-medium text-text-faint tabular-nums">
+			<span
+				className="min-w-9 text-right text-[11px] font-medium tabular-nums transition-colors duration-300"
+				style={{ color: theme.textMuted }}
+			>
 				{duration ? `-${formatTime(Math.max(0, duration - position))}` : "--:--"}
 			</span>
 		</div>

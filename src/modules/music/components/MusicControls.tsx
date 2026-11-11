@@ -4,15 +4,15 @@ import type { MouseEvent, ReactNode } from "react";
 import { cn } from "../../../core/cn";
 import { musicAction } from "../hooks/useMusic";
 import type { MediaCapabilities } from "../providers/types";
+import { useMusicTheme } from "../themes/theme.provider";
 
 interface MusicControlsProps {
 	playing: boolean;
 	capabilities: MediaCapabilities;
-	accent?: string;
 	onOpenSource?: () => void;
 }
 
-export function MusicControls({ playing, capabilities, accent, onOpenSource }: MusicControlsProps) {
+export function MusicControls({ playing, capabilities, onOpenSource }: MusicControlsProps) {
 	return (
 		<div className="flex items-center gap-2.5">
 			{/* Skip Previous */}
@@ -25,7 +25,7 @@ export function MusicControls({ playing, capabilities, accent, onOpenSource }: M
 			</CtrlButton>
 
 			{/* Primary Play / Pause Toggle Button */}
-			<CtrlButton big accent={accent} title={playing ? "Pause" : "Play"} onClick={() => musicAction("toggle")}>
+			<CtrlButton big title={playing ? "Pause" : "Play"} onClick={() => musicAction("toggle")}>
 				<AnimatePresence mode="popLayout" initial={false}>
 					<motion.span
 						key={playing ? "pause" : "play"}
@@ -64,7 +64,6 @@ function CtrlButton({
 	onClick,
 	disabled,
 	big,
-	accent,
 	title,
 	className,
 }: {
@@ -72,21 +71,24 @@ function CtrlButton({
 	onClick: () => void;
 	disabled?: boolean;
 	big?: boolean;
-	accent?: string;
 	title?: string;
 	className?: string;
 }) {
+	const theme = useMusicTheme();
+
 	return (
 		<motion.button
 			title={title}
 			className={cn(
-				"relative grid place-items-center rounded-full text-text transition-all duration-200 disabled:pointer-events-none disabled:opacity-25",
-				big
-					? "size-11 bg-white/12 shadow-[inset_0_1.5px_1px_0_rgba(255,255,255,0.4),0_6px_16px_rgba(0,0,0,0.3)] hover:bg-white/18 active:shadow-[inset_0_1px_1px_0_rgba(0,0,0,0.3)]"
-					: "size-8 hover:bg-white/10 active:scale-92 text-text-dim hover:text-text",
+				"relative grid place-items-center rounded-full transition-all duration-200 disabled:pointer-events-none disabled:opacity-25",
+				big ? "size-11 shadow-lg" : "size-8 active:scale-92",
 				className,
 			)}
-			style={big && accent ? ({ "--ctrl-glow": accent } as React.CSSProperties) : undefined}
+			style={{
+				backgroundColor: big ? theme.controlSurface : "transparent",
+				color: big ? theme.controlIcon : theme.controlIconMuted,
+				boxShadow: big ? theme.rimSpecular : undefined,
+			}}
 			disabled={disabled}
 			whileHover={{ scale: big ? 1.06 : 1.1 }}
 			whileTap={{ scale: big ? 0.9 : 0.86 }}
@@ -99,9 +101,7 @@ function CtrlButton({
 			{big && (
 				<div
 					className="pointer-events-none absolute inset-x-0 top-0 h-[48%] rounded-t-full opacity-60"
-					style={{
-						background: "linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, transparent 100%)",
-					}}
+					style={{ background: theme.sheenGradient }}
 				/>
 			)}
 			{children}

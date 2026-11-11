@@ -1,19 +1,23 @@
 import { useEffect, useRef } from "react";
 import { useTauriEvent } from "../../../core/bridge";
 import { LEVEL_EVENT } from "../hooks/useMusic";
+import { useMusicTheme } from "../themes/theme.provider";
 
 const WEIGHTS = [0.65, 0.95, 1, 0.8, 0.55];
 const FLOOR = 0.08;
 
 interface MusicVisualizerProps {
 	playing: boolean;
-	color: string;
+	color?: string;
 	height?: number;
 	barWidth?: number;
 	className?: string;
 }
 
 export function MusicVisualizer({ playing, color, height = 24, barWidth = 4, className }: MusicVisualizerProps) {
+	const theme = useMusicTheme();
+	const barColor = color || theme.accentPrimary;
+
 	const bars = useRef<(HTMLSpanElement | null)[]>([]);
 	const rawLevel = useRef(0);
 	const lastLevelTime = useRef(0);
@@ -34,13 +38,12 @@ export function MusicVisualizer({ playing, color, height = 24, barWidth = 4, cla
 			raf = requestAnimationFrame(loop);
 			t += 1;
 
-			// Check if we are receiving Mode A (actual audio level from SMTC/Windows)
+			// Mode A: actual audio level from SMTC/Windows
 			const hasActiveLevel = Date.now() - lastLevelTime.current < 250;
 			let energy = 0;
 
 			if (playing) {
 				if (hasActiveLevel && rawLevel.current > 0.005) {
-					// Mode A: Audio reactive
 					const level = rawLevel.current;
 					peak = Math.max(level, peak * 0.995, 0.02);
 					avg += (level - avg) * 0.05;
@@ -48,7 +51,7 @@ export function MusicVisualizer({ playing, color, height = 24, barWidth = 4, cla
 					const punch = Math.max(0, (level - avg) / peak) * 2.2;
 					energy = Math.min(1, norm * 0.55 + punch);
 				} else {
-					// Mode B: Decorative rhythmic playback oscillation
+					// Mode B: Decorative rhythmic oscillation
 					energy = 0.35 + 0.25 * Math.sin(t * 0.12) + 0.15 * Math.cos(t * 0.08);
 				}
 			}
@@ -83,7 +86,7 @@ export function MusicVisualizer({ playing, color, height = 24, barWidth = 4, cla
 					style={{
 						width: barWidth,
 						height: "100%",
-						backgroundColor: color,
+						backgroundColor: barColor,
 					}}
 				/>
 			))}
