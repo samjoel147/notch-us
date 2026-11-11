@@ -139,3 +139,4 @@ jobs:
             --title "Dynamic Island Preview $tag" `
             --notes "Automated preview test build from GitHub Actions run #${{ github.run_number }}." `
             --prerelease
+
