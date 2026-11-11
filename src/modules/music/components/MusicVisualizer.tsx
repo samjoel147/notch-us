@@ -14,7 +14,13 @@ interface MusicVisualizerProps {
 	className?: string;
 }
 
-export function MusicVisualizer({ playing, color, height = 24, barWidth = 4, className }: MusicVisualizerProps) {
+export function MusicVisualizer({
+	playing,
+	color,
+	height = 24,
+	barWidth = 4,
+	className,
+}: MusicVisualizerProps) {
 	const theme = useMusicTheme();
 	const barColor = color || theme.accentPrimary;
 
@@ -74,7 +80,11 @@ export function MusicVisualizer({ playing, color, height = 24, barWidth = 4, cla
 	}, [playing]);
 
 	return (
-		<div className={`flex items-end justify-center gap-1 ${className ?? ""}`} style={{ height }} aria-hidden="true">
+		<div
+			className={`flex items-end justify-center gap-1 ${className ?? ""}`}
+			style={{ height }}
+			aria-hidden="true"
+		>
 			{WEIGHTS.map((_, i) => (
 				<span
 					// biome-ignore lint/suspicious/noArrayIndexKey: fixed 5-bar visualizer
