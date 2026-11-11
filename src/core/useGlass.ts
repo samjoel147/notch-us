@@ -86,14 +86,15 @@ export function useGlass(level: GlassLevel) {
 
 	useEffect(() => {
 		const root = document.documentElement;
-		if (enabled && root.dataset.glassTheme !== "true") {
+		// Only apply a dark fallback tint for non-glass dark themes when native glass is enabled
+		if (enabled && root.dataset.glassTheme !== "true" && root.dataset.light !== "true") {
 			root.style.setProperty("--island", GLASS_TINT);
+		} else {
+			root.style.removeProperty("--island");
 		}
 		if (!isTauri)
 			return () => {
-				if (root.dataset.glassTheme !== "true") {
-					root.style.removeProperty("--island");
-				}
+				root.style.removeProperty("--island");
 			};
 
 		let raf = 0;

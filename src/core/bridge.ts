@@ -34,8 +34,12 @@ export function publishLocal(id: string, data: unknown) {
 }
 
 /** Emit an event locally (used by the browser mock). */
-export function emitLocal(event: string, payload: unknown) {
+export function emitLocal(event: string, payload?: unknown) {
 	for (const h of localEvents.get(event) ?? []) h(payload);
+}
+
+if (!isTauri && typeof window !== "undefined") {
+	(window as unknown as { __emitLocal: typeof emitLocal }).__emitLocal = emitLocal;
 }
 
 type LocalCall = (target: "provider" | "command", id: string, name: string, payload: unknown) => unknown;

@@ -100,38 +100,41 @@
 }
 
 :root[data-theme="glass-light"] {
-	--island: rgba(245, 246, 250, 0.76);
-	--text: #18181b;
-	--text-dim: rgba(24, 24, 27, 0.7);
-	--text-faint: rgba(24, 24, 27, 0.45);
-	--hairline: rgba(0, 0, 0, 0.1);
-	--card: rgba(255, 255, 255, 0.75);
+	--island: rgba(250, 250, 252, 0.88);
+	--surface-elevated: rgba(255, 255, 255, 0.82);
+	--surface-control: rgba(255, 255, 255, 0.9);
+	--card: rgba(255, 255, 255, 0.8);
+	--text: #141417;
+	--text-dim: #50505a;
+	--text-faint: #71717a;
+	--hairline: rgba(40, 40, 50, 0.12);
 	--accent: #007aff;
+	--progress-track: rgba(24, 24, 27, 0.1);
 	--specular:
 		inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1), inset 0 0 0 1px rgba(255, 255, 255, 0.85),
-		inset 0 -1px 1px 0 rgba(0, 0, 0, 0.08);
-	--glass-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.45) 40%, transparent 100%);
+		inset 0 -1px 1px 0 rgba(0, 0, 0, 0.06);
+	--glass-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.45) 40%, transparent 100%);
 	--island-shadow:
-		0 20px 48px -12px rgba(0, 0, 0, 0.16), 0 4px 14px -3px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06);
+		0 16px 48px rgba(25, 25, 40, 0.12), 0 4px 14px -3px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.85);
 	--island-shadow-big:
-		0 32px 64px -16px rgba(0, 0, 0, 0.22), 0 8px 20px -4px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.07);
+		0 24px 60px -8px rgba(25, 25, 40, 0.16), 0 8px 24px -4px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.9);
 }
 
-:root[data-theme="light"],
-:root[data-light="true"] {
+:root[data-theme="light"] {
 	--island: #ffffff;
-	--text: #141417;
-	--text-dim: rgba(20, 20, 23, 0.65);
-	--text-faint: rgba(20, 20, 23, 0.42);
-	--hairline: rgba(0, 0, 0, 0.08);
-	--card: rgba(0, 0, 0, 0.04);
+	--surface-elevated: #ffffff;
+	--surface-control: #f4f4f5;
+	--card: #f7f7f9;
+	--text: #18181b;
+	--text-dim: #52525b;
+	--text-faint: #71717a;
+	--hairline: #e4e4e7;
 	--accent: #0066cc;
-	--specular: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+	--progress-track: #e4e4e7;
+	--specular: inset 0 1px 0 #ffffff, inset 0 0 0 1px #e4e4e7;
 	--glass-sheen: none;
-	--island-shadow:
-		0 14px 34px -10px rgba(0, 0, 0, 0.14), 0 2px 8px -2px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06);
-	--island-shadow-big:
-		0 28px 56px -16px rgba(0, 0, 0, 0.18), 0 6px 16px -4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.07);
+	--island-shadow: 0 12px 36px rgba(24, 24, 27, 0.1), 0 2px 8px -2px rgba(0, 0, 0, 0.05), 0 0 0 1px #e4e4e7;
+	--island-shadow-big: 0 24px 50px -12px rgba(24, 24, 27, 0.14), 0 6px 18px -4px rgba(0, 0, 0, 0.07), 0 0 0 1px #e4e4e7;
 }
 
 :root[data-theme="cyberpunk"] {
@@ -191,40 +194,82 @@
 	--island-shadow-big: 0 30px 68px -16px rgba(0, 0, 0, 0.94), 0 0 34px -4px rgba(52, 211, 153, 0.24);
 }
 
-/* Comprehensive Light mode adjustments */
+/* Comprehensive Light mode adjustments (applies to both glass-light and light) */
 :root[data-light="true"] {
 	color-scheme: light;
 }
 
+/* Glass-light card elevation and optical materials */
+:root[data-theme="glass-light"] .bg-card {
+	box-shadow:
+		0 4px 16px rgba(25, 25, 40, 0.05),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.95);
+}
+
+/* Solid light card elevation */
+:root[data-theme="light"] .bg-card {
+	box-shadow:
+		0 2px 8px rgba(0, 0, 0, 0.04),
+		inset 0 0 0 1px #e6e6ea;
+}
+
+/* Solid light disables heavy backdrop blur */
+:root[data-theme="light"] .bg-island {
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+}
+
+/* Glass-light premium VisionOS frosted blur */
+:root[data-theme="glass-light"] .bg-island {
+	backdrop-filter: blur(28px) saturate(145%);
+	-webkit-backdrop-filter: blur(28px) saturate(145%);
+}
+
+/* Map white background fractions to clean subtle translucent dark surfaces */
 :root[data-light="true"] .bg-white\/3,
 :root[data-light="true"] .bg-white\/3\.5,
 :root[data-light="true"] .bg-white\/4,
 :root[data-light="true"] .bg-white\/5,
-:root[data-light="true"] .bg-white\/6,
-:root[data-light="true"] .bg-white\/8 {
-	background-color: rgba(0, 0, 0, 0.05);
+:root[data-light="true"] .bg-white\/6 {
+	background-color: rgba(0, 0, 0, 0.04);
 }
 
-:root[data-light="true"] .bg-white\/10,
+:root[data-light="true"] .bg-white\/7,
+:root[data-light="true"] .bg-white\/8,
+:root[data-light="true"] .bg-white\/9,
+:root[data-light="true"] .bg-white\/10 {
+	background-color: rgba(0, 0, 0, 0.07);
+}
+
 :root[data-light="true"] .bg-white\/12,
 :root[data-light="true"] .bg-white\/14,
-:root[data-light="true"] .bg-white\/16 {
-	background-color: rgba(0, 0, 0, 0.08);
+:root[data-light="true"] .bg-white\/15,
+:root[data-light="true"] .bg-white\/16,
+:root[data-light="true"] .bg-white\/18 {
+	background-color: rgba(0, 0, 0, 0.09);
 }
 
-:root[data-light="true"] .bg-white\/20 {
-	background-color: rgba(0, 0, 0, 0.15);
+:root[data-light="true"] .bg-white\/20,
+:root[data-light="true"] .bg-white\/25,
+:root[data-light="true"] .bg-white\/28,
+:root[data-light="true"] .bg-white\/30 {
+	background-color: rgba(0, 0, 0, 0.14);
 }
 
+/* Hover states */
 :root[data-light="true"] .hover\:bg-white\/5:hover,
 :root[data-light="true"] .hover\:bg-white\/8:hover,
+:root[data-light="true"] .hover\:bg-white\/9:hover,
 :root[data-light="true"] .hover\:bg-white\/10:hover,
 :root[data-light="true"] .hover\:bg-white\/15:hover {
-	background-color: rgba(0, 0, 0, 0.08);
+	background-color: rgba(0, 0, 0, 0.06);
 }
 
-:root[data-light="true"] .stroke-white\/10 {
-	stroke: rgba(0, 0, 0, 0.15);
+/* Borders & Strokes */
+:root[data-light="true"] .stroke-white\/10,
+:root[data-light="true"] .border-white\/10 {
+	stroke: rgba(0, 0, 0, 0.12);
+	border-color: rgba(0, 0, 0, 0.12);
 }
 
 :root[data-light="true"] .shadow-\[inset_0_0_0_1px_rgba\(255\,255\,255\,0\.05\)\] {
@@ -232,7 +277,7 @@
 }
 
 :root[data-light="true"] [class*="shadow-[0_0_0_1.5px"] {
-	box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.9);
+	box-shadow: 0 0 0 1.5px #ffffff;
 }
 
 :root[data-light="true"] select option {

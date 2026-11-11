@@ -46,7 +46,7 @@ export const THEMES: ThemeDef[] = [
 		previewBg: "linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(230, 238, 252, 0.88) 100%)",
 		previewBorder: "rgba(255, 255, 255, 0.95)",
 		previewAccent: "#007aff",
-		glassTint: "rgba(245, 246, 250, 0.76)",
+		glassTint: "rgba(250, 250, 252, 0.88)",
 	},
 	{
 		id: "dark",
