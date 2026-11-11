@@ -28,55 +28,108 @@ const tracks = [
 			"<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#1ed760'/><stop offset='1' stop-color='#0055ff'/></linearGradient></defs><rect width='120' height='120' fill='url(#g)'/><circle cx='60' cy='60' r='26' fill='rgba(0,0,0,.4)'/>",
 		),
 	},
+	{
+		title: "Extremely Long Track Title with Symphony No. 9 in D Minor, Op. 125 'Choral': IV. Presto - Allegro assai",
+		artist: "Ludwig van Beethoven, Berlin Philharmonic & Herbert von Karajan",
+		album: "Beethoven: The 9 Symphonies (Deluxe Remastered Edition)",
+		durationMs: 420_000,
+		thumbnail: art,
+	},
+	{
+		title: "Track With Missing Artwork",
+		artist: "Independent Creator",
+		album: "Single Release",
+		durationMs: 180_000,
+		thumbnail: null as string | null,
+	},
+	{
+		title: "Live Audio Stream (Unseekable)",
+		artist: "BBC Radio 1",
+		album: "Live Broadcast",
+		durationMs: 0,
+		thumbnail: art,
+	},
 ];
 
-const SERVICES: Record<string, { appId: string; appName: string; appDevice: string | null; youtubeId: string | null }> =
+const SERVICES: Record<
+	string,
 	{
-		Spotify: {
-			appId: "Spotify.exe",
-			appName: "Spotify",
-			appDevice: "Connect · Living Room",
-			youtubeId: null,
-		},
-		"YouTube Music": {
-			appId: "msedge_music.youtube.com",
-			appName: "YouTube Music",
-			appDevice: null,
-			youtubeId: null,
-		},
-		YouTube: {
-			appId: "chrome.exe",
-			appName: "YouTube",
-			appDevice: null,
-			youtubeId: "dQw4w9WgXcQ",
-		},
-		"Apple Music": {
-			appId: "AppleMusic.exe",
-			appName: "Apple Music",
-			appDevice: null,
-			youtubeId: null,
-		},
-		TIDAL: {
-			appId: "TIDAL.exe",
-			appName: "TIDAL",
-			appDevice: null,
-			youtubeId: null,
-		},
-		"Local Media": {
-			appId: "vlc.exe",
-			appName: "VLC media player",
-			appDevice: null,
-			youtubeId: null,
-		},
-	};
+		appId: string;
+		appName: string;
+		appDevice: string | null;
+		youtubeId: string | null;
+		canSeek?: boolean;
+	}
+> = {
+	"Spotify (Connect)": {
+		appId: "Spotify.exe",
+		appName: "Spotify",
+		appDevice: "Living Room Speaker",
+		youtubeId: null,
+	},
+	"Spotify (Desktop)": {
+		appId: "Spotify.exe",
+		appName: "Spotify",
+		appDevice: null,
+		youtubeId: null,
+	},
+	"YouTube Music": {
+		appId: "msedge_music.youtube.com",
+		appName: "YouTube Music",
+		appDevice: null,
+		youtubeId: null,
+	},
+	YouTube: {
+		appId: "chrome.exe",
+		appName: "YouTube",
+		appDevice: null,
+		youtubeId: "dQw4w9WgXcQ",
+	},
+	"Apple Music": {
+		appId: "AppleMusic.exe",
+		appName: "Apple Music",
+		appDevice: null,
+		youtubeId: null,
+	},
+	TIDAL: {
+		appId: "TIDAL.exe",
+		appName: "TIDAL",
+		appDevice: null,
+		youtubeId: null,
+	},
+	SoundCloud: {
+		appId: "SoundCloud.exe",
+		appName: "SoundCloud",
+		appDevice: null,
+		youtubeId: null,
+	},
+	"Amazon Music": {
+		appId: "AmazonMusic.exe",
+		appName: "Amazon Music",
+		appDevice: null,
+		youtubeId: null,
+	},
+	"Local Media (VLC)": {
+		appId: "vlc.exe",
+		appName: "VLC media player",
+		appDevice: null,
+		youtubeId: null,
+	},
+	"Unknown / Generic Source": {
+		appId: "unknown_audio_process.exe",
+		appName: "Audio Output",
+		appDevice: null,
+		youtubeId: null,
+	},
+};
 
-let currentService = "Spotify";
+let currentService = "Spotify (Connect)";
 
 const state = provider("music", {
 	available: true,
 	playing: true,
 	...tracks[0],
-	...SERVICES.Spotify,
+	...SERVICES[currentService],
 	positionMs: 30_000,
 	positionAt: Date.now(),
 	canNext: true,
@@ -125,7 +178,9 @@ export const music = defineMock({
 		state.publish();
 		// The next song once this one ends, and the waveform while playing.
 		setInterval(() => {
-			if (state.get().playing && position() >= state.get().durationMs) playTrack(track + 1);
+			if (state.get().playing && position() >= state.get().durationMs && state.get().durationMs > 0) {
+				playTrack(track + 1);
+			}
 		}, 1000);
 		setInterval(() => {
 			if (state.get().playing) emitLocal("music://level", 0.25 + Math.random() * 0.6);

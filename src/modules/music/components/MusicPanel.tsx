@@ -1,39 +1,80 @@
 import { MonitorIcon, MusicIcon } from "lucide-react";
-import { motion } from "motion/react";
-import type { CSSProperties, MouseEvent } from "react";
+import { type MouseEvent, useEffect, useState } from "react";
 import { Marquee } from "../../../components/Marquee";
 import { useT } from "../../../core/i18n";
 import { useSetting } from "../../../core/settings";
-import { formatTime, type MusicState, musicAction, setVolume, useLivePosition } from "../hooks/useMusic";
+import { useActiveTheme } from "../../../core/theme";
+import { normalizeMediaSession } from "../core/MediaSessionNormalizer";
+import { selectActiveSession } from "../core/SessionPriorityEngine";
+import { type MusicState, musicAction, setVolume, useLivePosition } from "../hooks/useMusic";
 import { closePip, openPip, usePipOpen } from "../hooks/usePip";
+import { getProviderDefinition } from "../providers/registry";
 import { musicSettings } from "../settings";
-import { detectMusicSource } from "../sources";
+import { type ArtworkPalette, extractArtworkPalette } from "../visuals/ArtworkPaletteEngine";
+import { composeAtmosphere } from "../visuals/AtmosphereComposer";
 import { Artwork } from "./Artwork";
-import { Controls } from "./Controls";
-import { Visualizer } from "./Visualizer";
+import { MusicControls } from "./MusicControls";
+import { MusicProgress } from "./MusicProgress";
+import { MusicVisualizer } from "./MusicVisualizer";
 import { VolumeSlider, VolumeSliders } from "./VolumeSliders";
 import { useMirrorVideo, YouTubeMirror } from "./YouTubeMirror";
 
-/** Expanded now-playing panel with streaming service and theme intelligence. */
-export function MusicPanel({
-	music,
-	accent,
-	showVisualizer = true,
-}: {
+export type MusicExperienceMode = "minimal" | "immersive" | "compact";
+
+interface MusicPanelProps {
 	music: MusicState | undefined;
 	accent: string;
 	showVisualizer?: boolean;
-}) {
+	mode?: MusicExperienceMode;
+}
+
+export function MusicPanel({
+	music,
+	accent: fallbackAccent,
+	showVisualizer = true,
+	mode = "immersive",
+}: MusicPanelProps) {
 	const position = useLivePosition(music);
 	const t = useT();
 	const pinned = usePipOpen();
 	const videoEnabled = useSetting(musicSettings.video);
 	const mirror = useMirrorVideo(music?.youtubeId);
-	// While pinned, only the pinned window plays the video.
 	const video = videoEnabled && !pinned ? mirror : null;
-	const source = detectMusicSource(music);
+	const theme = useActiveTheme();
 
-	if (!music?.available) {
+	// Normalize session state and resolve provider identity
+	const normalized = normalizeMediaSession(music, position);
+	const session = selectActiveSession(normalized, pinned);
+
+	const provider = getProviderDefinition(session?.source.providerId ?? "generic");
+
+	// Asynchronously extract and harmonize artwork palette
+	const [palette, setPalette] = useState<ArtworkPalette>({
+		dominant: fallbackAccent,
+		vibrant: fallbackAccent,
+		muted: fallbackAccent,
+		secondary: fallbackAccent,
+		glow: `${fallbackAccent}55`,
+		luminance: 0.5,
+		saturation: 0.5,
+		isDark: false,
+		isLight: false,
+		isMonochrome: false,
+	});
+
+	useEffect(() => {
+		let cancelled = false;
+		extractArtworkPalette(session?.metadata.artwork, provider.brandColor).then((p) => {
+			if (!cancelled) setPalette(p);
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, [session?.metadata.artwork, provider.brandColor]);
+
+	const atmosphere = composeAtmosphere(theme, palette, provider);
+
+	if (!music?.available || !session) {
 		const activeApps = music?.apps ?? [];
 		return (
 			<div className="flex h-full flex-col justify-between py-1">
@@ -84,35 +125,43 @@ export function MusicPanel({
 		);
 	}
 
-	const progress = music.durationMs ? position / music.durationMs : 0;
-	const subtitle = [music.artist, music.album].filter(Boolean).join(" — ") || music.appName;
-	const openPlayer = (e: MouseEvent) => {
-		e.stopPropagation();
+	const openPlayer = (e?: MouseEvent) => {
+		e?.stopPropagation();
 		musicAction("focus");
 	};
+
+	const subtitle =
+		[session.metadata.artist, session.metadata.album].filter(Boolean).join(" — ") ||
+		session.source.applicationName ||
+		"";
 
 	return (
 		<div
 			className="relative flex h-full items-center gap-4.5"
 			style={
 				{
-					"--accent": accent,
-					"--source-color": source.brandColor,
-				} as CSSProperties
+					"--accent": palette.vibrant,
+					"--source-color": provider.brandColor,
+				} as React.CSSProperties
 			}
 		>
-			{/* Ambient atmospheric backdrop glow */}
-			<div
-				className="pointer-events-none absolute -inset-4 -z-10 rounded-[28px] opacity-35 blur-2xl transition-all duration-700"
-				style={{
-					background: `radial-gradient(ellipse at 15% 45%, ${source.glowColor} 0%, ${accent}30 50%, transparent 80%)`,
-				}}
-			/>
+			{/* Ambient atmospheric backdrop glow (Mode: Immersive) */}
+			{mode === "immersive" && (
+				<div
+					className="pointer-events-none absolute -inset-5 -z-10 rounded-[28px] blur-2xl transition-all duration-700"
+					style={atmosphere.backdropStyle}
+				/>
+			)}
 
+			{/* Left Column: Artwork / Video Mirror */}
 			{video ? (
-				// YouTube in a browser: the video itself plays here (muted, in sync with the tab).
 				<div className="group/video relative h-28 w-50 flex-none overflow-hidden rounded-2xl bg-black shadow-lg">
-					<YouTubeMirror videoId={video} positionMs={position} playing={music.playing} live={!music.durationMs} />
+					<YouTubeMirror
+						videoId={video}
+						positionMs={session.playback.position}
+						playing={session.playback.status === "playing"}
+						live={!session.playback.duration}
+					/>
 					<button
 						type="button"
 						className="absolute top-1.5 right-1.5 rounded-[11px] bg-black/65 px-2.25 py-0.75 text-[11.5px] font-semibold text-white opacity-0 transition-[opacity,background] duration-200 group-hover/video:opacity-100 hover:bg-[rgba(28,28,30,0.92)]"
@@ -128,21 +177,27 @@ export function MusicPanel({
 				<button
 					type="button"
 					className="group/thumb relative block flex-none text-left transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
-					title={music.appName}
+					title={session.source.applicationName}
 					onClick={openPlayer}
 				>
-					<Artwork src={music.thumbnail} size={112} radius={20} trackKey={music.title} glow={source.brandColor} />
+					<Artwork
+						src={session.metadata.artwork}
+						size={112}
+						radius={20}
+						trackKey={session.metadata.title}
+						glow={provider.brandColor}
+					/>
 
-					{/* Streaming service brand badge pinned on bottom-right of artwork */}
+					{/* Provider Emblem Badge pinned on bottom-right */}
 					{!pinned && (
 						<span
 							className="pointer-events-none absolute -right-1 -bottom-1 grid size-7 place-items-center rounded-[10px] bg-[#141417]/95 shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.2)] transition-transform duration-200 group-hover/thumb:scale-110"
-							style={{ color: source.brandColor }}
+							style={{ color: provider.brandColor }}
 						>
-							{music.appIcon ? (
-								<img src={music.appIcon} alt="" draggable={false} className="size-4" />
+							{session.appIcon ? (
+								<img src={session.appIcon} alt="" draggable={false} className="size-4" />
 							) : (
-								source.renderIcon({ size: 14 })
+								provider.renderIcon({ size: 14 })
 							)}
 						</span>
 					)}
@@ -162,78 +217,66 @@ export function MusicPanel({
 				</button>
 			)}
 
+			{/* Right Column: Header, Metadata, Scrubber, Controls */}
 			<div className="flex h-28 min-w-0 flex-1 flex-col justify-between py-0.5">
-				{/* Top Header: Streaming Brand Pill & Visualizer */}
+				{/* Top Section: Provider Badge & Visualizer */}
 				<div className="flex items-center justify-between gap-2">
 					<div
 						className="inline-flex max-w-[280px] items-center gap-1.5 rounded-full px-2.25 py-0.5 text-[11px] font-semibold shadow-xs transition-colors duration-300"
-						style={{
-							backgroundColor: source.badgeBg,
-							color: source.badgeText,
-							border: `1px solid ${source.badgeBorder}`,
-						}}
+						style={atmosphere.badgeStyle}
 					>
-						{source.renderIcon({ size: 12 })}
+						{provider.renderIcon({ size: 12 })}
 						<span className="truncate">
-							{source.name}
-							{music.appDevice ? ` · ${music.appDevice}` : ""}
+							{provider.displayName}
+							{session.device?.name ? ` · ${session.device.name}` : ""}
 						</span>
 					</div>
 
 					{showVisualizer && (
-						<Visualizer
-							playing={music.playing}
-							color={source.brandColor}
-							height={24}
+						<MusicVisualizer
+							playing={session.playback.status === "playing"}
+							color={provider.brandColor}
+							height={22}
 							barWidth={4}
 							className="flex-none"
 						/>
 					)}
 				</div>
 
-				{/* Track Title and Artist */}
+				{/* Center: Track Title & Subtitle with Marquee */}
 				<div className="min-w-0">
 					<button
 						type="button"
 						className="relative block w-full min-w-0 flex-none text-left transition-[opacity,color,transform] duration-200 hover:opacity-85 active:scale-[0.99]"
-						title={music.appName}
+						title={session.source.applicationName}
 						onClick={openPlayer}
 					>
-						<Marquee text={music.title} className="text-[16.5px]/[1.25] font-[650] tracking-[-0.015em] text-text" />
-					</button>
-					<Marquee text={subtitle} className="text-[13px]/[1.3] text-text-dim font-medium" />
-				</div>
-
-				{/* Modern Scrubber Bar with Glow Thumb */}
-				<div className="group/scrub flex items-center gap-2.5">
-					<span className="min-w-9.5 text-[11px] font-medium text-text-faint tabular-nums">{formatTime(position)}</span>
-					<div
-						className="relative h-1.5 flex-1 cursor-pointer overflow-hidden rounded-full bg-white/12 transition-[height] duration-200 ease-[ease] group-hover/scrub:h-2"
-						onClick={(e) => {
-							if (!music.durationMs) return;
-							const r = e.currentTarget.getBoundingClientRect();
-							musicAction("seek", Math.round(((e.clientX - r.left) / r.width) * music.durationMs));
-						}}
-					>
-						<motion.div
-							className="absolute inset-y-0 left-0 origin-left rounded-full"
-							style={{
-								background: `linear-gradient(90deg, color-mix(in srgb, ${accent} 70%, #fff), ${source.brandColor})`,
-							}}
-							initial={false}
-							animate={{ scaleX: Math.min(1, progress) }}
-							transition={{ type: "tween", ease: "linear", duration: 0.25 }}
+						<Marquee
+							text={session.metadata.title}
+							className="text-[16.5px]/[1.25] font-[650] tracking-[-0.015em] text-text"
 						/>
-					</div>
-					<span className="min-w-9.5 text-right text-[11px] font-medium text-text-faint tabular-nums">
-						{music.durationMs ? `-${formatTime(music.durationMs - position)}` : "--:--"}
-					</span>
+					</button>
+					{subtitle && <Marquee text={subtitle} className="text-[13px]/[1.3] text-text-dim font-medium" />}
 				</div>
 
-				{/* Bottom Action Deck: Controls & Audio Sliders */}
+				{/* Progress Scrubber */}
+				<MusicProgress
+					position={session.playback.position}
+					duration={session.playback.duration}
+					canSeek={session.capabilities.canSeek}
+					accentGradient={atmosphere.accentGradient}
+				/>
+
+				{/* Bottom Action Deck */}
 				<div className="-ml-1 flex items-center justify-between gap-3">
-					<Controls music={music} accent={source.brandColor} />
-					{/* Dragging a slider must not drag the island */}
+					<MusicControls
+						playing={session.playback.status === "playing"}
+						capabilities={session.capabilities}
+						accent={provider.brandColor}
+						onOpenSource={openPlayer}
+					/>
+
+					{/* Sliders (drag-isolated) */}
 					<div className="flex min-w-0 flex-1 justify-end gap-1.5" data-no-drag>
 						<VolumeSliders music={music} />
 					</div>
