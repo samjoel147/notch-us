@@ -63,8 +63,8 @@
 :root {
 	--island: #000;
 	--text: #f5f5f7;
-	--text-dim: rgba(245, 245, 247, 0.56);
-	--text-faint: rgba(245, 245, 247, 0.32);
+	--text-dim: rgba(245, 245, 247, 0.7);
+	--text-faint: rgba(245, 245, 247, 0.5);
 	--hairline: rgba(255, 255, 255, 0.08);
 	--card: rgba(255, 255, 255, 0.055);
 	--accent: #a0a4ff;
@@ -84,8 +84,8 @@
 :root[data-theme="glass-dark"] {
 	--island: rgba(18, 20, 30, 0.7);
 	--text: #ffffff;
-	--text-dim: rgba(255, 255, 255, 0.7);
-	--text-faint: rgba(255, 255, 255, 0.42);
+	--text-dim: rgba(255, 255, 255, 0.75);
+	--text-faint: rgba(255, 255, 255, 0.52);
 	--hairline: rgba(255, 255, 255, 0.14);
 	--card: rgba(255, 255, 255, 0.08);
 	--accent: #8b92ff;
@@ -140,8 +140,8 @@
 :root[data-theme="cyberpunk"] {
 	--island: #05050a;
 	--text: #f0f6fc;
-	--text-dim: rgba(240, 246, 252, 0.65);
-	--text-faint: rgba(0, 240, 255, 0.55);
+	--text-dim: rgba(240, 246, 252, 0.75);
+	--text-faint: rgba(215, 245, 255, 0.6);
 	--hairline: rgba(0, 240, 255, 0.28);
 	--card: rgba(0, 240, 255, 0.05);
 	--accent: #00f0ff;
@@ -155,8 +155,8 @@
 :root[data-theme="midnight"] {
 	--island: #070b18;
 	--text: #e2e8f0;
-	--text-dim: rgba(226, 232, 240, 0.65);
-	--text-faint: rgba(56, 189, 248, 0.45);
+	--text-dim: rgba(226, 232, 240, 0.75);
+	--text-faint: rgba(210, 235, 255, 0.58);
 	--hairline: rgba(56, 189, 248, 0.18);
 	--card: rgba(56, 189, 248, 0.06);
 	--accent: #38bdf8;
@@ -169,8 +169,8 @@
 :root[data-theme="sunset"] {
 	--island: #140a08;
 	--text: #fef2f2;
-	--text-dim: rgba(254, 242, 242, 0.65);
-	--text-faint: rgba(251, 146, 60, 0.45);
+	--text-dim: rgba(254, 242, 242, 0.75);
+	--text-faint: rgba(254, 230, 220, 0.58);
 	--hairline: rgba(251, 146, 60, 0.18);
 	--card: rgba(251, 146, 60, 0.06);
 	--accent: #fb923c;
@@ -183,8 +183,8 @@
 :root[data-theme="aurora"] {
 	--island: #040f0b;
 	--text: #ecfdf5;
-	--text-dim: rgba(236, 253, 245, 0.65);
-	--text-faint: rgba(52, 211, 153, 0.45);
+	--text-dim: rgba(236, 253, 245, 0.75);
+	--text-faint: rgba(220, 252, 238, 0.58);
 	--hairline: rgba(52, 211, 153, 0.18);
 	--card: rgba(52, 211, 153, 0.06);
 	--accent: #34d399;

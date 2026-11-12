@@ -16,8 +16,8 @@ const tabs = tv({
 		part: "relative grid place-items-center",
 		dot: "relative size-1.25 rounded-full bg-ok",
 		extra: "ml-auto flex items-center gap-1.5",
-		gear: "grid size-7.5 place-items-center rounded-full text-text-faint transition-colors duration-200 hover:bg-white/8 hover:text-text",
-		pin: "absolute top-1/2 right-0 grid size-7.5 -translate-y-1/2 place-items-center rounded-full text-text-faint transition-colors duration-200 hover:bg-white/8 hover:text-text",
+		gear: "grid size-7.5 place-items-center rounded-full text-text-dim transition-colors duration-200 hover:bg-white/8 hover:text-text",
+		pin: "absolute top-1/2 right-0 grid size-7.5 -translate-y-1/2 place-items-center rounded-full text-text-dim transition-colors duration-200 hover:bg-white/8 hover:text-text",
 	},
 	variants: {
 		active: { true: { tab: "text-text" } },
@@ -27,7 +27,7 @@ const tabs = tv({
 		/** Windows Island: round icon tabs, ringed in the module's color. */
 		iconsOnly: {
 			true: {
-				tab: "w-8 justify-center rounded-full p-0 opacity-55 transition-opacity hover:opacity-100",
+				tab: "w-8 justify-center rounded-full p-0 opacity-75 transition-opacity hover:opacity-100",
 				pill: "shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--tab-accent)_70%,transparent)]",
 				dot: "absolute top-0.75 right-0.75 shadow-[0_0_0_1.5px_#000]",
 			},

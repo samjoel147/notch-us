@@ -59,7 +59,7 @@ export function SessionList({ items, now, showAgent }: { items: AgentSessionRef[
 							</span>
 							{session.contextPct != null && (
 								<span
-									className="rounded-full bg-white/7 px-1.5 py-px text-[11px] text-text-faint"
+									className="rounded-full bg-white/10 px-1.5 py-px text-[11px] font-semibold text-text-dim"
 									title={t("agents.contextUsed")}
 								>
 									{Math.round(session.contextPct)}%
