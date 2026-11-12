@@ -1,6 +1,7 @@
 import { MonitorIcon, MusicIcon } from "lucide-react";
 import { type MouseEvent, useEffect, useState } from "react";
 import { Marquee } from "../../../components/Marquee";
+import { cn } from "../../../core/cn";
 import { useT } from "../../../core/i18n";
 import { useSetting } from "../../../core/settings";
 import { normalizeMediaSession } from "../core/MediaSessionNormalizer";
@@ -9,7 +10,7 @@ import { type MusicState, musicAction, setVolume, useLivePosition } from "../hoo
 import { closePip, openPip, usePipOpen } from "../hooks/usePip";
 import { getProviderDefinition } from "../providers/registry";
 import { musicSettings } from "../settings";
-import { MusicThemeProvider, useMusicTheme } from "../themes/theme.provider";
+import { MusicThemeProvider, useMusicMaterial, useMusicTheme } from "../themes/theme.provider";
 import { type ArtworkPalette, extractArtworkPalette } from "../visuals/ArtworkPaletteEngine";
 import { Artwork } from "./Artwork";
 import { MusicControls } from "./MusicControls";
@@ -96,6 +97,7 @@ function MusicPanelContent({
 	mode: MusicExperienceMode;
 }) {
 	const theme = useMusicTheme();
+	const material = useMusicMaterial();
 	const t = useT();
 	const pinned = usePipOpen();
 	const videoEnabled = useSetting(musicSettings.video);
@@ -111,7 +113,7 @@ function MusicPanelContent({
 						className="flex items-center gap-2.5 text-[14px] font-semibold transition-colors duration-300"
 						style={{ color: theme.textMuted }}
 					>
-						<MusicIcon size={22} />
+						<MusicIcon size={20} />
 						<span>{t("music.nothingPlaying")}</span>
 					</div>
 					{music?.volume && (
@@ -171,26 +173,32 @@ function MusicPanelContent({
 	};
 
 	const subtitle =
-		[session.metadata.artist, session.metadata.album].filter(Boolean).join(" — ") ||
+		[session.metadata.artist, session.metadata.album].filter(Boolean).join(" • ") ||
 		session.source.applicationName ||
 		"";
 
 	return (
-		<div className="relative flex h-full items-center gap-4.5 transition-colors duration-300">
-			{/* Ambient atmospheric backdrop glow (Mode: Immersive) */}
+		<div
+			className={cn(
+				"relative flex h-full items-center gap-4 transition-all duration-300 rounded-[28px]",
+				material.className,
+			)}
+			style={material.style}
+		>
+			{/* Ambient atmospheric backdrop glow */}
 			{mode === "immersive" && (
 				<div
-					className="pointer-events-none absolute -inset-5 -z-10 rounded-[28px] blur-2xl transition-all duration-500"
+					className="pointer-events-none absolute -inset-6 -z-10 rounded-[32px] blur-2xl transition-all duration-700"
 					style={{
 						background: theme.ambientGlow,
-						opacity: theme.mode === "light" ? 0.14 : 0.38,
+						opacity: theme.mode === "light" ? 0.16 : 0.42,
 					}}
 				/>
 			)}
 
-			{/* Left Column: Artwork / Video Mirror */}
+			{/* Left Column: 76px Album Artwork with Provider Emblem */}
 			{video ? (
-				<div className="group/video relative h-28 w-50 flex-none overflow-hidden rounded-2xl bg-black shadow-lg">
+				<div className="group/video relative h-24 w-42 flex-none overflow-hidden rounded-2xl bg-black shadow-lg">
 					<YouTubeMirror
 						videoId={video}
 						positionMs={session.playback.position}
@@ -217,33 +225,33 @@ function MusicPanelContent({
 				>
 					<Artwork
 						src={session.metadata.artwork}
-						size={112}
-						radius={20}
+						size={76}
+						radius={16}
 						trackKey={session.metadata.title}
 						glow={provider.brandColor}
+						badge={
+							!pinned ? (
+								<span
+									className="grid size-6 place-items-center rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.3)] transition-transform duration-200 group-hover/thumb:scale-110"
+									style={{
+										backgroundColor: theme.mode === "light" ? "#ffffff" : "#141417",
+										color: provider.brandColor,
+										border: `1px solid ${theme.border}`,
+									}}
+								>
+									{session.appIcon ? (
+										<img src={session.appIcon} alt="" draggable={false} className="size-3.5" />
+									) : (
+										provider.renderIcon({ size: 12 })
+									)}
+								</span>
+							) : null
+						}
 					/>
-
-					{/* Provider Emblem Badge pinned on bottom-right of artwork */}
-					{!pinned && (
-						<span
-							className="pointer-events-none absolute -right-1 -bottom-1 grid size-7 place-items-center rounded-[10px] shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.2)] transition-transform duration-200 group-hover/thumb:scale-110"
-							style={{
-								backgroundColor: theme.mode === "light" ? "#ffffff" : "#141417",
-								color: provider.brandColor,
-								border: `1px solid ${theme.border}`,
-							}}
-						>
-							{session.appIcon ? (
-								<img src={session.appIcon} alt="" draggable={false} className="size-4" />
-							) : (
-								provider.renderIcon({ size: 14 })
-							)}
-						</span>
-					)}
 
 					{pinned && (
 						<span
-							className="absolute inset-x-1.5 bottom-1.5 cursor-pointer rounded-[11px] bg-black/70 px-2.25 py-0.75 text-center text-[10.5px] font-semibold text-white shadow-md backdrop-blur-md transition-[opacity,background] duration-200 hover:bg-[rgba(28,28,30,0.92)]"
+							className="absolute inset-x-1 bottom-1 cursor-pointer rounded-[9px] bg-black/75 px-1.5 py-0.5 text-center text-[10px] font-semibold text-white shadow-md backdrop-blur-md transition-all duration-200 hover:bg-black/90"
 							title={t("music.unpin")}
 							onClick={(e) => {
 								e.stopPropagation();
@@ -256,12 +264,35 @@ function MusicPanelContent({
 				</button>
 			)}
 
-			{/* Right Column: Header, Metadata, Scrubber, Controls */}
-			<div className="flex h-28 min-w-0 flex-1 flex-col justify-between py-0.5">
-				{/* Top Section: Provider Badge & Visualizer */}
-				<div className="flex items-center justify-between gap-2">
+			{/* Right Column: Title, Artist, Source Pill, Progress, Controls, Volume */}
+			<div className="flex h-full min-w-0 flex-1 flex-col justify-between py-0.5">
+				{/* Top Row: Track Title & Streaming Source Badge */}
+				<div className="flex items-center justify-between gap-3">
+					<div className="min-w-0 flex-1">
+						<button
+							type="button"
+							className="relative block w-full min-w-0 flex-none text-left transition-opacity duration-200 hover:opacity-85"
+							title={session.source.applicationName}
+							onClick={openPlayer}
+						>
+							<Marquee
+								text={session.metadata.title}
+								className="text-[15.5px]/[1.2] font-[700] tracking-[-0.015em] transition-colors duration-300"
+								style={{ color: theme.textPrimary }}
+							/>
+						</button>
+						{subtitle && (
+							<Marquee
+								text={subtitle}
+								className="text-[12px]/[1.25] font-medium transition-colors duration-300 mt-0.5"
+								style={{ color: theme.textSecondary }}
+							/>
+						)}
+					</div>
+
+					{/* Streaming Source Badge Pill */}
 					<div
-						className="inline-flex max-w-[280px] items-center gap-1.5 rounded-full px-2.25 py-0.5 text-[11px] font-semibold shadow-xs transition-colors duration-300"
+						className="inline-flex flex-none items-center gap-1.5 rounded-full px-2.5 py-0.75 text-[11px] font-semibold shadow-xs ring-1 ring-white/10 transition-colors duration-300"
 						style={{
 							backgroundColor: provider.badgeBg,
 							color: provider.badgeText,
@@ -269,47 +300,11 @@ function MusicPanelContent({
 						}}
 					>
 						{provider.renderIcon({ size: 12 })}
-						<span className="truncate">
-							{provider.displayName}
-							{session.device?.name ? ` · ${session.device.name}` : ""}
-						</span>
+						<span className="truncate max-w-28 font-medium">{provider.displayName}</span>
 					</div>
-
-					{showVisualizer && (
-						<MusicVisualizer
-							playing={session.playback.status === "playing"}
-							color={provider.brandColor}
-							height={22}
-							barWidth={4}
-							className="flex-none"
-						/>
-					)}
 				</div>
 
-				{/* Center: Track Title & Subtitle with Marquee */}
-				<div className="min-w-0">
-					<button
-						type="button"
-						className="relative block w-full min-w-0 flex-none text-left transition-[opacity,color,transform] duration-200 hover:opacity-85 active:scale-[0.99]"
-						title={session.source.applicationName}
-						onClick={openPlayer}
-					>
-						<Marquee
-							text={session.metadata.title}
-							className="text-[16.5px]/[1.25] font-[650] tracking-[-0.015em] transition-colors duration-300"
-							style={{ color: theme.textPrimary }}
-						/>
-					</button>
-					{subtitle && (
-						<Marquee
-							text={subtitle}
-							className="text-[13px]/[1.3] font-medium transition-colors duration-300"
-							style={{ color: theme.textSecondary }}
-						/>
-					)}
-				</div>
-
-				{/* Progress Scrubber */}
+				{/* Middle Row: Interactive Progress Scrubber */}
 				<MusicProgress
 					position={session.playback.position}
 					duration={session.playback.duration}
@@ -317,15 +312,27 @@ function MusicPanelContent({
 					accentGradient={theme.progressFill}
 				/>
 
-				{/* Bottom Action Deck */}
-				<div className="-ml-1 flex items-center justify-between gap-3">
+				{/* Bottom Row: Transport Controls + Volume Slider + Visualizer */}
+				<div className="-ml-1 flex items-center justify-between gap-3 pt-0.5">
 					<MusicControls
 						playing={session.playback.status === "playing"}
 						capabilities={session.capabilities}
 						onOpenSource={openPlayer}
 					/>
 
-					{/* Sliders (drag-isolated) */}
+					{/* Visualizer (if enabled) */}
+					{showVisualizer && (
+						<div className="hidden sm:flex items-center px-1">
+							<MusicVisualizer
+								playing={session.playback.status === "playing"}
+								color={provider.brandColor}
+								height={18}
+								barWidth={3}
+							/>
+						</div>
+					)}
+
+					{/* Volume Slider (drag-isolated) */}
 					<div className="flex min-w-0 flex-1 justify-end gap-1.5" data-no-drag>
 						<VolumeSliders music={music} />
 					</div>

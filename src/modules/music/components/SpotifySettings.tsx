@@ -1,10 +1,14 @@
 import { type FormEvent, useState } from "react";
 import { Button, LinkButton } from "../../../components/ui/button";
 import { Block, Desc, Row } from "../../../components/ui/card";
-import { Input } from "../../../components/ui/form";
+import { Input, Select } from "../../../components/ui/form";
 import { command, providerAction, useProvider } from "../../../core/bridge";
 import { useT } from "../../../core/i18n";
+import { setSetting, useSetting } from "../../../core/settings";
 import { MUSIC_PROVIDER } from "../hooks/useMusic";
+import type { GlassMaterialId } from "../materials/material.types";
+import { musicSettings } from "../settings";
+import type { MusicThemeId } from "../themes/theme.types";
 
 const DASHBOARD_URL = "https://developer.spotify.com/dashboard";
 /** Must match `REDIRECT` in `src-tauri/src/providers/music/spotify.rs`. */
@@ -33,13 +37,16 @@ interface SpotifyStatus {
 const errorText = (t: ReturnType<typeof useT>, code: string) =>
 	ERRORS.includes(code) ? t(`music.spotify.error.${code}` as Parameters<typeof t>[0]) : code;
 
-/** Spotify account, for the volume of the device Spotify plays on elsewhere. */
+/** Notch Pop Media Player Customization & Spotify Account Integration */
 export function SpotifySettings() {
 	const t = useT();
 	const status = useProvider<SpotifyStatus>("spotify");
 	const [busy, setBusy] = useState<"connect" | "other" | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [clientId, setClientId] = useState("");
+
+	const material = useSetting(musicSettings.material);
+	const theme = useSetting(musicSettings.theme);
 
 	const run = async (action: string, payload?: unknown, kind: "connect" | "other" = "other") => {
 		setBusy(kind);
@@ -76,57 +83,93 @@ export function SpotifySettings() {
 						: t("music.spotify.none");
 
 	return (
-		<Block>
-			<Row
-				label={t("music.spotify.title")}
-				desc={description}
-				descTone={revoked || (status?.connected && status.error) ? "warn" : undefined}
-			>
-				{busy === "connect" ? (
-					<Button onClick={() => providerAction(MUSIC_PROVIDER, "spotifyCancel")}>{t("music.spotify.cancel")}</Button>
-				) : status?.connected && !revoked ? (
-					<Button variant="danger" disabled={!!busy} onClick={() => run("spotifyDisconnect")}>
-						{t("music.spotify.disconnect")}
-					</Button>
-				) : (
-					status?.hasClient && (
-						<Button variant="primary" disabled={!!busy} onClick={() => run("spotifyConnect", undefined, "connect")}>
-							{t("music.spotify.connect")}
-						</Button>
-					)
-				)}
-			</Row>
+		<>
+			{/* Notch Pop Visual Engine Settings */}
+			<Block>
+				<Row
+					label="Glass Material"
+					desc="VisionOS-inspired physical optical materials independently applied across all themes."
+				>
+					<Select
+						value={material}
+						onChange={(e) => setSetting(musicSettings.material, e.target.value as GlassMaterialId)}
+					>
+						<option value="liquid">Liquid Glass (VisionOS)</option>
+						<option value="frosted">Frosted Glass (Milky)</option>
+						<option value="crystal">Crystal Glass (High Clarity)</option>
+						<option value="smoked">Smoked Glass (High Contrast)</option>
+						<option value="adaptive">Adaptive Glass (Artwork Reactive)</option>
+					</Select>
+				</Row>
 
-			{status && !status.hasClient && (
-				<>
+				<Row label="Music Player Theme" desc="Visual color personality and atmospheric ambient lighting.">
+					<Select value={theme} onChange={(e) => setSetting(musicSettings.theme, e.target.value as MusicThemeId)}>
+						<option value="auto">Auto (Match System Appearance)</option>
+						<option value="glass-dark">Glass Dark</option>
+						<option value="glass-light">Glass Light</option>
+						<option value="dark">Dark (Matte Graphite)</option>
+						<option value="light">Light (Solid White)</option>
+						<option value="cyberpunk">Cyberpunk</option>
+						<option value="midnight">Midnight</option>
+						<option value="sunset">Sunset</option>
+						<option value="aurora">Aurora</option>
+					</Select>
+				</Row>
+			</Block>
+
+			{/* Spotify Provider Integration */}
+			<Block>
+				<Row
+					label={t("music.spotify.title")}
+					desc={description}
+					descTone={revoked || (status?.connected && status.error) ? "warn" : undefined}
+				>
+					{busy === "connect" ? (
+						<Button onClick={() => providerAction(MUSIC_PROVIDER, "spotifyCancel")}>{t("music.spotify.cancel")}</Button>
+					) : status?.connected && !revoked ? (
+						<Button variant="danger" disabled={!!busy} onClick={() => run("spotifyDisconnect")}>
+							{t("music.spotify.disconnect")}
+						</Button>
+					) : (
+						status?.hasClient && (
+							<Button variant="primary" disabled={!!busy} onClick={() => run("spotifyConnect", undefined, "connect")}>
+								{t("music.spotify.connect")}
+							</Button>
+						)
+					)}
+				</Row>
+
+				{status && !status.hasClient && (
+					<>
+						<Desc>
+							{t("music.spotify.clientHow", { redirect: REDIRECT })}{" "}
+							<LinkButton onClick={() => command("open_external", { url: DASHBOARD_URL })}>
+								{t("music.spotify.clientOpen")}
+							</LinkButton>
+						</Desc>
+						<form className="flex gap-2" onSubmit={saveClient}>
+							<Input
+								className="flex-1"
+								value={clientId}
+								placeholder={t("music.spotify.clientId")}
+								spellCheck={false}
+								onChange={(e) => setClientId(e.target.value)}
+							/>
+							<Button variant="primary" disabled={!!busy || !clientId.trim()}>
+								{t("music.spotify.clientSave")}
+							</Button>
+						</form>
+					</>
+				)}
+				{status?.hasClient && !status.connected && (
 					<Desc>
-						{t("music.spotify.clientHow", { redirect: REDIRECT })}{" "}
-						<LinkButton onClick={() => command("open_external", { url: DASHBOARD_URL })}>
-							{t("music.spotify.clientOpen")}
+						<LinkButton disabled={!!busy} onClick={() => run("spotifyClearClient")}>
+							{t("music.spotify.clientRemove")}
 						</LinkButton>
 					</Desc>
-					<form className="flex gap-2" onSubmit={saveClient}>
-						<Input
-							className="flex-1"
-							value={clientId}
-							placeholder={t("music.spotify.clientId")}
-							spellCheck={false}
-							onChange={(e) => setClientId(e.target.value)}
-						/>
-						<Button variant="primary" disabled={!!busy || !clientId.trim()}>
-							{t("music.spotify.clientSave")}
-						</Button>
-					</form>
-				</>
-			)}
-			{status?.hasClient && !status.connected && (
-				<Desc>
-					<LinkButton disabled={!!busy} onClick={() => run("spotifyClearClient")}>
-						{t("music.spotify.clientRemove")}
-					</LinkButton>
-				</Desc>
-			)}
-			{error && <Desc tone="error">{error}</Desc>}
-		</Block>
+				)}
+				{error && <Desc tone="error">{error}</Desc>}
+			</Block>
+		</>
 	);
 }

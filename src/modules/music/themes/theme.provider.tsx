@@ -1,11 +1,16 @@
 import { type CSSProperties, createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { appearanceSettings, readSetting, useSettings } from "../../../core/settings";
+import { resolveMaterial } from "../materials/material.resolver";
+import type { ComputedMaterialProperties, GlassMaterialId } from "../materials/material.types";
+import { musicSettings } from "../settings";
 import { resolveMusicAppearance } from "./theme.resolver";
 import type { MusicThemeId, MusicThemeTokens } from "./theme.types";
 
 interface MusicThemeContextValue {
 	tokens: MusicThemeTokens;
 	cssVars: CSSProperties;
+	material: ComputedMaterialProperties;
+	materialId: GlassMaterialId;
 }
 
 const MusicThemeContext = createContext<MusicThemeContextValue | null>(null);
@@ -26,7 +31,13 @@ export function MusicThemeProvider({
 	isPlaying?: boolean;
 }) {
 	const settings = useSettings();
-	const themeId = (readSetting(settings, appearanceSettings.theme) as MusicThemeId) || "glass-dark";
+	const themeSetting = readSetting(settings, musicSettings.theme);
+	const themeId =
+		(themeSetting !== "auto" ? (themeSetting as MusicThemeId) : null) ||
+		(readSetting(settings, appearanceSettings.theme) as MusicThemeId) ||
+		"glass-dark";
+
+	const materialId = (readSetting(settings, musicSettings.material) as GlassMaterialId) || "liquid";
 
 	const [systemIsDark, setSystemIsDark] = useState(() => {
 		if (typeof window === "undefined" || !window.matchMedia) return true;
@@ -53,6 +64,29 @@ export function MusicThemeProvider({
 				isPlaying,
 			}),
 		[themeId, systemIsDark, providerBrandColor, providerGlowColor, artworkVibrant, artworkMuted, isPlaying],
+	);
+
+	const material = useMemo(
+		() =>
+			resolveMaterial(
+				materialId,
+				tokens,
+				artworkVibrant
+					? {
+							dominant: artworkVibrant,
+							vibrant: artworkVibrant,
+							muted: artworkMuted ?? artworkVibrant,
+							secondary: artworkMuted ?? artworkVibrant,
+							glow: providerGlowColor,
+							luminance: 0.5,
+							saturation: 0.5,
+							isDark: !systemIsDark,
+							isLight: systemIsDark,
+							isMonochrome: false,
+						}
+					: null,
+			),
+		[materialId, tokens, artworkVibrant, artworkMuted, providerGlowColor, systemIsDark],
 	);
 
 	const cssVars = useMemo<CSSProperties>(
@@ -82,7 +116,7 @@ export function MusicThemeProvider({
 		[tokens],
 	);
 
-	const value = useMemo(() => ({ tokens, cssVars }), [tokens, cssVars]);
+	const value = useMemo(() => ({ tokens, cssVars, material, materialId }), [tokens, cssVars, material, materialId]);
 
 	return (
 		<MusicThemeContext.Provider value={value}>
@@ -96,7 +130,6 @@ export function MusicThemeProvider({
 export function useMusicTheme(): MusicThemeTokens {
 	const ctx = useContext(MusicThemeContext);
 	if (!ctx) {
-		// Fallback to default glass-dark if rendered outside provider
 		return resolveMusicAppearance({
 			themeId: "glass-dark",
 			systemIsDark: true,
@@ -106,4 +139,19 @@ export function useMusicTheme(): MusicThemeTokens {
 		});
 	}
 	return ctx.tokens;
+}
+
+export function useMusicMaterial(): ComputedMaterialProperties {
+	const ctx = useContext(MusicThemeContext);
+	if (!ctx) {
+		const fallbackTokens = resolveMusicAppearance({
+			themeId: "glass-dark",
+			systemIsDark: true,
+			providerBrandColor: "#1ed760",
+			providerGlowColor: "rgba(30, 215, 96, 0.45)",
+			isPlaying: true,
+		});
+		return resolveMaterial("liquid", fallbackTokens);
+	}
+	return ctx.material;
 }

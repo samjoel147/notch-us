@@ -148,6 +148,18 @@
   music: {
     title: "Music",
     nothingPlaying: "Nothing playing",
+    material: {
+      label: "Glass Material",
+      desc: "VisionOS-inspired physical optical materials independently applied across all themes.",
+    },
+    theme: {
+      label: "Music Player Theme",
+      desc: "Visual color personality and atmospheric ambient lighting.",
+    },
+    ambientGlow: {
+      label: "Artwork ambient glow",
+      desc: "Soft atmospheric glow extracted from album artwork.",
+    },
     autoExpand: {
       label: "Expand on track change",
       desc: "Shows the artwork and title for a few seconds when a new track starts.",
