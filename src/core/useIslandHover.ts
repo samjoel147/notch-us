@@ -16,6 +16,8 @@ interface Options {
 	expandOnHover: boolean;
 	/** Leaving collapses the island; when off, only a click outside it does. */
 	collapseOnLeave: boolean;
+	hoverInDelay?: number;
+	hoverOutDelay?: number;
 	onOpen: () => void;
 	onClose: () => void;
 }
@@ -30,13 +32,20 @@ interface Options {
  * pointer goes; the pointer's last state applies once every reason to stay
  * open has ended.
  */
-export function useIslandHover({ expandOnHover, collapseOnLeave, onOpen, onClose }: Options) {
+export function useIslandHover({
+	expandOnHover,
+	collapseOnLeave,
+	hoverInDelay,
+	hoverOutDelay,
+	onOpen,
+	onClose,
+}: Options) {
 	const [open, setOpen] = useState(false);
 	const [pinned, setPinned] = useState(false);
 	const openRef = useRef(false);
 	const timer = useRef<number | undefined>(undefined);
-	const latest = useRef({ expandOnHover, collapseOnLeave, onOpen, onClose });
-	latest.current = { expandOnHover, collapseOnLeave, onOpen, onClose };
+	const latest = useRef({ expandOnHover, collapseOnLeave, hoverInDelay, hoverOutDelay, onOpen, onClose });
+	latest.current = { expandOnHover, collapseOnLeave, hoverInDelay, hoverOutDelay, onOpen, onClose };
 
 	const pointerInside = useRef(false);
 	const locked = useRef(false);
@@ -57,7 +66,9 @@ export function useIslandHover({ expandOnHover, collapseOnLeave, onOpen, onClose
 		};
 		if (immediate) return apply();
 		const justResized = Date.now() - resizedAt.current < RESIZE_GRACE_MS;
-		const delay = inside ? HOVER_IN_DELAY : justResized ? RESIZE_OUT_DELAY : HOVER_OUT_DELAY;
+		const inDelay = latest.current.hoverInDelay ?? HOVER_IN_DELAY;
+		const outDelay = latest.current.hoverOutDelay ?? HOVER_OUT_DELAY;
+		const delay = inside ? inDelay : justResized ? RESIZE_OUT_DELAY : outDelay;
 		timer.current = window.setTimeout(apply, delay);
 	}, []);
 

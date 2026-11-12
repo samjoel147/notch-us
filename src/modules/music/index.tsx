@@ -29,6 +29,7 @@ export const musicModule: IslandModule = {
 		return {
 			active,
 			priority: music?.playing ? 50 : 10,
+			accent: accent || "#007aff",
 			icon: <Artwork src={music?.thumbnail} size={22} radius={11} />,
 			compact: music
 				? {
@@ -42,7 +43,7 @@ export const musicModule: IslandModule = {
 						width: 180,
 					},
 			expanded: <MusicPanel music={music} accent={accent} showVisualizer={showVisualizer} />,
-			expandedSize: { width: 560, height: 176 },
+			expandedSize: { width: 560, height: 188 },
 			activityKey: autoExpand && music?.playing ? `${music.title}|${music.artist}` : undefined,
 		};
 	},

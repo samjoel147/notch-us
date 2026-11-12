@@ -68,7 +68,11 @@ export function Artwork({
 					}}
 				/>
 			</div>
-			{badge && <div className="absolute -bottom-1 -right-1 z-10 pointer-events-none">{badge}</div>}
+			{badge && (
+				<div className="absolute -bottom-0.5 -right-0.5 z-10 pointer-events-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
+					{badge}
+				</div>
+			)}
 		</div>
 	);
 }

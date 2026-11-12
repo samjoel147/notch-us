@@ -44,7 +44,7 @@ export function islandContent(ctl: IslandController, look: Appearance, v: Varian
 		return {
 			key: ctl.launcher ? `big:${LAUNCHER}` : `big:${focused?.module.id}`,
 			node: (
-				<div className={cn("flex h-full flex-col px-5 pt-3.5 pb-4.5", v.tabsAtBottom && "pb-2")}>
+				<div className={cn("flex h-full flex-col px-5 pt-4.5 pb-4.5", v.tabsAtBottom && "pb-2")}>
 					{!v.tabsAtBottom && tabs}
 					<div className="min-h-0 flex-1">
 						{ctl.launcher ? <Launcher entries={ctl.entries} onSelect={ctl.setTab} /> : focused?.view.expanded}

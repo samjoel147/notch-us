@@ -27,9 +27,9 @@ const tabs = tv({
 		/** Windows Island: round icon tabs, ringed in the module's color. */
 		iconsOnly: {
 			true: {
-				tab: "w-8 justify-center rounded-full p-0 opacity-75 transition-opacity hover:opacity-100",
-				pill: "shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--tab-accent)_70%,transparent)]",
-				dot: "absolute top-0.75 right-0.75 shadow-[0_0_0_1.5px_#000]",
+				tab: "w-8 justify-center rounded-full p-0 opacity-85 transition-opacity hover:opacity-100",
+				pill: "bg-black/6 dark:bg-white/10 shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--tab-accent)_85%,rgba(0,0,0,0.12))] backdrop-blur-xs",
+				dot: "absolute top-0.75 right-0.75 shadow-[0_0_0_1.5px_var(--island,#000)]",
 			},
 		},
 		bottom: {
@@ -79,7 +79,7 @@ export function Tabs({
 						key={module.id}
 						className={s.tab({ active: selected })}
 						title={t(module.title)}
-						style={{ "--tab-accent": view.accent ?? "#fff" } as CSSProperties}
+						style={{ "--tab-accent": view.accent || "var(--accent)" } as CSSProperties}
 						onClick={() => onSelect(module.id)}
 					>
 						{selected && pill}

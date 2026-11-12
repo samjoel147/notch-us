@@ -38,6 +38,26 @@ export function BehaviorPage({ values }: { values: Record<string, unknown> }) {
 						<option value="clickOutside">{t("behavior.closeOn.clickOutside")}</option>
 					</Select>
 				</Row>
+				<Row as="label" label={t("behavior.hoverDelay.label")} desc={t("behavior.hoverDelay.desc")}>
+					<Select
+						value={readSetting(values, behaviorSettings.hoverDelay)}
+						onChange={(e) => setSetting(behaviorSettings.hoverDelay, Number(e.target.value))}
+					>
+						<option value={0}>{t("behavior.hoverDelay.instant")}</option>
+						<option value={150}>{t("behavior.hoverDelay.balanced")}</option>
+						<option value={300}>{t("behavior.hoverDelay.relaxed")}</option>
+					</Select>
+				</Row>
+				<Row as="label" label={t("behavior.leaveDelay.label")} desc={t("behavior.leaveDelay.desc")}>
+					<Select
+						value={readSetting(values, behaviorSettings.leaveDelay)}
+						onChange={(e) => setSetting(behaviorSettings.leaveDelay, Number(e.target.value))}
+					>
+						<option value={150}>{t("behavior.leaveDelay.snappy")}</option>
+						<option value={250}>{t("behavior.leaveDelay.balanced")}</option>
+						<option value={450}>{t("behavior.leaveDelay.generous")}</option>
+					</Select>
+				</Row>
 			</Card>
 			<Card>
 				<ToggleRow def={hideInFullscreen} value={readSetting(values, hideInFullscreen)} />

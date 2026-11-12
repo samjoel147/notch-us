@@ -2,6 +2,9 @@ import type { SettingDef } from "../../core/settings";
 import type { GlassMaterialId } from "./materials/material.types";
 import type { MusicThemeId } from "./themes/theme.types";
 
+export type VisualizerStyle = "bars" | "wave" | "pulse" | "minimal";
+export type GlowIntensity = "off" | "subtle" | "vibrant" | "immersive";
+
 export const musicSettings = {
 	material: {
 		key: "music.material.label",
@@ -15,6 +18,18 @@ export const musicSettings = {
 		description: "music.theme.desc",
 		default: "auto" as MusicThemeId,
 	} satisfies SettingDef<MusicThemeId>,
+	visualizerStyle: {
+		key: "music.visualizerStyle.label",
+		label: "music.visualizerStyle.label",
+		description: "music.visualizerStyle.desc",
+		default: "bars" as VisualizerStyle,
+	} satisfies SettingDef<VisualizerStyle>,
+	glowIntensity: {
+		key: "music.glowIntensity.label",
+		label: "music.glowIntensity.label",
+		description: "music.glowIntensity.desc",
+		default: "vibrant" as GlowIntensity,
+	} satisfies SettingDef<GlowIntensity>,
 	ambientGlow: {
 		key: "music.ambientGlow.label",
 		label: "music.ambientGlow.label",

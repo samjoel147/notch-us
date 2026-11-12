@@ -1,5 +1,6 @@
 import { type CSSProperties, createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
-import { appearanceSettings, readSetting, useSettings } from "../../../core/settings";
+import { useAppearance } from "../../../core/appearance";
+import { readSetting, useSettings } from "../../../core/settings";
 import { resolveMaterial } from "../materials/material.resolver";
 import type { ComputedMaterialProperties, GlassMaterialId } from "../materials/material.types";
 import { musicSettings } from "../settings";
@@ -30,12 +31,15 @@ export function MusicThemeProvider({
 	artworkMuted?: string;
 	isPlaying?: boolean;
 }) {
+	const look = useAppearance();
 	const settings = useSettings();
 	const themeSetting = readSetting(settings, musicSettings.theme);
-	const themeId =
-		(themeSetting !== "auto" ? (themeSetting as MusicThemeId) : null) ||
-		(readSetting(settings, appearanceSettings.theme) as MusicThemeId) ||
-		"glass-dark";
+	const isLight = look.theme === "light" || look.theme === "glass-light";
+
+	const effectiveThemeId =
+		(themeSetting && themeSetting !== "auto" ? (themeSetting as MusicThemeId) : null) ||
+		(look.theme as MusicThemeId) ||
+		(isLight ? "light" : "dark");
 
 	const materialId = (readSetting(settings, musicSettings.material) as GlassMaterialId) || "liquid";
 
@@ -55,15 +59,24 @@ export function MusicThemeProvider({
 	const tokens = useMemo(
 		() =>
 			resolveMusicAppearance({
-				themeId,
-				systemIsDark,
+				themeId: effectiveThemeId,
+				systemIsDark: isLight ? false : systemIsDark,
 				providerBrandColor,
 				providerGlowColor,
 				artworkVibrant,
 				artworkMuted,
 				isPlaying,
 			}),
-		[themeId, systemIsDark, providerBrandColor, providerGlowColor, artworkVibrant, artworkMuted, isPlaying],
+		[
+			effectiveThemeId,
+			isLight,
+			systemIsDark,
+			providerBrandColor,
+			providerGlowColor,
+			artworkVibrant,
+			artworkMuted,
+			isPlaying,
+		],
 	);
 
 	const material = useMemo(

@@ -4,7 +4,6 @@ import type { MouseEvent, ReactNode } from "react";
 import { cn } from "../../../core/cn";
 import { musicAction } from "../hooks/useMusic";
 import type { MediaCapabilities } from "../providers/types";
-import { useMusicTheme } from "../themes/theme.provider";
 
 interface MusicControlsProps {
 	playing: boolean;
@@ -74,20 +73,18 @@ function CtrlButton({
 	title?: string;
 	className?: string;
 }) {
-	const theme = useMusicTheme();
-
 	return (
 		<motion.button
 			title={title}
 			className={cn(
 				"relative grid place-items-center rounded-full transition-all duration-200 disabled:pointer-events-none disabled:opacity-25",
-				big ? "size-11 shadow-lg" : "size-8 active:scale-92",
+				big
+					? "size-11 shadow-lg bg-black/6 dark:bg-white/12 text-text"
+					: "size-8 text-text-dim hover:text-text active:scale-92",
 				className,
 			)}
 			style={{
-				backgroundColor: big ? theme.controlSurface : "transparent",
-				color: big ? theme.controlIcon : theme.controlIconMuted,
-				boxShadow: big ? theme.rimSpecular : undefined,
+				boxShadow: big ? "inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.25), 0 3px 10px rgba(0, 0, 0, 0.12)" : undefined,
 			}}
 			disabled={disabled}
 			whileHover={{ scale: big ? 1.06 : 1.1 }}
@@ -99,10 +96,7 @@ function CtrlButton({
 			}}
 		>
 			{big && (
-				<div
-					className="pointer-events-none absolute inset-x-0 top-0 h-[48%] rounded-t-full opacity-60"
-					style={{ background: theme.sheenGradient }}
-				/>
+				<div className="pointer-events-none absolute inset-x-0 top-0 h-[48%] rounded-t-full opacity-40 bg-gradient-to-b from-white/30 to-transparent" />
 			)}
 			{children}
 		</motion.button>

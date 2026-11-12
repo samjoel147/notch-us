@@ -129,6 +129,18 @@ export const behaviorSettings = {
 		description: "settings.hideInFullscreen.desc",
 		default: true,
 	} satisfies SettingDef,
+	hoverDelay: {
+		key: "island.hoverDelay",
+		label: "behavior.hoverDelay.label",
+		description: "behavior.hoverDelay.desc",
+		default: 150,
+	} satisfies SettingDef<number>,
+	leaveDelay: {
+		key: "island.leaveDelay",
+		label: "behavior.leaveDelay.label",
+		description: "behavior.leaveDelay.desc",
+		default: 250,
+	} satisfies SettingDef<number>,
 };
 
 /** Before `island.openOn`, a boolean said whether hovering expands the island. */

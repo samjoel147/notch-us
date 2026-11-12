@@ -199,6 +199,23 @@
 	color-scheme: light;
 }
 
+/* Accessibility contrast boosts for pastel icons on light backgrounds */
+:root[data-light="true"] svg[stroke="#f5c542"],
+:root[data-light="true"] svg[color="#f5c542"],
+:root[data-light="true"] [stroke="#f5c542"] {
+	stroke: #b45309;
+}
+:root[data-light="true"] svg[stroke="#30d158"],
+:root[data-light="true"] svg[color="#30d158"],
+:root[data-light="true"] [stroke="#30d158"] {
+	stroke: #15803d;
+}
+:root[data-light="true"] svg[stroke="#45c4e6"],
+:root[data-light="true"] svg[color="#45c4e6"],
+:root[data-light="true"] [stroke="#45c4e6"] {
+	stroke: #0284c7;
+}
+
 /* Glass-light card elevation and optical materials */
 :root[data-theme="glass-light"] .bg-card {
 	box-shadow:
@@ -330,6 +347,57 @@ body:has([data-pip]) {
 html:has([data-settings]),
 body:has([data-settings]) {
 	background: #0c0c10;
+}
+
+/* Settings window: Always preserve dark theme contrast regardless of island theme */
+[data-settings],
+:root[data-theme] [data-settings],
+:root[data-light] [data-settings],
+html[data-theme] [data-settings] {
+	--text: #f5f5f7;
+	--text-dim: rgba(245, 245, 247, 0.7);
+	--text-faint: rgba(245, 245, 247, 0.5);
+	--hairline: rgba(255, 255, 255, 0.08);
+	--card: rgba(255, 255, 255, 0.055);
+	--surface-control: rgba(255, 255, 255, 0.08);
+	color: #f5f5f7;
+}
+
+[data-settings] *,
+:root[data-theme] [data-settings] *,
+:root[data-light] [data-settings] * {
+	--text: #f5f5f7;
+	--text-dim: rgba(245, 245, 247, 0.7);
+	--text-faint: rgba(245, 245, 247, 0.5);
+}
+
+[data-settings] .text-text,
+:root[data-theme] [data-settings] .text-text,
+:root[data-light] [data-settings] .text-text {
+	color: #f5f5f7;
+}
+
+[data-settings] .text-text-dim,
+:root[data-theme] [data-settings] .text-text-dim,
+:root[data-light] [data-settings] .text-text-dim {
+	color: rgba(245, 245, 247, 0.7);
+}
+
+[data-settings] .text-text-faint,
+:root[data-theme] [data-settings] .text-text-faint,
+:root[data-light] [data-settings] .text-text-faint {
+	color: rgba(245, 245, 247, 0.5);
+}
+
+:root[data-light="true"] [data-settings] .bg-white\/3,
+:root[data-light="true"] [data-settings] .bg-white\/3\.5,
+:root[data-light="true"] [data-settings] .bg-white\/4,
+:root[data-light="true"] [data-settings] .bg-white\/5,
+:root[data-light="true"] [data-settings] .bg-white\/6,
+:root[data-light="true"] [data-settings] .bg-white\/7,
+:root[data-light="true"] [data-settings] .bg-white\/8,
+:root[data-light="true"] [data-settings] .bg-white\/10 {
+	background-color: rgba(255, 255, 255, 0.04);
 }
 
 /* Browser preview wallpaper (never applied inside Tauri). */

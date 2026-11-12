@@ -52,6 +52,43 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 		<>
 			<Title>{t("appearance.title")}</Title>
 
+			{/* Real-time Interactive Island Stage Preview */}
+			<Card>
+				<div className="relative flex flex-col items-center justify-center overflow-hidden rounded-2xl bg-[radial-gradient(120%_120%_at_50%_100%,#1a1a2e_0%,#0e0e18_60%,#08080f_100%)] p-6 border border-hairline shadow-md">
+					<div className="absolute top-2.5 left-3.5 flex items-center gap-1.5 text-[11px] font-semibold text-text-faint">
+						<span className="size-2 rounded-full bg-ok animate-pulse" />
+						<span>{t("appearance.preview.label")}</span>
+					</div>
+
+					<div className="relative mt-3 flex items-center justify-center">
+						<div
+							className={cn(
+								"relative flex h-10 items-center justify-between px-3.5 shadow-xl transition-all duration-300",
+								style === "dynamic"
+									? "w-72 rounded-b-2xl before:absolute before:top-0 before:right-full before:size-2.5 before:bg-[radial-gradient(circle_at_0_100%,transparent_70%,var(--island)_71%)] after:absolute after:top-0 after:left-full after:size-2.5 after:bg-[radial-gradient(circle_at_100%_100%,transparent_70%,var(--island)_71%)]"
+									: "w-68 rounded-[18px]",
+							)}
+							style={{
+								background: "var(--island)",
+								border: "1px solid var(--hairline)",
+								boxShadow: "var(--island-shadow)",
+							}}
+						>
+							{style === "windows" && rim.length > 0 && <RimRing background={rimBackground(rim)} width={thickness} />}
+							<div className="flex items-center gap-2">
+								<span className="size-2.5 rounded-full" style={{ backgroundColor: "var(--accent)" }} />
+								<span className="text-[12px] font-bold text-text">9:41</span>
+							</div>
+							<div className="flex items-center gap-1.5 text-[11px] font-medium text-text-dim">
+								<span>Dynamic Island</span>
+								<span className="size-1.5 rounded-full bg-ok" />
+							</div>
+						</div>
+					</div>
+					<div className="mt-3 text-[11px] text-text-faint">{t("appearance.preview.desc")}</div>
+				</div>
+			</Card>
+
 			<Card>
 				<Block>
 					<Row label={t("appearance.theme.label")} desc={t("appearance.theme.desc")} />

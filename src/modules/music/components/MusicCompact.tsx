@@ -67,14 +67,12 @@ function CompactLeftContent({
 				>
 					<Marquee
 						text={session?.metadata.title ?? music.title}
-						className="text-[13px] font-semibold tracking-tight transition-colors duration-300"
-						style={{ color: theme.textPrimary }}
+						className="text-[13px] font-semibold tracking-tight text-text transition-colors duration-300"
 					/>
 					{(session?.metadata.artist || music.artist) && (
 						<Marquee
 							text={session?.metadata.artist ?? music.artist}
-							className="text-[11px] font-medium transition-colors duration-300"
-							style={{ color: theme.textSecondary }}
+							className="text-[11px] font-medium text-text-dim transition-colors duration-300"
 						/>
 					)}
 				</motion.div>
@@ -127,15 +125,11 @@ function CompactRightContent({
 	accent: string;
 	showVisualizer: boolean;
 }) {
-	const theme = useMusicTheme();
 	const visualizerColor = provider.id !== "generic" ? provider.brandColor : accent;
 
 	return (
 		<div className="flex items-center gap-2.5 flex-none transition-colors duration-300">
-			<span
-				className="text-[12px] font-semibold tabular-nums font-mono transition-colors duration-300"
-				style={{ color: music.playing ? theme.textSecondary : theme.textMuted }}
-			>
+			<span className="text-[12px] font-semibold tabular-nums font-mono text-text-dim transition-colors duration-300">
 				{formatTime(position)}
 			</span>
 			{showVisualizer && <MusicVisualizer playing={music.playing} color={visualizerColor} height={18} barWidth={3} />}
@@ -147,7 +141,7 @@ function CompactRightContent({
 export function MusicIdleLeft() {
 	return (
 		<div className="flex items-center gap-2 text-text-dim text-[12.5px] font-medium">
-			<div className="size-6 rounded-full bg-white/8 grid place-items-center text-text-dim">
+			<div className="size-6 rounded-full bg-black/6 dark:bg-white/10 grid place-items-center text-text-dim">
 				<MusicIcon size={13} />
 			</div>
 			<span>Music</span>
@@ -158,7 +152,7 @@ export function MusicIdleLeft() {
 export function MusicIdleRight() {
 	return (
 		<div className="flex items-center gap-1.5 text-text-faint text-[11px] font-mono">
-			<span className="size-1.5 rounded-full bg-white/20 animate-pulse" />
+			<span className="size-1.5 rounded-full bg-emerald-500/80 animate-pulse" />
 			<span>Ready</span>
 		</div>
 	);

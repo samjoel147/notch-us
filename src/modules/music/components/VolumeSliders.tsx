@@ -46,8 +46,8 @@ export function VolumeSliders({ music }: { music: MusicState | undefined }) {
 				<button
 					type="button"
 					className={cn(
-						"grid size-6.5 place-items-center rounded-[11px] bg-white/6 text-text-dim transition-[opacity,color,background,transform] duration-200 hover:bg-white/12 hover:text-text active:scale-92",
-						showMixer && "bg-white/16 text-text",
+						"grid size-6.5 place-items-center rounded-[11px] bg-card shadow-[inset_0_0_0_1px_var(--hairline)] text-text-dim transition-[opacity,color,background,transform] duration-200 hover:bg-white/12 hover:text-text active:scale-92",
+						showMixer && "bg-white/20 text-text",
 					)}
 					title={t("music.mixer") || "Audio mixer"}
 					onClick={() => setShowMixer((v) => !v)}
@@ -57,7 +57,7 @@ export function VolumeSliders({ music }: { music: MusicState | undefined }) {
 			)}
 
 			{showMixer && otherApps.length > 0 && (
-				<div className="absolute right-0 bottom-full mb-2 flex max-h-48 w-56 flex-col gap-1.5 overflow-y-auto rounded-2xl bg-[#1c1c1f]/95 p-2 shadow-2xl backdrop-blur-xl border border-white/10 z-50">
+				<div className="absolute right-0 bottom-full mb-2 flex max-h-48 w-56 flex-col gap-1.5 overflow-y-auto rounded-2xl bg-island/95 p-2 shadow-2xl backdrop-blur-xl border border-hairline z-50">
 					<span className="px-1.5 text-[11px] font-semibold text-text-faint">
 						{t("music.otherApps") || "Other apps"}
 					</span>
@@ -121,7 +121,7 @@ export function VolumeSlider({
 	const percent = Math.round(shown.level * 100);
 	return (
 		<div
-			className="flex h-6.5 min-w-0 flex-[0_1_auto] items-center gap-1.25 rounded-[13px] bg-white/6 pr-2.25 pl-1"
+			className="flex h-6.5 min-w-0 flex-[0_1_auto] items-center gap-1.25 rounded-[13px] bg-card shadow-[inset_0_0_0_1px_var(--hairline)] pr-2.25 pl-1"
 			onClick={(e) => e.stopPropagation()}
 		>
 			<button
@@ -162,11 +162,11 @@ export function VolumeSlider({
 					setLevel(shown.level + step);
 				}}
 			>
-				<div className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/16 transition-[height] duration-200 ease-[ease] group-hover/track:h-1.5 group-focus-visible/track:h-1.5">
+				<div className="relative h-1 flex-1 overflow-hidden rounded-full bg-black/10 dark:bg-white/16 transition-[height] duration-200 ease-[ease] group-hover/track:h-1.5 group-focus-visible/track:h-1.5">
 					<div
 						className={cn(
-							"absolute inset-0 origin-left rounded-[inherit] bg-white transition-transform duration-120 ease-out",
-							shown.muted && "bg-white/30",
+							"absolute inset-0 origin-left rounded-[inherit] bg-text transition-transform duration-120 ease-out",
+							shown.muted && "opacity-40",
 						)}
 						style={{ transform: `scaleX(${shown.level})` }}
 					/>

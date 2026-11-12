@@ -1,10 +1,12 @@
-import { MonitorIcon, MusicIcon } from "lucide-react";
+import { MonitorIcon, MusicIcon, QuoteIcon } from "lucide-react";
 import { type MouseEvent, useEffect, useState } from "react";
 import { Marquee } from "../../../components/Marquee";
+import { cn } from "../../../core/cn";
 import { useT } from "../../../core/i18n";
 import { useSetting } from "../../../core/settings";
 import { normalizeMediaSession } from "../core/MediaSessionNormalizer";
 import { selectActiveSession } from "../core/SessionPriorityEngine";
+import { useLyrics } from "../hooks/useLyrics";
 import { type MusicState, musicAction, setVolume, useLivePosition } from "../hooks/useMusic";
 import { closePip, openPip, usePipOpen } from "../hooks/usePip";
 import { getProviderDefinition } from "../providers/registry";
@@ -99,8 +101,26 @@ function MusicPanelContent({
 	const t = useT();
 	const pinned = usePipOpen();
 	const videoEnabled = useSetting(musicSettings.video);
+	const glowSetting = useSetting(musicSettings.glowIntensity) || "vibrant";
 	const mirror = useMirrorVideo(music?.youtubeId);
 	const video = videoEnabled && !pinned ? mirror : null;
+	const [showLyrics, setShowLyrics] = useState(false);
+	const { currentLine, hasLyrics } = useLyrics(music, session?.playback.position ?? 0);
+
+	const glowOpacity =
+		glowSetting === "off"
+			? 0
+			: glowSetting === "subtle"
+				? theme.mode === "light"
+					? 0.1
+					: 0.22
+				: glowSetting === "immersive"
+					? theme.mode === "light"
+						? 0.35
+						: 0.75
+					: theme.mode === "light"
+						? 0.2
+						: 0.45;
 
 	if (!music?.available || !session) {
 		const activeApps = music?.apps ?? [];
@@ -181,12 +201,12 @@ function MusicPanelContent({
 			style={{ "--accent": provider.brandColor } as React.CSSProperties}
 		>
 			{/* Atmospheric ambient artwork lighting (subtle radial diffusion behind artwork) */}
-			{mode === "immersive" && (
+			{mode === "immersive" && glowOpacity > 0 && (
 				<div
-					className="pointer-events-none absolute -left-4 top-1/2 -translate-y-1/2 size-36 -z-10 rounded-full blur-2xl transition-all duration-700"
+					className="pointer-events-none absolute -left-4 top-1/2 -translate-y-1/2 size-36 -z-10 rounded-full blur-2xl transition-all duration-700 will-change-transform"
 					style={{
 						background: theme.ambientGlow,
-						opacity: theme.mode === "light" ? 0.2 : 0.45,
+						opacity: glowOpacity,
 					}}
 				/>
 			)}
@@ -220,7 +240,7 @@ function MusicPanelContent({
 				>
 					<Artwork
 						src={session.metadata.artwork}
-						size={88}
+						size={84}
 						radius={18}
 						trackKey={session.metadata.title}
 						glow={provider.brandColor}
@@ -260,7 +280,7 @@ function MusicPanelContent({
 			)}
 
 			{/* ================= REGIONS B & C: INFO & CONTROLS ================= */}
-			<div className="flex h-full min-w-0 flex-1 flex-col justify-between py-0.5">
+			<div className="flex min-w-0 flex-1 flex-col justify-between py-0.5 h-full max-h-[126px]">
 				{/* Row 1: Track Details + Service Badge + Visualizer */}
 				<div className="flex items-center justify-between gap-3 min-w-0">
 					{/* Track Title and Artist */}
@@ -273,26 +293,44 @@ function MusicPanelContent({
 						>
 							<Marquee
 								text={session.metadata.title}
-								className="text-[16px]/[1.25] font-[700] tracking-[-0.015em] transition-colors duration-300"
-								style={{ color: theme.textPrimary }}
+								className="text-[15px]/[1.3] font-[700] tracking-[-0.012em] text-text transition-colors duration-300"
 							/>
 						</button>
-						{subtitle && (
+						{showLyrics && currentLine ? (
+							<Marquee
+								key={currentLine}
+								text={`♪ ${currentLine}`}
+								className="text-[12px]/[1.25] font-semibold text-accent transition-colors duration-300 mt-0.5"
+							/>
+						) : subtitle ? (
 							<Marquee
 								text={subtitle}
-								className="text-[12.5px]/[1.3] font-medium transition-colors duration-300 mt-0.5"
-								style={{ color: theme.textSecondary }}
+								className="text-[12px]/[1.25] font-medium text-text-dim transition-colors duration-300 mt-0.5"
 							/>
-						)}
+						) : null}
 					</div>
 
 					{/* Service Indicator Badge & Visualizer (side-by-side, never overlapping) */}
 					<div className="flex flex-none items-center gap-2">
+						{hasLyrics && (
+							<button
+								type="button"
+								className={cn(
+									"grid size-6 place-items-center rounded-full text-text-dim hover:text-text hover:bg-white/10 active:scale-95 transition-all",
+									showLyrics && "text-accent bg-accent/15",
+								)}
+								title={showLyrics ? "Show track metadata" : "Peek synchronized lyrics"}
+								onClick={() => setShowLyrics((v) => !v)}
+							>
+								<QuoteIcon size={12} />
+							</button>
+						)}
+
 						{showVisualizer && (
 							<MusicVisualizer
 								playing={session.playback.status === "playing"}
 								color={provider.brandColor}
-								height={18}
+								height={16}
 								barWidth={3}
 								className="flex-none"
 							/>
@@ -307,7 +345,7 @@ function MusicPanelContent({
 							}}
 						>
 							{provider.renderIcon({ size: 12 })}
-							<span className="truncate max-w-28 font-medium">{provider.displayName}</span>
+							<span className="truncate max-w-24 sm:max-w-28 font-medium">{provider.displayName}</span>
 						</div>
 					</div>
 				</div>
@@ -323,9 +361,9 @@ function MusicPanelContent({
 				</div>
 
 				{/* Row 3: Playback Controls on Left, Volume Controls on Right */}
-				<div className="flex items-center justify-between gap-3 w-full pt-0.5">
+				<div className="flex items-center justify-between gap-3 w-full h-11">
 					{/* Playback Controls (Previous, Play/Pause, Next share exact centerline) */}
-					<div className="-ml-1 flex items-center">
+					<div className="-ml-1 flex items-center h-full">
 						<MusicControls
 							playing={session.playback.status === "playing"}
 							capabilities={session.capabilities}
@@ -334,7 +372,7 @@ function MusicPanelContent({
 					</div>
 
 					{/* Volume Control Group (isolated from window dragging) */}
-					<div className="flex min-w-0 flex-1 justify-end gap-1.5 items-center" data-no-drag>
+					<div className="flex min-w-0 flex-1 justify-end gap-1.5 items-center h-full" data-no-drag>
 						<VolumeSliders music={music} />
 					</div>
 				</div>

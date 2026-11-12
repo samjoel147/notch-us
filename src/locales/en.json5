@@ -123,6 +123,20 @@
       leave: "When the pointer leaves",
       clickOutside: "On click outside",
     },
+    hoverDelay: {
+      label: "Hover open delay",
+      desc: "How long the cursor must pause over the island before it expands.",
+      instant: "Instant (0 ms)",
+      balanced: "Balanced (150 ms)",
+      relaxed: "Relaxed (300 ms)",
+    },
+    leaveDelay: {
+      label: "Leave collapse delay",
+      desc: "How long the island stays open after the pointer leaves.",
+      snappy: "Snappy (150 ms)",
+      balanced: "Balanced (250 ms)",
+      generous: "Generous (450 ms)",
+    },
   },
 
   // Modules page of the settings: every module, its tab order and on/off
@@ -167,6 +181,22 @@
     visualizer: {
       label: "Audio visualizer",
       desc: "Animated bars that follow the music.",
+    },
+    visualizerStyle: {
+      label: "Visualizer style",
+      desc: "Visual waveform rendering presentation.",
+      bars: "Spectrum bars",
+      wave: "Audio wave",
+      pulse: "Rhythmic pulse",
+      minimal: "Minimal dots",
+    },
+    glowIntensity: {
+      label: "Ambient glow intensity",
+      desc: "Diffusion atmospheric illumination behind album art.",
+      off: "Off",
+      subtle: "Subtle (25%)",
+      vibrant: "Vibrant (60%)",
+      immersive: "Immersive (100%)",
     },
     video: {
       label: "YouTube video in the island",
@@ -551,6 +581,10 @@
   // Appearance page (settings): island style and rim
   appearance: {
     title: "Appearance",
+    preview: {
+      label: "Interactive preview",
+      desc: "Live rendering of current theme, rim gradient, and visual material.",
+    },
     theme: {
       label: "Theme",
       desc: "Material and color scheme of the island.",
@@ -687,6 +721,34 @@
       openPrivacy: "Open settings",
       how: "Needs Windows Developer Mode (Settings → System → For developers), since the registration isn't signed.",
       openDeveloper: "Open developer settings",
+    },
+    settings: {
+      quickReply: {
+        label: "In-island quick reply",
+        desc: "Reply directly to WhatsApp, Teams, Instagram and Telegram inside the Dynamic Island.",
+      },
+      smartClipboard: {
+        label: "Smart clipboard bridge",
+        desc: "Automatically copies your response to clipboard when opening the messaging application.",
+      },
+      autoDismiss: {
+        label: "Auto-dismiss on reply",
+        desc: "Removes notification alert from the island once response is sent.",
+      },
+      platformBadges: {
+        label: "Platform brand badges",
+        desc: "Displays recognizable platform emblems and sender avatar indicators.",
+      },
+      reactionPills: {
+        label: "Quick reaction chips",
+        desc: "One-tap response pills above the reply input.",
+        reset: "Reset defaults",
+        add: "Add pill",
+      },
+      platforms: {
+        title: "Recognized messaging services",
+        desc: "Dynamic Island automatically formats and bridges notifications from these platforms.",
+      },
     },
   },
 

@@ -24,8 +24,8 @@ export function Marquee({ text, className, style }: { text: string; className?: 
 			ref={outer}
 			style={style}
 			className={cn(
-				"overflow-hidden whitespace-nowrap",
-				overflow && "[mask-image:linear-gradient(90deg,transparent_0,#000_12px,#000_calc(100%-16px),transparent)]",
+				"overflow-hidden whitespace-nowrap py-0.5",
+				overflow && "[mask-image:linear-gradient(90deg,#000_0,#000_calc(100%-14px),transparent)]",
 				className,
 			)}
 		>

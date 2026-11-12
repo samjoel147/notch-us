@@ -126,6 +126,42 @@ impl Provider for NotificationsProvider {
                     if let Some(a) = activities::handle() {
                         a.remove(&activity_id(id));
                     }
+                    if let Ok(listener) = UserNotificationListener::Current() {
+                        let _ = listener.RemoveNotification(id);
+                    }
+                }
+            }
+            "dismiss" => {
+                let id = payload.as_u64().unwrap_or_default() as u32;
+                ctx.state.lock().unwrap().items.retain(|i| i.id != id);
+                if let Some(a) = activities::handle() {
+                    a.remove(&activity_id(id));
+                }
+                if let Ok(listener) = UserNotificationListener::Current() {
+                    let _ = listener.RemoveNotification(id);
+                }
+            }
+            "reply" => {
+                let id = payload.get("id").and_then(|v| v.as_u64()).map(|n| n as u32);
+                let aumid = payload.get("aumid").and_then(|v| v.as_str()).unwrap_or_default();
+                let protocol = payload.get("protocol").and_then(|v| v.as_str());
+
+                if let Some(proto) = protocol {
+                    if !proto.is_empty() {
+                        crate::settings::open_url(proto);
+                    }
+                } else if !aumid.is_empty() {
+                    open_app(aumid);
+                }
+
+                if let Some(id) = id {
+                    ctx.state.lock().unwrap().items.retain(|i| i.id != id);
+                    if let Some(a) = activities::handle() {
+                        a.remove(&activity_id(id));
+                    }
+                    if let Ok(listener) = UserNotificationListener::Current() {
+                        let _ = listener.RemoveNotification(id);
+                    }
                 }
             }
             "markRead" => {

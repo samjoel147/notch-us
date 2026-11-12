@@ -46,6 +46,8 @@ export function useIslandController(modules: IslandModule[]) {
 	const hover = useIslandHover({
 		expandOnHover: openTrigger(settings) === "hover",
 		collapseOnLeave: readSetting(settings, behaviorSettings.closeOn) === "leave",
+		hoverInDelay: readSetting(settings, behaviorSettings.hoverDelay),
+		hoverOutDelay: readSetting(settings, behaviorSettings.leaveDelay),
 		onOpen: tabMemory.onIslandOpen,
 		onClose: tabMemory.onIslandClose,
 	});
