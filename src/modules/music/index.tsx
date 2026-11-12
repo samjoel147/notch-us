@@ -42,7 +42,7 @@ export const musicModule: IslandModule = {
 						width: 180,
 					},
 			expanded: <MusicPanel music={music} accent={accent} showVisualizer={showVisualizer} />,
-			expandedSize: { width: 540, height: 184 },
+			expandedSize: { width: 560, height: 176 },
 			activityKey: autoExpand && music?.playing ? `${music.title}|${music.artist}` : undefined,
 		};
 	},

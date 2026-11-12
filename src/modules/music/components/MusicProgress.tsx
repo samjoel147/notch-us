@@ -38,7 +38,7 @@ export function MusicProgress({ position, duration, canSeek, accentGradient }: M
 		>
 			{/* Elapsed Time */}
 			<span
-				className="min-w-9 text-[11px] font-medium tabular-nums transition-colors duration-300"
+				className="min-w-9 text-[11px] font-mono font-medium tabular-nums select-none transition-colors duration-300"
 				style={{ color: theme.textMuted }}
 			>
 				{formatTime(position)}
@@ -81,7 +81,7 @@ export function MusicProgress({ position, duration, canSeek, accentGradient }: M
 
 			{/* Remaining Time */}
 			<span
-				className="min-w-9 text-right text-[11px] font-medium tabular-nums transition-colors duration-300"
+				className="min-w-9 text-right text-[11px] font-mono font-medium tabular-nums select-none transition-colors duration-300"
 				style={{ color: theme.textMuted }}
 			>
 				{duration ? `-${formatTime(Math.max(0, duration - position))}` : "--:--"}
