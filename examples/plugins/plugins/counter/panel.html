@@ -7,12 +7,23 @@
 	</head>
 	<body>
 		<main>
-			<output id="count">0</output>
-			<div class="actions">
-				<button id="add" class="island-button" data-tone="accent"></button>
-				<button id="reset" class="island-button"></button>
+			<div class="counter-card">
+				<output id="count">0</output>
 			</div>
-			<p id="hint" class="island-faint"></p>
+
+			<div class="control-section">
+				<div class="header-group">
+					<h3 id="panel-title" class="tracker-title"></h3>
+					<span id="hint" class="hint-text island-faint"></span>
+				</div>
+
+				<div class="actions">
+					<button id="add" class="island-button step-primary" data-tone="accent"></button>
+					<button id="add5" class="island-button step-btn"></button>
+					<button id="sub1" class="island-button step-btn"></button>
+					<button id="reset" class="island-button reset-btn"></button>
+				</div>
+			</div>
 		</main>
 	</body>
 </html>

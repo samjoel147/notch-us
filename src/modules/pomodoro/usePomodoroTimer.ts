@@ -4,6 +4,15 @@ import type { PomodoroPhase, PomodoroTimer } from "./types";
 const MINUTE = 60_000;
 const STORAGE_KEY = "island-pomodoro-rounds";
 
+interface PhaseState {
+	remaining: number;
+	total: number;
+	endsAt: number | null;
+	running: boolean;
+	done: boolean;
+	doneAt: number | null;
+}
+
 function todayKey(): string {
 	return new Date().toDateString();
 }
@@ -29,8 +38,7 @@ function saveRounds(rounds: number) {
 
 function playChime() {
 	try {
-		const AudioCtx =
-			window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+		const AudioCtx = window.AudioContext || window.webkitAudioContext;
 		if (!AudioCtx) return;
 		const ctx = new AudioCtx();
 		const now = ctx.currentTime;
@@ -73,35 +81,84 @@ export function usePomodoroTimer(
 	enabled: boolean,
 ) {
 	const getDuration = useCallback(
-		(phase: PomodoroPhase): number => {
-			if (phase === "work") return workMinutes * MINUTE;
-			if (phase === "longBreak") return longBreakMinutes * MINUTE;
+		(targetPhase: PomodoroPhase): number => {
+			if (targetPhase === "work") return workMinutes * MINUTE;
+			if (targetPhase === "longBreak") return longBreakMinutes * MINUTE;
 			return breakMinutes * MINUTE;
 		},
 		[workMinutes, breakMinutes, longBreakMinutes],
 	);
 
 	const [phase, setPhase] = useState<PomodoroPhase>("work");
-	const [running, setRunning] = useState<boolean>(false);
-	const [endsAt, setEndsAt] = useState<number | null>(null);
-	const [remaining, setRemaining] = useState<number>(() => getDuration("work"));
-	const [total, setTotal] = useState<number>(() => getDuration("work"));
 	const [rounds, setRounds] = useState<number>(loadSavedRounds);
-	const [done, setDone] = useState<boolean>(false);
-	const [doneAt, setDoneAt] = useState<number | null>(null);
+
+	// Multi-phase state store: preserves exact remaining & total times independently across phase switches
+	const [phaseStates, setPhaseStates] = useState<Record<PomodoroPhase, PhaseState>>(() => ({
+		work: {
+			remaining: workMinutes * MINUTE,
+			total: workMinutes * MINUTE,
+			endsAt: null,
+			running: false,
+			done: false,
+			doneAt: null,
+		},
+		break: {
+			remaining: breakMinutes * MINUTE,
+			total: breakMinutes * MINUTE,
+			endsAt: null,
+			running: false,
+			done: false,
+			doneAt: null,
+		},
+		longBreak: {
+			remaining: longBreakMinutes * MINUTE,
+			total: longBreakMinutes * MINUTE,
+			endsAt: null,
+			running: false,
+			done: false,
+			doneAt: null,
+		},
+	}));
+
+	const activeState = phaseStates[phase];
+	const { remaining, total, endsAt, running, done, doneAt } = activeState;
 
 	const timerRef = useRef<number | undefined>(undefined);
 
-	// Sync duration changes if timer has not been started yet
+	// Sync duration changes if a phase is unstarted and untouched
 	useEffect(() => {
-		if (!running && endsAt === null) {
-			const dur = getDuration(phase);
-			setTotal(dur);
-			setRemaining(dur);
-		}
-	}, [getDuration, phase, running, endsAt]);
+		setPhaseStates((prev) => {
+			let changed = false;
+			const next = { ...prev };
+			const durations: Record<PomodoroPhase, number> = {
+				work: workMinutes * MINUTE,
+				break: breakMinutes * MINUTE,
+				longBreak: longBreakMinutes * MINUTE,
+			};
 
-	// Timer countdown loop
+			for (const p of ["work", "break", "longBreak"] as const) {
+				const current = prev[p];
+				const defaultDur = durations[p];
+				if (
+					!current.running &&
+					current.endsAt === null &&
+					current.remaining === current.total &&
+					current.total !== defaultDur
+				) {
+					next[p] = {
+						...current,
+						total: defaultDur,
+						remaining: defaultDur,
+					};
+					changed = true;
+				}
+			}
+
+			return changed ? next : prev;
+		});
+	}, [workMinutes, breakMinutes, longBreakMinutes]);
+
+	// Timer countdown loop for active phase
 	useEffect(() => {
 		if (!running || !endsAt || !enabled) {
 			window.clearInterval(timerRef.current);
@@ -110,7 +167,6 @@ export function usePomodoroTimer(
 
 		const checkTick = () => {
 			const left = Math.max(0, endsAt - Date.now());
-			setRemaining(left);
 
 			if (left <= 0) {
 				window.clearInterval(timerRef.current);
@@ -133,18 +189,37 @@ export function usePomodoroTimer(
 				const willAutoRun = isWork ? autoBreak : autoWork;
 
 				setPhase(nextPhase);
-				setTotal(nextDuration);
-				setRemaining(nextDuration);
-				setDone(true);
-				setDoneAt(Date.now());
-
-				if (willAutoRun) {
-					setEndsAt(Date.now() + nextDuration);
-					setRunning(true);
-				} else {
-					setEndsAt(null);
-					setRunning(false);
-				}
+				setPhaseStates((prev) => {
+					const curDur = getDuration(phase);
+					return {
+						...prev,
+						[phase]: {
+							...prev[phase],
+							remaining: curDur,
+							total: curDur,
+							endsAt: null,
+							running: false,
+							done: false,
+						},
+						[nextPhase]: {
+							...prev[nextPhase],
+							remaining: nextDuration,
+							total: nextDuration,
+							endsAt: willAutoRun ? Date.now() + nextDuration : null,
+							running: willAutoRun,
+							done: !willAutoRun,
+							doneAt: Date.now(),
+						},
+					};
+				});
+			} else {
+				setPhaseStates((prev) => ({
+					...prev,
+					[phase]: {
+						...prev[phase],
+						remaining: left,
+					},
+				}));
 			}
 		};
 
@@ -155,18 +230,37 @@ export function usePomodoroTimer(
 	}, [running, endsAt, enabled, soundChime, phase, rounds, roundsBeforeLong, autoBreak, autoWork, getDuration]);
 
 	const start = useCallback(() => {
-		setDone(false);
-		setEndsAt(Date.now() + remaining);
-		setRunning(true);
-	}, [remaining]);
+		setPhaseStates((prev) => {
+			const current = prev[phase];
+			const rem = current.remaining <= 0 ? current.total : current.remaining;
+			return {
+				...prev,
+				[phase]: {
+					...current,
+					remaining: rem,
+					endsAt: Date.now() + rem,
+					running: true,
+					done: false,
+				},
+			};
+		});
+	}, [phase]);
 
 	const pause = useCallback(() => {
-		if (endsAt) {
-			setRemaining(Math.max(0, endsAt - Date.now()));
-		}
-		setEndsAt(null);
-		setRunning(false);
-	}, [endsAt]);
+		setPhaseStates((prev) => {
+			const current = prev[phase];
+			const rem = current.endsAt ? Math.max(0, current.endsAt - Date.now()) : current.remaining;
+			return {
+				...prev,
+				[phase]: {
+					...current,
+					remaining: rem,
+					endsAt: null,
+					running: false,
+				},
+			};
+		});
+	}, [phase]);
 
 	const toggle = useCallback(() => {
 		if (running) {
@@ -177,38 +271,92 @@ export function usePomodoroTimer(
 	}, [running, pause, start]);
 
 	const reset = useCallback(() => {
-		setRunning(false);
-		setEndsAt(null);
-		setDone(false);
 		const dur = getDuration(phase);
-		setTotal(dur);
-		setRemaining(dur);
+		setPhaseStates((prev) => ({
+			...prev,
+			[phase]: {
+				remaining: dur,
+				total: dur,
+				endsAt: null,
+				running: false,
+				done: false,
+				doneAt: null,
+			},
+		}));
 	}, [getDuration, phase]);
 
 	const skip = useCallback(() => {
 		const isWork = phase === "work";
 		const nextPhase: PomodoroPhase = isWork ? ((rounds + 1) % roundsBeforeLong === 0 ? "longBreak" : "break") : "work";
-
 		const dur = getDuration(nextPhase);
+
 		setPhase(nextPhase);
-		setTotal(dur);
-		setRemaining(dur);
-		setEndsAt(null);
-		setRunning(false);
-		setDone(false);
+		setPhaseStates((prev) => {
+			const currentDur = getDuration(phase);
+			return {
+				...prev,
+				[phase]: {
+					...prev[phase],
+					remaining: currentDur,
+					total: currentDur,
+					endsAt: null,
+					running: false,
+					done: false,
+				},
+				[nextPhase]: {
+					...prev[nextPhase],
+					remaining: prev[nextPhase].remaining > 0 ? prev[nextPhase].remaining : dur,
+					total: prev[nextPhase].total > 0 ? prev[nextPhase].total : dur,
+					endsAt: null,
+					running: false,
+					done: false,
+				},
+			};
+		});
 	}, [phase, rounds, roundsBeforeLong, getDuration]);
 
 	const selectPhase = useCallback(
 		(newPhase: PomodoroPhase) => {
+			if (newPhase === phase) return;
+
+			setPhaseStates((prev) => {
+				const current = prev[phase];
+				if (!current.running) return prev;
+				const rem = current.endsAt ? Math.max(0, current.endsAt - Date.now()) : current.remaining;
+				return {
+					...prev,
+					[phase]: {
+						...current,
+						remaining: rem,
+						endsAt: null,
+						running: false,
+					},
+				};
+			});
+
 			setPhase(newPhase);
-			const dur = getDuration(newPhase);
-			setTotal(dur);
-			setRemaining(dur);
-			setEndsAt(null);
-			setRunning(false);
-			setDone(false);
 		},
-		[getDuration],
+		[phase],
+	);
+
+	const setCustomDuration = useCallback(
+		(minutes: number) => {
+			const dur = Math.max(1, minutes) * MINUTE;
+			setPhaseStates((prev) => {
+				const current = prev[phase];
+				return {
+					...prev,
+					[phase]: {
+						...current,
+						total: dur,
+						remaining: dur,
+						endsAt: current.running ? Date.now() + dur : null,
+						done: false,
+					},
+				};
+			});
+		},
+		[phase],
 	);
 
 	const timer: PomodoroTimer = {
@@ -230,5 +378,6 @@ export function usePomodoroTimer(
 		reset,
 		skip,
 		selectPhase,
+		setCustomDuration,
 	};
 }

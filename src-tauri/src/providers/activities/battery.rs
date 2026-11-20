@@ -14,8 +14,9 @@ const THRESHOLDS: [u8; 3] = [20, 10, 5];
 pub fn watch(activities: Activities) {
     let mut was_on_ac: Option<bool> = None;
     let mut last_percent: Option<u8> = None;
+    let mut was_power_saver: Option<bool> = None;
     loop {
-        if let Some((on_ac, percent)) = read() {
+        if let Some((on_ac, percent, power_saver)) = read() {
             if let Some(before) = was_on_ac
                 && before != on_ac
             {
@@ -25,8 +26,16 @@ pub fn watch(activities: Activities) {
             {
                 show_low(&activities, percent, threshold);
             }
+
+            if let Some(before_saver) = was_power_saver
+                && before_saver != power_saver
+            {
+                show_power_saver(&activities, power_saver);
+            }
+
             was_on_ac = Some(on_ac);
             last_percent = Some(percent);
+            was_power_saver = Some(power_saver);
         }
         std::thread::sleep(POLL);
     }
@@ -39,15 +48,16 @@ pub fn present() -> bool {
     unsafe { GetSystemPowerStatus(&mut status).is_err() || status.BatteryFlag & 128 == 0 }
 }
 
-/// `(on AC power, battery %)`, or `None` on a desktop without a battery.
-fn read() -> Option<(bool, u8)> {
+/// `(on AC power, battery %, power saver active)`, or `None` on a desktop without a battery.
+fn read() -> Option<(bool, u8, bool)> {
     let mut status = SYSTEM_POWER_STATUS::default();
     unsafe { GetSystemPowerStatus(&mut status).ok()? };
     // 128 = no system battery, 255 = unknown percentage.
     if status.BatteryFlag & 128 != 0 || status.BatteryLifePercent > 100 {
         return None;
     }
-    Some((status.ACLineStatus == 1, status.BatteryLifePercent))
+    let power_saver = status.SystemStatusFlag == 1;
+    Some((status.ACLineStatus == 1, status.BatteryLifePercent, power_saver))
 }
 
 /// The lowest low-battery threshold crossed going from `before` to `now`, if any.
@@ -73,6 +83,24 @@ fn show_power(activities: &Activities, on_ac: bool, percent: u8) {
     alert.color = on_ac.then(|| GREEN.into());
     alert.progress = Some(percent as f64 / 100.0);
     alert.priority = 70;
+    activities.upsert(alert);
+}
+
+fn show_power_saver(activities: &Activities, active: bool) {
+    let mut alert = Activity::alert("system.power_saver", "battery", Duration::from_millis(3000));
+    alert.title = if active {
+        "Battery Saver On".to_string()
+    } else {
+        "Battery Saver Off".to_string()
+    };
+    alert.subtitle = Some(if active {
+        "Active".to_string()
+    } else {
+        "Turned off".to_string()
+    });
+    alert.icon = Some("leaf".to_string());
+    alert.color = Some(GREEN.to_string());
+    alert.priority = 65;
     activities.upsert(alert);
 }
 

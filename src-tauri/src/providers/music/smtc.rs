@@ -66,6 +66,7 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
                 }
                 state.volume = super::volume::system();
                 state.apps = super::volume::all_apps();
+                state.devices = super::volume::active_devices();
                 let local = super::volume::app(&state.app_id);
                 spotify.set_wanted(local.is_none() && spotify::is_spotify(&state.app_id));
                 if let Some((volume, exe)) = local {
@@ -87,6 +88,7 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
                 MusicState {
                     volume: super::volume::system(),
                     apps: super::volume::all_apps(),
+                    devices: super::volume::active_devices(),
                     ..Default::default()
                 }
             }
@@ -95,6 +97,7 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
                 MusicState {
                     volume: super::volume::system(),
                     apps: super::volume::all_apps(),
+                    devices: super::volume::active_devices(),
                     ..Default::default()
                 }
             }
@@ -202,6 +205,7 @@ fn read_state(manager: &SessionManager) -> Result<Option<(MusicState, Session)>>
         app_icon: None,
         app_device: None,
         apps: Vec::new(),
+        devices: Vec::new(),
     };
     Ok(Some((state, session)))
 }

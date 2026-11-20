@@ -41,6 +41,7 @@ const states = new Map<string, unknown>();
 /** Last settings / locale sent, per plugin, to send only changes. */
 const sentSettings = new Map<string, string>();
 let sentLocale = "";
+let sentTheme = "";
 
 /** What the island can do for a plugin; set by the island window. */
 export interface IslandControls {
@@ -50,6 +51,9 @@ export interface IslandControls {
 let controls: IslandControls | null = null;
 export const setIslandControls = (c: IslandControls | null) => {
 	controls = c;
+	if (typeof window !== "undefined") {
+		window.__expandIsland = (id?: string) => c?.expand(id);
+	}
 };
 
 // Views (`island.setView`) by island module id.
@@ -324,6 +328,8 @@ function init(frame: Frame) {
 	const locale = currentLocale();
 	const settings = settingsFor(frame.plugin);
 	sentSettings.set(frame.plugin.id, JSON.stringify(settings));
+	const theme = document.documentElement.dataset.theme ?? "dark";
+	const isLight = document.documentElement.dataset.light === "true";
 	frame.ready = true;
 	post(frame, {
 		type: "init",
@@ -333,6 +339,8 @@ function init(frame: Frame) {
 			context: frame.context,
 			module: frame.module,
 			locale,
+			theme,
+			isLight,
 			messages: messagesFor(frame.plugin, locale),
 			settings,
 			state: states.get(frame.plugin.id) ?? null,
@@ -400,6 +408,17 @@ function onSettings() {
 	const locale = currentLocale(values);
 	const localeChanged = locale !== sentLocale;
 	sentLocale = locale;
+	const theme = document.documentElement.dataset.theme ?? "dark";
+	const isLight = document.documentElement.dataset.light === "true";
+	const themeKey = `${theme}|${isLight}`;
+	const themeChanged = themeKey !== sentTheme;
+	sentTheme = themeKey;
+
+	if (themeChanged) {
+		for (const frame of frames.values()) {
+			event(frame, "theme", { theme, isLight });
+		}
+	}
 	// Plugins with a page open, and on-demand ones that ran before: a stopped
 	// background still has to hear about it, its views may show the old values.
 	const plugins = new Map([...frames.values()].map((f) => [f.plugin.id, f.plugin]));

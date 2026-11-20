@@ -10,6 +10,7 @@ import { formatAgo, useNow } from "../../ai-agents/common/format";
 import { parseNotification } from "../platforms";
 import { notificationSettings } from "../settings";
 import { NOTIFICATIONS_PROVIDER, type NotificationItem, type NotificationsState } from "../types";
+import { SoundControlDeck } from "./SoundControlDeck";
 
 const MAX_ROWS = 4;
 
@@ -22,12 +23,20 @@ export function NotificationsPanel({ state }: { state: NotificationsState | unde
 	const quickReplyEnabled = useSetting(notificationSettings.quickReply);
 	const smartClipboardEnabled = useSetting(notificationSettings.smartClipboard);
 	const platformBadgesEnabled = useSetting(notificationSettings.platformBadges);
+	const showSoundDeck = useSetting(notificationSettings.showSoundDeck);
 	const reactionChips = useSetting(notificationSettings.reactionPills) || notificationSettings.reactionPills.default;
 
 	const [replyingId, setReplyingId] = useState<number | null>(null);
 	const [replyText, setReplyText] = useState("");
 	const [feedback, setFeedback] = useState<{ id: number; message: string } | null>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
+	const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	useEffect(() => {
+		return () => {
+			if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+		};
+	}, []);
 
 	// Mark notifications as read when viewing panel
 	useEffect(() => {
@@ -73,7 +82,8 @@ export function NotificationsPanel({ state }: { state: NotificationsState | unde
 		setReplyingId(null);
 		setReplyText("");
 
-		setTimeout(() => {
+		if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+		feedbackTimer.current = setTimeout(() => {
 			setFeedback(null);
 		}, 3000);
 	};
@@ -91,6 +101,9 @@ export function NotificationsPanel({ state }: { state: NotificationsState | unde
 
 	return (
 		<div className="flex h-full flex-col">
+			{/* Windows 11 Action Center: Sound & Device Control Deck */}
+			{showSoundDeck && <SoundControlDeck />}
+
 			{/* Top Header */}
 			<div className="mb-2 flex items-center justify-between">
 				<div className="flex items-center gap-2">

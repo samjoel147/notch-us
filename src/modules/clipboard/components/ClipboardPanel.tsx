@@ -1,14 +1,19 @@
 import {
+	CheckIcon,
 	ClipboardIcon,
 	CopyIcon,
 	ExternalLinkIcon,
 	EyeIcon,
 	EyeOffIcon,
 	FolderIcon,
+	ImageIcon,
 	LockIcon,
 	MessageCircleIcon,
+	PaletteIcon,
 	PinIcon,
+	SearchIcon,
 	TextIcon,
+	XIcon,
 } from "lucide-react";
 import { type PointerEvent, type ReactNode, useRef, useState } from "react";
 import { TextButton } from "../../../components/ui/button";
@@ -49,6 +54,94 @@ export function detectSecret(text: string | null | undefined): SecretInfo | null
 	return null;
 }
 
+export interface ColorFormats {
+	hex: string;
+	rgb: string;
+	hsl: string;
+}
+
+/** Detects and converts CSS color codes (HEX, RGB) into multi-format conversions. */
+export function detectColorFormats(text: string | null | undefined): ColorFormats | null {
+	if (!text) return null;
+	const trimmed = text.trim();
+
+	// HEX Match
+	const hexMatch = trimmed.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+	if (hexMatch) {
+		let c = hexMatch[1];
+		if (c.length === 3) {
+			c = c
+				.split("")
+				.map((x) => x + x)
+				.join("");
+		}
+		const num = Number.parseInt(c, 16);
+		const r = (num >> 16) & 255;
+		const g = (num >> 8) & 255;
+		const b = num & 255;
+		return {
+			hex: `#${c.toUpperCase()}`,
+			rgb: `rgb(${r}, ${g}, ${b})`,
+			hsl: rgbToHsl(r, g, b),
+		};
+	}
+
+	// RGB Match
+	const rgbMatch = trimmed.match(/^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
+	if (rgbMatch) {
+		const r = Math.min(255, Number.parseInt(rgbMatch[1], 10));
+		const g = Math.min(255, Number.parseInt(rgbMatch[2], 10));
+		const b = Math.min(255, Number.parseInt(rgbMatch[3], 10));
+		const hex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+		return {
+			hex,
+			rgb: `rgb(${r}, ${g}, ${b})`,
+			hsl: rgbToHsl(r, g, b),
+		};
+	}
+
+	return null;
+}
+
+function rgbToHsl(r: number, g: number, b: number): string {
+	const rn = r / 255;
+	const gn = g / 255;
+	const bn = b / 255;
+	const max = Math.max(rn, gn, bn);
+	const min = Math.min(rn, gn, bn);
+	let h = 0;
+	let s = 0;
+	const l = (max + min) / 2;
+
+	if (max !== min) {
+		const d = max - min;
+		s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+		switch (max) {
+			case rn:
+				h = (gn - bn) / d + (gn < bn ? 6 : 0);
+				break;
+			case gn:
+				h = (bn - rn) / d + 2;
+				break;
+			case bn:
+				h = (rn - gn) / d + 4;
+				break;
+		}
+		h /= 6;
+	}
+
+	return `hsl(${Math.round(h * 360)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
+}
+
+/** Detects CSS color codes (HEX, RGB, HSL) to display a live swatch. */
+export function detectColor(text: string | null | undefined): string | null {
+	if (!text) return null;
+	const trimmed = text.trim();
+	if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(trimmed)) return trimmed;
+	if (/^(rgb|hsl)a?\([^)]+\)$/i.test(trimmed)) return trimmed;
+	return null;
+}
+
 /** What the item is, on one line ("Picture 1920×1080", "3 files", the text). */
 export function clipTitle(t: Translate, item: ClipItem, maskSecret = false): string {
 	if (maskSecret && item.kind === "text") {
@@ -76,6 +169,8 @@ export function ClipboardPanel({ state, hero }: { state: ClipboardState | undefi
 	const t = useT();
 	const maskSecrets = useSetting(clipboardSettings.maskSecrets);
 	const [unmasked, setUnmasked] = useState<Record<number, boolean>>({});
+	const [search, setSearch] = useState("");
+	const [category, setCategory] = useState<"all" | "text" | "image" | "files" | "color">("all");
 
 	const toggleUnmask = (id: number) => {
 		setUnmasked((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -86,19 +181,92 @@ export function ClipboardPanel({ state, hero }: { state: ClipboardState | undefi
 	const listItems = heroItem ? items.slice(1) : items;
 	const sorted = [...listItems].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
 
+	const filtered = sorted.filter((item) => {
+		if (category === "color") {
+			if (item.kind !== "text" || !detectColor(item.preview)) return false;
+		} else if (category !== "all" && item.kind !== category) {
+			return false;
+		}
+
+		if (!search.trim()) return true;
+		const q = search.toLowerCase();
+		if (item.preview?.toLowerCase().includes(q)) return true;
+		if (item.source?.toLowerCase().includes(q)) return true;
+		if (item.kind === "files" && item.names.some((n) => n.toLowerCase().includes(q))) return true;
+		return false;
+	});
+
 	return (
-		<div className="flex h-full flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
-			<div className="flex items-center justify-between gap-3">
-				<span className="text-[12px] text-text-dim">{items.length ? t("clipboard.hint") : t("clipboard.empty")}</span>
+		<div className="flex h-full flex-col gap-2 select-none" onClick={(e) => e.stopPropagation()}>
+			{/* Top Bar: Hint / Clear & Count */}
+			<div className="flex items-center justify-between gap-3 px-1">
+				<span className="text-[12px] font-medium text-text-dim">
+					{items.length ? t("clipboard.hint") : t("clipboard.empty")}
+				</span>
 				{items.length > 0 && (
 					<TextButton onClick={() => providerAction(CLIPBOARD_PROVIDER, "clear")}>{t("clipboard.clear")}</TextButton>
 				)}
 			</div>
+
+			{/* Search & Category Filter Header */}
+			{items.length > 0 && (
+				<div className="flex items-center gap-2 px-0.5">
+					<div className="relative flex-1 flex items-center">
+						<SearchIcon size={12} className="absolute left-2.5 text-text-faint pointer-events-none" />
+						<input
+							type="text"
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							placeholder={t("clipboard.searchPlaceholder")}
+							className="h-7.5 w-full rounded-xl bg-white/[0.05] dark:bg-white/[0.04] border border-hairline/80 backdrop-blur-md pl-7.5 pr-6 text-[11.5px] text-text placeholder:text-text-faint focus:border-cyan-400/50 focus:outline-hidden transition-colors"
+						/>
+						{search && (
+							<button
+								type="button"
+								onClick={() => setSearch("")}
+								className="absolute right-2 text-text-faint hover:text-text cursor-pointer"
+							>
+								<XIcon size={11} />
+							</button>
+						)}
+					</div>
+
+					{/* Category Filter Chips */}
+					<div className="flex items-center gap-1">
+						{(
+							[
+								{ id: "all", label: "All" },
+								{ id: "text", label: "Text", icon: <TextIcon size={10} /> },
+								{ id: "image", label: "Images", icon: <ImageIcon size={10} /> },
+								{ id: "files", label: "Files", icon: <FolderIcon size={10} /> },
+								{ id: "color", label: "Colors", icon: <PaletteIcon size={10} /> },
+							] as const
+						).map((cat) => (
+							<button
+								key={cat.id}
+								type="button"
+								className={cn(
+									"inline-flex items-center gap-1 h-7 rounded-lg px-2 text-[10.5px] font-semibold transition-all cursor-pointer border",
+									category === cat.id
+										? "border-cyan-400/40 bg-cyan-400/15 text-cyan-400 shadow-xs"
+										: "border-hairline/80 bg-white/[0.04] text-text-dim hover:bg-white/[0.08] hover:text-text",
+								)}
+								onClick={() => setCategory(cat.id)}
+							>
+								{"icon" in cat && cat.icon}
+								<span>{cat.label}</span>
+							</button>
+						))}
+					</div>
+				</div>
+			)}
+
+			{/* List Body */}
 			{heroItem ? (
 				<>
 					<Hero item={heroItem} />
 					<ul className="min-h-0 flex-1 list-none overflow-y-auto [scrollbar-width:none]" data-scroll>
-						{sorted.map((item) => (
+						{filtered.map((item) => (
 							<Row
 								key={item.id}
 								item={item}
@@ -111,7 +279,7 @@ export function ClipboardPanel({ state, hero }: { state: ClipboardState | undefi
 				</>
 			) : (
 				<ul className="min-h-0 flex-1 list-none overflow-y-auto [scrollbar-width:none]" data-scroll>
-					{sorted.map((item) => (
+					{filtered.map((item) => (
 						<Row
 							key={item.id}
 							item={item}
@@ -121,9 +289,12 @@ export function ClipboardPanel({ state, hero }: { state: ClipboardState | undefi
 						/>
 					))}
 					{!items.length && (
-						<li className="grid h-full place-items-center text-text-faint">
-							<ClipboardIcon size={22} />
+						<li className="grid h-full place-items-center text-text-faint py-8">
+							<ClipboardIcon size={26} className="opacity-50" />
 						</li>
+					)}
+					{items.length > 0 && filtered.length === 0 && (
+						<li className="grid h-24 place-items-center text-[12px] text-text-dim">{t("clipboard.noResults")}</li>
 					)}
 				</ul>
 			)}
@@ -135,9 +306,9 @@ export function ClipboardPanel({ state, hero }: { state: ClipboardState | undefi
 function useItemActions(item: ClipItem) {
 	const island = useIsland();
 	const askEnabled = useAskEnabled();
-	const [done, setDone] = useState<"copied" | "kept" | null>(null);
+	const [done, setDone] = useState<string | null>(null);
 	const timer = useRef<number | undefined>(undefined);
-	const flash = (what: "copied" | "kept") => {
+	const flash = (what: string) => {
 		setDone(what);
 		window.clearTimeout(timer.current);
 		timer.current = window.setTimeout(() => setDone(null), FEEDBACK_MS);
@@ -146,6 +317,14 @@ function useItemActions(item: ClipItem) {
 	return {
 		done,
 		copy: () => clipAction("copy", item.id).then(() => flash("copied")),
+		copyCustom: async (text: string, label: string) => {
+			try {
+				await navigator.clipboard.writeText(text);
+				flash(label);
+			} catch {
+				clipAction("copy", item.id).then(() => flash("copied"));
+			}
+		},
 		pin: () => clipAction("pin", item.id),
 		keep: async () => {
 			const paths = await clipAction<string[]>("keep", item.id);
@@ -154,7 +333,6 @@ function useItemActions(item: ClipItem) {
 				flash("kept");
 			}
 		},
-		// Left out while "Ask Claude" is turned off.
 		ask: askEnabled
 			? async () => {
 					if (item.kind === "text") {
@@ -196,21 +374,42 @@ function useDragOut(item: ClipItem) {
 }
 
 function Visual({ item, size, isMasked }: { item: ClipItem; size: number; isMasked?: boolean }) {
+	const [hovered, setHovered] = useState(false);
+
 	if (item.kind === "image" && item.thumb) {
 		return (
-			<img
-				className="flex-none rounded-[7px] bg-white/6 object-cover"
-				src={item.thumb}
-				alt=""
-				draggable={false}
-				style={{ width: size, height: size }}
+			<div className="relative flex-none" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+				<img
+					className="flex-none rounded-[8px] bg-white/6 object-cover border border-white/10"
+					src={item.thumb}
+					alt=""
+					draggable={false}
+					style={{ width: size, height: size }}
+				/>
+
+				{/* Floating Magnified Image Popover on Hover */}
+				{hovered && (
+					<div className="absolute left-10 -top-12 z-50 rounded-2xl bg-black/90 backdrop-blur-2xl border border-white/20 p-1.5 shadow-2xl pointer-events-none">
+						<img className="max-h-48 max-w-64 rounded-xl object-contain" src={item.thumb} alt="" draggable={false} />
+					</div>
+				)}
+			</div>
+		);
+	}
+	const color = item.kind === "text" && !isMasked ? detectColor(item.preview) : null;
+	if (color) {
+		return (
+			<span
+				className="flex-none rounded-[8px] border border-white/20 shadow-xs ring-1 ring-black/10"
+				style={{ width: size, height: size, backgroundColor: color }}
+				title={color}
 			/>
 		);
 	}
 	return (
 		<span
 			className={cn(
-				"grid flex-none place-items-center rounded-[9px]",
+				"grid flex-none place-items-center rounded-[8px]",
 				isMasked ? "bg-[rgba(255,159,10,0.15)]" : "bg-white/7",
 			)}
 			style={{ width: size, height: size }}
@@ -254,10 +453,11 @@ function Row({
 	const drag = useDragOut(item);
 	const secret = item.kind === "text" ? detectSecret(item.preview) : null;
 	const isMasked = Boolean(maskSecrets && secret && !unmasked);
+	const colorFormats = item.kind === "text" && !isMasked ? detectColorFormats(item.preview) : null;
 
 	return (
 		<li
-			className="group relative flex h-12 cursor-pointer items-center gap-2.5 rounded-xl px-2 hover:bg-white/6"
+			className="group relative flex h-12 cursor-pointer items-center gap-2.5 rounded-xl px-2.5 transition-all duration-150 hover:bg-white/[0.07] dark:hover:bg-white/[0.05]"
 			title={t("clipboard.copy")}
 			data-no-drag
 			onClick={a.copy}
@@ -267,8 +467,12 @@ function Row({
 			<div className="flex min-w-0 flex-1 flex-col gap-px">
 				<div className="flex items-center gap-1.5 min-w-0">
 					{item.pinned && (
-						<span title={t("clipboard.pinned")} className="inline-flex">
-							<PinIcon size={11} className="flex-none fill-[currentColor] text-[#FFD60A]" />
+						<span
+							title={t("clipboard.pinned")}
+							className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-md bg-[#FFD60A]/15 border border-[#FFD60A]/30 text-[#FFD60A] text-[9px] font-bold"
+						>
+							<PinIcon size={9} className="flex-none fill-[currentColor]" />
+							<span>PIN</span>
 						</span>
 					)}
 					{isMasked ? (
@@ -285,11 +489,50 @@ function Row({
 					)}
 				</div>
 				{a.done ? (
-					<span className="truncate text-[11.5px] font-semibold text-[#30d158]">
-						✓ {t(a.done === "copied" ? "clipboard.copiedAgain" : "clipboard.kept")}
+					<span className="inline-flex items-center gap-1 truncate text-[11.5px] font-semibold text-[#30d158]">
+						<CheckIcon size={12} className="shrink-0" />
+						<span>
+							{a.done === "copied"
+								? t("clipboard.copiedAgain")
+								: a.done === "kept"
+									? t("clipboard.kept")
+									: `Copied ${a.done}!`}
+						</span>
 					</span>
 				) : (
-					<Meta item={item} />
+					<div className="flex items-center gap-2">
+						<Meta item={item} />
+						{/* Multi-Format Color Conversion Chips */}
+						{colorFormats && (
+							<div
+								className="flex items-center gap-1"
+								onClick={(e) => e.stopPropagation()}
+								onKeyDown={(e) => e.stopPropagation()}
+							>
+								<button
+									type="button"
+									onClick={() => a.copyCustom(colorFormats.hex, "HEX")}
+									className="rounded-md bg-white/10 hover:bg-white/20 px-1.5 py-0.2 text-[9.5px] font-bold text-text-dim hover:text-text transition-colors"
+								>
+									HEX
+								</button>
+								<button
+									type="button"
+									onClick={() => a.copyCustom(colorFormats.rgb, "RGB")}
+									className="rounded-md bg-white/10 hover:bg-white/20 px-1.5 py-0.2 text-[9.5px] font-bold text-text-dim hover:text-text transition-colors"
+								>
+									RGB
+								</button>
+								<button
+									type="button"
+									onClick={() => a.copyCustom(colorFormats.hsl, "HSL")}
+									className="rounded-md bg-white/10 hover:bg-white/20 px-1.5 py-0.2 text-[9.5px] font-bold text-text-dim hover:text-text transition-colors"
+								>
+									HSL
+								</button>
+							</div>
+						)}
+					</div>
 				)}
 			</div>
 			<div className="hidden gap-1 group-hover:flex">
@@ -309,7 +552,7 @@ function Row({
 				{item.kind !== "text" && (
 					<RowAction icon={<FolderIcon size={11} />} label={t("clipboard.keep")} onClick={a.keep} />
 				)}
-				<RowAction icon="×" label={t("clipboard.remove")} onClick={a.remove} />
+				<RowAction icon={<XIcon size={11} />} label={t("clipboard.remove")} onClick={a.remove} />
 			</div>
 		</li>
 	);
@@ -321,10 +564,14 @@ function Hero({ item }: { item: ClipItem }) {
 	const drag = useDragOut(item);
 
 	return (
-		<div className="flex h-29 flex-none cursor-grab gap-3.5 rounded-[14px] bg-card p-1.5" data-no-drag {...drag}>
+		<div
+			className="flex h-29 flex-none cursor-grab gap-3.5 rounded-[16px] bg-card/80 dark:bg-white/[0.04] backdrop-blur-xl border border-hairline/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_4px_16px_rgba(0,0,0,0.15)] p-2"
+			data-no-drag
+			{...drag}
+		>
 			{item.thumb && (
 				<img
-					className="h-26 max-w-47.5 flex-none rounded-[9px] bg-white/4 object-contain"
+					className="h-25 max-w-48 flex-none rounded-[10px] bg-white/4 object-contain border border-white/10"
 					src={item.thumb}
 					alt=""
 					draggable={false}
@@ -333,15 +580,20 @@ function Hero({ item }: { item: ClipItem }) {
 			<div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
 				<div className="flex items-center gap-1.5 min-w-0">
 					{item.pinned && (
-						<span title={t("clipboard.pinned")} className="inline-flex">
-							<PinIcon size={11} className="flex-none fill-[currentColor] text-[#FFD60A]" />
+						<span
+							title={t("clipboard.pinned")}
+							className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-md bg-[#FFD60A]/15 border border-[#FFD60A]/30 text-[#FFD60A] text-[9px] font-bold"
+						>
+							<PinIcon size={9} className="flex-none fill-[currentColor]" />
+							<span>PIN</span>
 						</span>
 					)}
 					<span className="truncate text-[13px] font-semibold">{clipTitle(t, item)}</span>
 				</div>
 				{a.done ? (
-					<span className="truncate text-[11.5px] font-semibold text-[#30d158]">
-						✓ {t(a.done === "copied" ? "clipboard.copiedAgain" : "clipboard.kept")}
+					<span className="inline-flex items-center gap-1 truncate text-[11.5px] font-semibold text-[#30d158]">
+						<CheckIcon size={12} className="shrink-0" />
+						<span>{t(a.done === "copied" ? "clipboard.copiedAgain" : "clipboard.kept")}</span>
 					</span>
 				) : (
 					<Meta item={item} />
@@ -349,7 +601,7 @@ function Hero({ item }: { item: ClipItem }) {
 				<div className="mt-2 flex flex-wrap gap-1.5">
 					<button
 						type="button"
-						className="inline-flex items-center gap-1.25 rounded-full bg-white/10 px-2.5 py-1 text-[11.5px] font-semibold hover:bg-white/18"
+						className="inline-flex items-center gap-1.25 rounded-full bg-white/10 hover:bg-white/18 px-2.5 py-1 text-[11.5px] font-semibold transition-all cursor-pointer"
 						title={t("clipboard.copy")}
 						onClick={a.copy}
 					>
@@ -358,8 +610,8 @@ function Hero({ item }: { item: ClipItem }) {
 					<button
 						type="button"
 						className={cn(
-							"inline-flex items-center gap-1.25 rounded-full px-2.5 py-1 text-[11.5px] font-semibold hover:bg-white/18",
-							item.pinned ? "bg-[#FFD60A]/20 text-[#FFD60A]" : "bg-white/10",
+							"inline-flex items-center gap-1.25 rounded-full px-2.5 py-1 text-[11.5px] font-semibold transition-all cursor-pointer",
+							item.pinned ? "bg-[#FFD60A]/20 text-[#FFD60A]" : "bg-white/10 hover:bg-white/18",
 						)}
 						title={t(item.pinned ? "clipboard.unpin" : "clipboard.pin")}
 						onClick={a.pin}
@@ -370,7 +622,7 @@ function Hero({ item }: { item: ClipItem }) {
 					{a.ask && (
 						<button
 							type="button"
-							className="inline-flex items-center gap-1.25 rounded-full bg-white/10 px-2.5 py-1 text-[11.5px] font-semibold hover:bg-white/18"
+							className="inline-flex items-center gap-1.25 rounded-full bg-white/10 hover:bg-white/18 px-2.5 py-1 text-[11.5px] font-semibold transition-all cursor-pointer"
 							title={t("clipboard.ask")}
 							onClick={a.ask}
 						>
@@ -379,7 +631,7 @@ function Hero({ item }: { item: ClipItem }) {
 					)}
 					<button
 						type="button"
-						className="inline-flex items-center gap-1.25 rounded-full bg-white/10 px-2.5 py-1 text-[11.5px] font-semibold hover:bg-white/18"
+						className="inline-flex items-center gap-1.25 rounded-full bg-white/10 hover:bg-white/18 px-2.5 py-1 text-[11.5px] font-semibold transition-all cursor-pointer"
 						title={t("clipboard.keep")}
 						onClick={a.keep}
 					>
@@ -387,7 +639,7 @@ function Hero({ item }: { item: ClipItem }) {
 					</button>
 					<button
 						type="button"
-						className="inline-flex items-center gap-1.25 rounded-full bg-white/10 px-2.5 py-1 text-[11.5px] font-semibold hover:bg-white/18"
+						className="inline-flex items-center gap-1.25 rounded-full bg-white/10 hover:bg-white/18 px-2.5 py-1 text-[11.5px] font-semibold transition-all cursor-pointer"
 						title={t("clipboard.open")}
 						onClick={a.open}
 					>
@@ -403,7 +655,7 @@ function RowAction({ icon, label, onClick }: { icon: ReactNode; label: string; o
 	return (
 		<button
 			type="button"
-			className="grid size-6 place-items-center rounded-full bg-[#3a3a3c] text-[14px] leading-none hover:bg-[#4a4a4e]"
+			className="grid size-6.5 place-items-center rounded-lg bg-white/10 dark:bg-white/[0.08] hover:bg-white/20 border border-white/10 text-text-dim hover:text-text transition-all active:scale-95 cursor-pointer"
 			title={label}
 			onClick={(e) => {
 				e.stopPropagation();

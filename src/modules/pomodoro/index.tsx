@@ -40,7 +40,7 @@ export const pomodoroModule: IslandModule = {
 		const showBubble = useSetting(pomodoroSettings.showBubble);
 		const soundChime = useSetting(pomodoroSettings.soundChime);
 
-		const { timer, start, pause, reset, skip, selectPhase } = usePomodoroTimer(
+		const { timer, start, pause, reset, skip, selectPhase, setCustomDuration } = usePomodoroTimer(
 			workMinutes,
 			breakMinutes,
 			longBreakMinutes,
@@ -92,6 +92,7 @@ export const pomodoroModule: IslandModule = {
 					onReset={reset}
 					onSkip={skip}
 					onSelectPhase={selectPhase}
+					onSetDuration={setCustomDuration}
 				/>
 			),
 			expandedSize: { width: 560, height: 165 },

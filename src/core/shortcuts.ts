@@ -24,6 +24,7 @@ export type ShortcutsState = Partial<Record<string, ShortcutStatus>>;
 const BUILTIN_SHORTCUTS: Record<string, SettingDef<string | null> & { fallback: string }> = {
 	ask: { key: "shortcut.ask", label: "shortcuts.ask", default: null, fallback: "Ctrl+Alt+Space" },
 	find: { key: "shortcut.find", label: "shortcuts.find", default: null, fallback: "Ctrl+Alt+F" },
+	mute: { key: "shortcut.mute", label: "shortcuts.mute", default: null, fallback: "Alt+M" },
 };
 
 export function shortcutSetting(id: ShortcutId): SettingDef<string | null> & { fallback: string } {

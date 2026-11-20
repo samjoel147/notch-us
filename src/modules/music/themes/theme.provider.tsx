@@ -3,12 +3,15 @@ import { useAppearance } from "../../../core/appearance";
 import { readSetting, useSettings } from "../../../core/settings";
 import { resolveMaterial } from "../materials/material.resolver";
 import type { ComputedMaterialProperties, GlassMaterialId } from "../materials/material.types";
+import "../music-player.css";
 import { musicSettings } from "../settings";
+import { type ArtworkAtmosphereTokens, resolveArtworkAtmosphere } from "../visuals/ArtworkAtmosphereEngine";
 import { resolveMusicAppearance } from "./theme.resolver";
 import type { MusicThemeId, MusicThemeTokens } from "./theme.types";
 
 interface MusicThemeContextValue {
 	tokens: MusicThemeTokens;
+	atmosphere: ArtworkAtmosphereTokens;
 	cssVars: CSSProperties;
 	material: ComputedMaterialProperties;
 	materialId: GlassMaterialId;
@@ -22,6 +25,9 @@ export function MusicThemeProvider({
 	providerGlowColor = "rgba(30, 215, 96, 0.45)",
 	artworkVibrant,
 	artworkMuted,
+	artworkSecondary,
+	artworkComplementary,
+	artworkBackgroundCompatible,
 	isPlaying = true,
 }: {
 	children: ReactNode;
@@ -29,6 +35,9 @@ export function MusicThemeProvider({
 	providerGlowColor?: string;
 	artworkVibrant?: string;
 	artworkMuted?: string;
+	artworkSecondary?: string;
+	artworkComplementary?: string;
+	artworkBackgroundCompatible?: string;
 	isPlaying?: boolean;
 }) {
 	const look = useAppearance();
@@ -65,6 +74,9 @@ export function MusicThemeProvider({
 				providerGlowColor,
 				artworkVibrant,
 				artworkMuted,
+				artworkSecondary,
+				artworkComplementary,
+				artworkBackgroundCompatible,
 				isPlaying,
 			}),
 		[
@@ -75,6 +87,9 @@ export function MusicThemeProvider({
 			providerGlowColor,
 			artworkVibrant,
 			artworkMuted,
+			artworkSecondary,
+			artworkComplementary,
+			artworkBackgroundCompatible,
 			isPlaying,
 		],
 	);
@@ -89,7 +104,9 @@ export function MusicThemeProvider({
 							dominant: artworkVibrant,
 							vibrant: artworkVibrant,
 							muted: artworkMuted ?? artworkVibrant,
-							secondary: artworkMuted ?? artworkVibrant,
+							secondary: artworkSecondary ?? artworkMuted ?? artworkVibrant,
+							complementary: artworkComplementary ?? artworkVibrant,
+							backgroundCompatible: artworkBackgroundCompatible ?? `${artworkVibrant}18`,
 							glow: providerGlowColor,
 							luminance: 0.5,
 							saturation: 0.5,
@@ -99,7 +116,46 @@ export function MusicThemeProvider({
 						}
 					: null,
 			),
-		[materialId, tokens, artworkVibrant, artworkMuted, providerGlowColor, systemIsDark],
+		[
+			materialId,
+			tokens,
+			artworkVibrant,
+			artworkMuted,
+			artworkSecondary,
+			artworkComplementary,
+			artworkBackgroundCompatible,
+			providerGlowColor,
+			systemIsDark,
+		],
+	);
+
+	const atmosphere = useMemo(
+		() =>
+			resolveArtworkAtmosphere(tokens, materialId, {
+				dominant: artworkVibrant ?? tokens.accentPrimary,
+				vibrant: artworkVibrant ?? tokens.accentPrimary,
+				muted: artworkMuted ?? tokens.accentPrimary,
+				secondary: artworkSecondary ?? artworkMuted ?? tokens.accentPrimary,
+				complementary: artworkComplementary ?? tokens.accentPrimary,
+				backgroundCompatible: artworkBackgroundCompatible ?? `${tokens.accentPrimary}18`,
+				glow: providerGlowColor,
+				luminance: 0.5,
+				saturation: 0.5,
+				isDark: !systemIsDark,
+				isLight: systemIsDark,
+				isMonochrome: false,
+			}),
+		[
+			tokens,
+			materialId,
+			artworkVibrant,
+			artworkMuted,
+			artworkSecondary,
+			artworkComplementary,
+			artworkBackgroundCompatible,
+			providerGlowColor,
+			systemIsDark,
+		],
 	);
 
 	const cssVars = useMemo<CSSProperties>(
@@ -117,7 +173,13 @@ export function MusicThemeProvider({
 				"--music-sheen": tokens.sheenGradient,
 				"--music-accent": tokens.accentPrimary,
 				"--music-accent-secondary": tokens.accentSecondary,
-				"--music-ambient-glow": tokens.ambientGlow,
+				"--music-ambient-glow": atmosphere.primaryBloom,
+				"--music-ambient-glow-secondary": atmosphere.secondaryBloom,
+				"--music-surface-wash": atmosphere.surfaceWash,
+				"--music-edge-accent": atmosphere.edgeAccent,
+				"--music-fluid-mesh": atmosphere.fluidMeshBackground,
+				"--music-primary-color": atmosphere.primaryColor,
+				"--music-secondary-color": atmosphere.secondaryColor,
 				"--music-control-surface": tokens.controlSurface,
 				"--music-control-hover": tokens.controlHover,
 				"--music-control-active": tokens.controlActive,
@@ -125,11 +187,18 @@ export function MusicThemeProvider({
 				"--music-control-icon-muted": tokens.controlIconMuted,
 				"--music-progress-track": tokens.progressTrack,
 				"--music-progress-fill": tokens.progressFill,
+				"--music-tooltip-bg": tokens.tooltipBackground,
+				"--music-tooltip-text": tokens.tooltipText,
+				"--music-card-shadow": tokens.cardShadow,
+				"--music-artwork-shadow": tokens.artworkShadow,
 			}) as CSSProperties,
-		[tokens],
+		[tokens, atmosphere],
 	);
 
-	const value = useMemo(() => ({ tokens, cssVars, material, materialId }), [tokens, cssVars, material, materialId]);
+	const value = useMemo(
+		() => ({ tokens, atmosphere, cssVars, material, materialId }),
+		[tokens, atmosphere, cssVars, material, materialId],
+	);
 
 	return (
 		<MusicThemeContext.Provider value={value}>
@@ -167,4 +236,32 @@ export function useMusicMaterial(): ComputedMaterialProperties {
 		return resolveMaterial("liquid", fallbackTokens);
 	}
 	return ctx.material;
+}
+
+export function useMusicAtmosphere(): ArtworkAtmosphereTokens {
+	const ctx = useContext(MusicThemeContext);
+	if (!ctx) {
+		const fallbackTokens = resolveMusicAppearance({
+			themeId: "glass-dark",
+			systemIsDark: true,
+			providerBrandColor: "#1ed760",
+			providerGlowColor: "rgba(30, 215, 96, 0.45)",
+			isPlaying: true,
+		});
+		return resolveArtworkAtmosphere(fallbackTokens, "liquid", {
+			dominant: "#1ed760",
+			vibrant: "#1ed760",
+			muted: "#1ed760",
+			secondary: "#1ed760",
+			complementary: "#1ed760",
+			backgroundCompatible: "rgba(30, 215, 96, 0.12)",
+			glow: "rgba(30, 215, 96, 0.45)",
+			luminance: 0.5,
+			saturation: 0.5,
+			isDark: false,
+			isLight: false,
+			isMonochrome: false,
+		});
+	}
+	return ctx.atmosphere;
 }

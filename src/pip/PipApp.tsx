@@ -1,6 +1,6 @@
 import { emit } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { PauseIcon, PlayIcon, SkipBackIcon, SkipForwardIcon } from "lucide-react";
+import { Minimize2Icon, PauseIcon, PlayIcon, SkipBackIcon, SkipForwardIcon, XIcon } from "lucide-react";
 import { type MouseEvent, useEffect, useRef, type WheelEvent } from "react";
 import { Marquee } from "../components/Marquee";
 import { command, isTauri } from "../core/bridge";
@@ -100,7 +100,7 @@ export function PipApp() {
 							closePip();
 						}}
 					>
-						⤡
+						<Minimize2Icon size={14} />
 					</button>
 					<button
 						type="button"
@@ -108,7 +108,7 @@ export function PipApp() {
 						title={t("settings.close")}
 						onClick={closePip}
 					>
-						✕
+						<XIcon size={14} />
 					</button>
 				</div>
 				<div className="flex flex-col gap-0.5">

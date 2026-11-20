@@ -28,7 +28,7 @@ export function GithubPanel({ state }: { state: GithubState | undefined }) {
 		<div className="flex h-full flex-col gap-2">
 			<div className="flex h-5.5 flex-none items-center gap-2.5">
 				<SectionLabel>{t("github.openIssues")}</SectionLabel>
-				<span className="flex-1 text-[11.5px] text-text-faint">{meta}</span>
+				<span className="flex-1 text-[11.5px] font-medium text-text-dim">{meta}</span>
 				<IconButton
 					size="sm"
 					tone="faint"
@@ -84,7 +84,7 @@ function RepoRow({ repo, fresh }: { repo: GithubRepo; fresh: boolean }) {
 					<span className="font-medium text-text-dim">{owner}/</span>
 					{name}
 				</span>
-				<span className={cn("truncate text-[11.5px] text-text-faint", repo.error && "text-danger")}>
+				<span className={cn("truncate text-[11.5px] font-medium text-text-dim", repo.error && "text-danger")}>
 					{fresh && (
 						<span className="mr-1.5 rounded-[4px] bg-[#d29922] px-1.25 text-[10px] font-[750] text-black uppercase">
 							{t("github.newIssue")}
@@ -95,11 +95,11 @@ function RepoRow({ repo, fresh }: { repo: GithubRepo; fresh: boolean }) {
 			</div>
 			<span
 				className={cn(
-					"flex flex-none items-center gap-1.25 text-[13px] font-bold text-[#3fb950] tabular-nums",
-					!repo.openIssues && "text-text-faint",
+					"flex flex-none items-center gap-1.25 rounded-full px-2 py-0.5 text-[12px] font-bold tabular-nums border",
+					repo.openIssues ? "bg-ok/15 border-ok/30 text-ok" : "border-hairline bg-card/60 text-text-dim",
 				)}
 			>
-				<CircleDotIcon size={13} />
+				<CircleDotIcon size={12} />
 				{repo.openIssues == null ? "—" : formatCount(repo.openIssues)}
 			</span>
 		</button>

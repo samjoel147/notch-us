@@ -5,14 +5,19 @@
 	},
 	"module": { "title": "Water" },
 	"settings": {
-		"every": { "label": "Remind every", "desc": "Minutes between reminders." }
+		"every": { "label": "Remind every", "desc": "Minutes between reminders." },
+		"goal": { "label": "Daily Target", "desc": "Target number of glasses to drink per day." }
 	},
-	"units": { "min": "min" },
+	"units": { "min": "min", "glasses": "glasses" },
 	"compact": { "due": "Time for some water" },
 	"panel": {
+		"title": "Hydration Tracker",
 		"today": "glasses today",
 		"due": "Time for some water!",
-		"drink": "I had a glass",
-		"next": "Next reminder at {time}"
+		"drink": "+1 Glass",
+		"bottle": "+Bottle",
+		"undo": "Undo",
+		"next": "Next reminder at {time}",
+		"progress": "{count} of {target} glasses ({pct}%)"
 	}
 }

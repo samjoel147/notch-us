@@ -9,7 +9,7 @@ mod memory;
 mod pip;
 mod plugins;
 mod portable;
-mod providers;
+pub mod providers;
 mod screen;
 mod settings;
 mod sound;

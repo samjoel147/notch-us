@@ -13,7 +13,7 @@ import type { IslandModule, ModuleView } from "../../core/types";
 import { useNow } from "../ai-agents/common/format";
 import { ClipboardCompactLeft, ClipboardCompactRight } from "./components/ClipboardCompact";
 import { ClipboardPanel } from "./components/ClipboardPanel";
-import { clipboardSettings } from "./settings";
+import { clipboardSettings, clipboardToggleSettings } from "./settings";
 import { CLIPBOARD_PROVIDER, CLIPBOARD_YELLOW, type ClipboardState } from "./types";
 
 /** The "copied" pill stays this long. */
@@ -36,7 +36,7 @@ export const clipboardModule: IslandModule = {
 	id: "clipboard",
 	title: "clipboard.title",
 	settingsIcon: <ClipboardIcon size={14} />,
-	settings: Object.values(clipboardSettings),
+	settings: clipboardToggleSettings,
 	SettingsSection: ClipboardSettings,
 	useView(): ModuleView {
 		const state = useProvider<ClipboardState>(CLIPBOARD_PROVIDER);

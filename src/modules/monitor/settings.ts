@@ -14,4 +14,27 @@ export const systemMonitorSettings = {
 		description: "monitor.showBubble.desc",
 		default: false,
 	},
-} satisfies Record<string, SettingDef>;
+	cpuThreshold: {
+		key: "monitor.cpuThreshold",
+		label: "monitor.cpuThreshold.label",
+		description: "monitor.cpuThreshold.desc",
+		default: 90,
+	},
+	ramThreshold: {
+		key: "monitor.ramThreshold",
+		label: "monitor.ramThreshold.label",
+		description: "monitor.ramThreshold.desc",
+		default: 90,
+	},
+	pollRate: {
+		key: "monitor.pollRate",
+		label: "monitor.pollRate.label",
+		description: "monitor.pollRate.desc",
+		default: 2,
+	},
+} as const satisfies Record<string, SettingDef<boolean | number>>;
+
+export const systemMonitorToggleSettings: SettingDef<boolean>[] = [
+	systemMonitorSettings.alerts,
+	systemMonitorSettings.showBubble,
+];

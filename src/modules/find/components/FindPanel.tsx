@@ -96,11 +96,14 @@ export function FindPanel({ state }: { state: FindState | undefined }) {
 
 	return (
 		<div className="flex flex-col gap-2 pt-1" onClick={(e) => e.stopPropagation()}>
-			<div className="flex h-9.5 items-center gap-1.5 rounded-[19px] bg-white/7 pr-1.5 pl-3.5" data-no-drag>
+			<div
+				className="flex h-9.5 items-center gap-1.5 rounded-[19px] bg-card border border-hairline pr-1.5 pl-3.5 shadow-xs"
+				data-no-drag
+			>
 				<SearchIcon size={14} color={FIND_YELLOW} />
 				<input
 					ref={input}
-					className="h-full min-w-0 flex-1 bg-transparent px-1 text-[14px] text-text outline-none select-text placeholder:text-text-faint"
+					className="h-full min-w-0 flex-1 bg-transparent px-1 text-[14px] text-text outline-none select-text placeholder:text-text-dim"
 					value={query}
 					placeholder={t("find.placeholder")}
 					spellCheck={false}
@@ -128,7 +131,9 @@ export function FindPanel({ state }: { state: FindState | undefined }) {
 					<RotateCwIcon size={12} />
 				</IconButton>
 			</div>
-			<div className={cn("truncate px-3.5 text-[11.5px] text-text-faint", state?.error && "text-danger")}>{hint}</div>
+			<div className={cn("truncate px-3.5 text-[11.5px] font-medium text-text-dim", state?.error && "text-danger")}>
+				{hint}
+			</div>
 		</div>
 	);
 }

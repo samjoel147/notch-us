@@ -31,3 +31,11 @@ export const hydrationSnooze: SettingDef<number> = {
 	description: "hydration.snooze.desc",
 	default: 10,
 };
+
+/** Daily target of water glasses. */
+export const hydrationGoal: SettingDef<number> = {
+	key: "hydration.dailyGoal",
+	label: "hydration.goal.label",
+	description: "hydration.goal.desc",
+	default: 8,
+};

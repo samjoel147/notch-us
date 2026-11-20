@@ -9,14 +9,14 @@ import { useSetting } from "../../core/settings";
 import type { IslandModule, ModuleView } from "../../core/types";
 import { MonitorBubble } from "./components/MonitorBubble";
 import { MonitorPanel } from "./components/MonitorPanel";
-import { systemMonitorSettings } from "./settings";
+import { systemMonitorSettings, systemMonitorToggleSettings } from "./settings";
 import { MONITOR_GREEN, MONITOR_PROVIDER, type MonitorState } from "./types";
 
 export const monitorModule: IslandModule = {
 	id: "monitor",
 	title: "monitor.title",
 	settingsIcon: <ActivityIcon size={14} />,
-	settings: Object.values(systemMonitorSettings),
+	settings: systemMonitorToggleSettings,
 	useView(): ModuleView {
 		const state = useProvider<MonitorState>(MONITOR_PROVIDER);
 		const showBubble = useSetting(systemMonitorSettings.showBubble);
@@ -28,7 +28,7 @@ export const monitorModule: IslandModule = {
 			icon: <ActivityIcon size={14} color={MONITOR_GREEN} />,
 			ambient: showBubble && state?.cpu != null ? <MonitorBubble state={state} /> : undefined,
 			expanded: <MonitorPanel state={state} />,
-			expandedSize: { width: 560, height: 132 },
+			expandedSize: { width: 560, height: 144 },
 		};
 	},
 };

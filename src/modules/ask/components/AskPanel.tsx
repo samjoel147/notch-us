@@ -1,4 +1,4 @@
-import { ArrowUpIcon, BotIcon, CameraIcon, FolderIcon } from "lucide-react";
+import { ArrowUpIcon, BotIcon, CameraIcon, CheckIcon, FolderIcon, PaperclipIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { type KeyboardEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { IconButton, TextButton } from "../../../components/ui/button";
@@ -21,7 +21,14 @@ import {
 import { Formatted } from "./Formatted";
 
 const userBubble =
-	"flex max-w-85 flex-col gap-1.5 self-end rounded-[15px] bg-[#2c2c2e] px-3 py-1.75 text-[13px] whitespace-pre-wrap";
+	"flex max-w-85 flex-col gap-1.5 self-end rounded-[18px] bg-accent/20 border border-accent/40 px-3.5 py-2 text-[13px] text-text font-medium shadow-xs whitespace-pre-wrap";
+
+const PROMPT_SUGGESTIONS = [
+	"Explain this code snippet",
+	"Find and fix syntax errors",
+	"Summarize recent changes",
+	"Write a command to run tests",
+];
 
 /** "Ask Claude": a conversation with Claude Code (headless) inside the island. */
 export function AskPanel({ state }: { state: AskState | undefined }) {
@@ -164,16 +171,20 @@ export function AskPanel({ state }: { state: AskState | undefined }) {
 									a.isImage && a.thumb ? (
 										<img key={a.path} className="max-h-22.5 rounded-lg object-cover" src={a.thumb} alt="" />
 									) : (
-										<span key={a.path} className="text-[12px] text-text-dim">
-											📎 {a.label ?? a.name}
+										<span key={a.path} className="inline-flex items-center gap-1 text-[12px] text-text-dim">
+											<PaperclipIcon size={12} className="shrink-0" />
+											<span>{a.label ?? a.name}</span>
 										</span>
 									),
 								)}
 								<span>{m.text}</span>
 							</div>
 						) : (
-							// biome-ignore lint/suspicious/noArrayIndexKey: messages are append-only and have no id
-							<div key={i} className={cn("text-[13px]/normal text-white/92", m.error && "text-[#ff8a80]")}>
+							<div
+								// biome-ignore lint/suspicious/noArrayIndexKey: messages are append-only and have no id
+								key={i}
+								className={cn("text-[13.5px]/[1.55] text-text font-normal select-text", m.error && "text-danger")}
+							>
 								{m.text ? (
 									<Formatted text={m.text} />
 								) : running && i === messages.length - 1 ? (
@@ -189,7 +200,14 @@ export function AskPanel({ state }: { state: AskState | undefined }) {
 								navigator.clipboard.writeText(lastAnswer).then(() => setCopied(true));
 							}}
 						>
-							{copied ? t("ask.copied") : t("ask.copy")}
+							{copied ? (
+								<span className="inline-flex items-center gap-1 text-ok">
+									<CheckIcon size={12} />
+									<span>{t("ask.copied")}</span>
+								</span>
+							) : (
+								t("ask.copy")
+							)}
 						</TextButton>
 					)}
 				</div>
@@ -200,7 +218,7 @@ export function AskPanel({ state }: { state: AskState | undefined }) {
 					{attachments.map((a) => (
 						<span
 							key={a.path}
-							className="flex max-w-60 items-center gap-1.75 rounded-[10px] bg-[#2c2c2e] p-[3px_4px] text-[12px]"
+							className="flex max-w-60 items-center gap-1.75 rounded-[10px] bg-card border border-hairline p-[3px_4px] text-[12px] text-text"
 							title={a.path}
 						>
 							{a.thumb ? (
@@ -222,14 +240,35 @@ export function AskPanel({ state }: { state: AskState | undefined }) {
 				</div>
 			)}
 
-			<div className="flex items-end gap-1.5 rounded-[18px] bg-white/7 p-1.25" data-no-drag>
+			{messages.length === 0 && !draft && (
+				<div className="flex flex-wrap gap-1.5 py-1">
+					{PROMPT_SUGGESTIONS.map((sug) => (
+						<button
+							key={sug}
+							type="button"
+							onClick={() => {
+								setDraft(sug);
+								takeKeyboard();
+							}}
+							className="rounded-xl border border-hairline bg-card/75 px-2.5 py-1 text-[11.5px] font-medium text-text-dim hover:border-accent/40 hover:text-text hover:bg-card transition-all cursor-pointer"
+						>
+							{sug}
+						</button>
+					))}
+				</div>
+			)}
+
+			<div
+				className="flex items-end gap-1.5 rounded-[18px] bg-surface-control border border-hairline/80 p-1.25 shadow-xs"
+				data-no-drag
+			>
 				<IconButton title={t("ask.screenshot")} onClick={screenshot}>
 					<CameraIcon size={14} />
 				</IconButton>
 				<textarea
 					ref={input}
 					rows={1}
-					className="min-h-6.5 flex-1 resize-none bg-transparent p-1 text-[13px]/[18px] text-text outline-none select-text placeholder:text-text-faint"
+					className="min-h-6.5 flex-1 resize-none bg-transparent p-1 text-[13px]/[18px] text-text outline-none select-text placeholder:text-text-dim"
 					value={draft}
 					placeholder={t("ask.placeholder")}
 					onChange={(e) => setDraft(e.target.value)}

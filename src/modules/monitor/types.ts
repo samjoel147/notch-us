@@ -19,9 +19,9 @@ export const MONITOR_PROVIDER = "monitor";
 export const MONITOR_GREEN = "#30D158";
 export const NETWORK_BLUE = "#0A84FF";
 
-/** Green, then orange, then red as a percentage climbs. */
-export function levelColor(percent: number): string {
-	if (percent >= 85) return "#FF453A";
-	if (percent >= 60) return "#FF9F0A";
-	return MONITOR_GREEN;
+/** Green, then orange, then red as a percentage climbs. Tuned for AAA contrast on light backgrounds. */
+export function levelColor(percent: number, isLight = false): string {
+	if (percent >= 85) return isLight ? "#dc2626" : "#FF453A";
+	if (percent >= 60) return isLight ? "#d97706" : "#FF9F0A";
+	return isLight ? "#16a34a" : MONITOR_GREEN;
 }

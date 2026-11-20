@@ -39,7 +39,7 @@ export function emitLocal(event: string, payload?: unknown) {
 }
 
 if (!isTauri && typeof window !== "undefined") {
-	(window as unknown as { __emitLocal: typeof emitLocal }).__emitLocal = emitLocal;
+	window.__emitLocal = emitLocal;
 }
 
 type LocalCall = (target: "provider" | "command", id: string, name: string, payload: unknown) => unknown;

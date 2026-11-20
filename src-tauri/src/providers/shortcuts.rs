@@ -42,8 +42,8 @@ const BUILTIN_ACTIONS: [Action; 3] = [
     },
     Action {
         id: "mute",
-        default: "Ctrl+Alt+M",
-        fallback: None,
+        default: "Alt+M",
+        fallback: Some("Ctrl+Alt+M"),
     },
 ];
 

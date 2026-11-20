@@ -1,3 +1,4 @@
+import { CheckIcon, XIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
 import { PluginIcon } from "../../../components/plugins/Segments";
@@ -90,11 +91,19 @@ function PluginDetails({ plugin, values }: { plugin: PluginInfo; values: Record<
 							</Fact>
 						)}
 						<Fact label={t("plugins.page.integrity")}>
-							{plugin.dev
-								? t("plugins.page.unverified")
-								: plugin.problem === "tampered"
-									? "✕"
-									: `✓ ${t("plugins.page.verified")}`}
+							{plugin.dev ? (
+								t("plugins.page.unverified")
+							) : plugin.problem === "tampered" ? (
+								<span className="inline-flex items-center gap-1 text-danger">
+									<XIcon size={12} />
+									<span>{t("plugins.page.tampered") || "Tampered"}</span>
+								</span>
+							) : (
+								<span className="inline-flex items-center gap-1 text-ok">
+									<CheckIcon size={12} />
+									<span>{t("plugins.page.verified")}</span>
+								</span>
+							)}
 						</Fact>
 						<Fact label="SDK">{manifest?.sdk ?? "—"}</Fact>
 						<Fact label={t("plugins.page.background")}>

@@ -25,6 +25,18 @@ export const agentSettings = {
 		description: "agents.peekOnLimitsReset.desc",
 		default: true,
 	},
+	pulseAnimation: {
+		key: "agents.pulseAnimation",
+		label: "agents.pulseAnimation.label",
+		description: "agents.pulseAnimation.desc",
+		default: true,
+	},
+	completionAlert: {
+		key: "agents.completionAlert",
+		label: "agents.completionAlert.label",
+		description: "agents.completionAlert.desc",
+		default: true,
+	},
 } satisfies Record<string, SettingDef>;
 
 /**

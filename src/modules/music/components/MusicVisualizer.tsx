@@ -5,8 +5,8 @@ import { LEVEL_EVENT } from "../hooks/useMusic";
 import { musicSettings } from "../settings";
 import { useMusicTheme } from "../themes/theme.provider";
 
-const WEIGHTS = [0.65, 0.95, 1, 0.8, 0.55];
-const FLOOR = 0.08;
+const WEIGHTS = [0.55, 0.9, 1.0, 0.75, 0.45];
+const FLOOR = 0.12;
 
 interface MusicVisualizerProps {
 	playing: boolean;
@@ -16,7 +16,7 @@ interface MusicVisualizerProps {
 	className?: string;
 }
 
-export function MusicVisualizer({ playing, color, height = 24, barWidth = 4, className }: MusicVisualizerProps) {
+export function MusicVisualizer({ playing, color, height = 16, barWidth = 2.5, className }: MusicVisualizerProps) {
 	const theme = useMusicTheme();
 	const visualizerStyle = useSetting(musicSettings.visualizerStyle) || "bars";
 	const barColor = color || theme.accentPrimary;
@@ -38,7 +38,6 @@ export function MusicVisualizer({ playing, color, height = 24, barWidth = 4, cla
 		const current = WEIGHTS.map(() => FLOOR);
 
 		const loop = () => {
-			raf = requestAnimationFrame(loop);
 			t += 1;
 
 			// Mode A: actual audio level from SMTC/Windows
@@ -59,29 +58,29 @@ export function MusicVisualizer({ playing, color, height = 24, barWidth = 4, cla
 				}
 			}
 
+			let allResting = !playing;
 			current.forEach((v, i) => {
 				let goal: number;
 				if (visualizerStyle === "wave") {
-					// Continuous harmonic wave
 					const wave = 0.5 + 0.5 * Math.sin(t * 0.14 + i * 0.9);
 					goal = Math.max(FLOOR, energy * wave);
 				} else if (visualizerStyle === "pulse") {
-					// Symmetrical pulse from center (index 2 is center)
 					const dist = Math.abs(2 - i);
 					const pulse = 0.6 + 0.4 * Math.sin(t * 0.16 - dist * 0.5);
 					goal = Math.max(FLOOR, energy * pulse);
 				} else if (visualizerStyle === "minimal") {
-					// Minimal dots
 					const minPulse = 0.4 + 0.6 * Math.sin(t * 0.1 + i * 1.2);
 					goal = Math.max(0.2, energy * minPulse);
 				} else {
-					// Classic bars
 					const wobble = 0.75 + 0.25 * Math.sin(t / (4 + i * 1.2) + i * 1.8);
 					goal = Math.max(FLOOR, energy * WEIGHTS[i] * wobble);
 				}
 
-				const k = goal > v ? 0.45 : 0.12;
+				const k = goal > v ? 0.38 : 0.14;
 				current[i] = v + (goal - v) * k;
+				if (Math.abs(current[i] - goal) > 0.005) {
+					allResting = false;
+				}
 
 				const el = bars.current[i];
 				if (el) {
@@ -89,11 +88,16 @@ export function MusicVisualizer({ playing, color, height = 24, barWidth = 4, cla
 						el.style.transform = `scale(${Math.max(0.4, current[i])})`;
 						el.style.opacity = `${Math.min(1, Math.max(0.3, current[i]))}`;
 					} else {
-						el.style.transform = `scaleY(${Math.max(0.1, current[i])})`;
-						el.style.opacity = "1";
+						el.style.transform = `scaleY(${Math.max(0.12, current[i])})`;
+						el.style.opacity = playing ? "1" : "0.35";
 					}
 				}
 			});
+
+			if (!playing && allResting) {
+				return;
+			}
+			raf = requestAnimationFrame(loop);
 		};
 
 		raf = requestAnimationFrame(loop);
@@ -114,7 +118,10 @@ export function MusicVisualizer({ playing, color, height = 24, barWidth = 4, cla
 							bars.current[i] = el;
 						}}
 						className="size-1.5 rounded-full transition-colors duration-300"
-						style={{ backgroundColor: barColor }}
+						style={{
+							backgroundColor: barColor,
+							boxShadow: playing ? `0 0 6px ${barColor}80` : "none",
+						}}
 					/>
 				))}
 			</div>
@@ -122,7 +129,11 @@ export function MusicVisualizer({ playing, color, height = 24, barWidth = 4, cla
 	}
 
 	return (
-		<div className={`flex items-end justify-center gap-1 ${className ?? ""}`} style={{ height }} aria-hidden="true">
+		<div
+			className={`flex items-end justify-center gap-[2.5px] ${className ?? ""}`}
+			style={{ height }}
+			aria-hidden="true"
+		>
 			{WEIGHTS.map((_, i) => (
 				<span
 					// biome-ignore lint/suspicious/noArrayIndexKey: fixed 5-bar visualizer
@@ -135,6 +146,7 @@ export function MusicVisualizer({ playing, color, height = 24, barWidth = 4, cla
 						width: barWidth,
 						height: "100%",
 						backgroundColor: barColor,
+						boxShadow: playing ? `0 0 6px ${barColor}66` : "none",
 					}}
 				/>
 			))}

@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please search the [existing issues](https://github.com/HeyyCzer/windows-dynamic-island/issues) first to see if it was already suggested.
+        Please search the [existing issues](https://github.com/samjoel147/notch-us/issues) first to see if it was already suggested.
   - type: textarea
     id: problem
     attributes:

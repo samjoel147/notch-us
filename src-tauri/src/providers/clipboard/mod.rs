@@ -439,6 +439,15 @@ pub fn write_text(app: &tauri::AppHandle, text: &str) -> Result<(), String> {
     os::write(owner, Payload::Text(text))
 }
 
+/// Puts files on the clipboard (e.g. for pasting in Explorer, Slack, Discord).
+pub fn write_files(app: &tauri::AppHandle, paths: &[PathBuf]) -> Result<(), String> {
+    let win = app
+        .get_webview_window(crate::window::ISLAND_LABEL)
+        .ok_or("no island window")?;
+    let owner = HWND(win.hwnd().map_err(|e| e.to_string())?.0);
+    os::write(owner, Payload::Files(paths))
+}
+
 fn watch(ctx: Arc<Ctx>) {
     // `None`: nothing read since start (or since the module was turned on);
     // what's on the clipboard then is listed without the "copied" pill.

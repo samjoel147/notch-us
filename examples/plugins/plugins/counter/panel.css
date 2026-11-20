@@ -1,26 +1,86 @@
 main {
-	display: grid;
-	grid-template-columns: auto 1fr;
-	grid-template-rows: auto auto;
+	display: flex;
 	align-items: center;
-	gap: 6px 22px;
+	gap: 20px;
 	height: 100%;
-	padding: 4px 6px;
+	padding: 8px 16px;
+	color: var(--island-text);
 }
+
+.counter-card {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 84px;
+	height: 84px;
+	flex-shrink: 0;
+	border-radius: 18px;
+	background: var(--island-card);
+	border: 1px solid var(--island-hairline);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
 #count {
-	grid-row: span 2;
-	font-size: 56px;
-	font-weight: 700;
+	font-size: 38px;
+	font-weight: 800;
 	font-variant-numeric: tabular-nums;
-	min-width: 1.5ch;
+	color: var(--island-text);
+	letter-spacing: -0.02em;
 }
+
+.control-section {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 12px;
+}
+
+.header-group {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.tracker-title {
+	margin: 0;
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--island-text);
+	letter-spacing: -0.01em;
+}
+
+.hint-text {
+	margin: 0;
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--island-text-dim);
+	opacity: 0.95;
+}
+
 .actions {
 	display: flex;
+	align-items: center;
 	gap: 8px;
-	align-self: end;
 }
-#hint {
-	margin: 0;
-	font-size: 12px;
-	align-self: start;
+
+.step-primary {
+	min-width: 60px;
+	font-weight: 700;
+}
+
+.step-btn {
+	min-width: 44px;
+	border: 1px solid var(--island-hairline);
+}
+
+.reset-btn {
+	border: 1px solid var(--island-hairline);
+	color: var(--island-text-dim);
+}
+
+.reset-btn:hover {
+	color: var(--island-danger, #dc2626);
+	border-color: var(--island-danger, #dc2626);
 }

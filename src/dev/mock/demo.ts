@@ -28,9 +28,16 @@ export function startDemo(mocks: Mock[]) {
 	};
 	const claude = (...sessions: object[]) => claudeState.set((s) => ({ ...s, sessions: sessions as typeof s.sessions }));
 	// Starts once the opening peek of the first song is over.
-	const at = (ms: number, fn: () => void) => setTimeout(fn, 4_000 + ms);
+	const at = (ms: number, fn: () => void) => {
+		if (typeof window !== "undefined" && window.location.search.includes("static")) return;
+		setTimeout(fn, 4_000 + ms);
+	};
 
-	claude(editing, finished);
+	if (typeof window !== "undefined" && window.location.search.includes("static")) {
+		claudeState.set((s) => ({ ...s, sessions: [] }));
+	} else {
+		claude(editing, finished);
+	}
 	clearActivities();
 	setNotifications((s) => ({
 		...s,

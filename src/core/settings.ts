@@ -219,6 +219,39 @@ export const positionSettings = {
 	} satisfies SettingDef<number>,
 };
 
+export const soundSettings = {
+	enabled: {
+		key: "island.sound.enabled",
+		label: "sound.enabled.label",
+		description: "sound.enabled.desc",
+		default: true,
+	} satisfies SettingDef,
+	alerts: {
+		key: "island.sound.alerts",
+		label: "sound.alerts.label",
+		description: "sound.alerts.desc",
+		default: true,
+	} satisfies SettingDef,
+	volumeClicks: {
+		key: "island.sound.volumeClicks",
+		label: "sound.volumeClicks.label",
+		description: "sound.volumeClicks.desc",
+		default: false,
+	} satisfies SettingDef,
+	timerChimes: {
+		key: "island.sound.timerChimes",
+		label: "sound.timerChimes.label",
+		description: "sound.timerChimes.desc",
+		default: true,
+	} satisfies SettingDef,
+	volume: {
+		key: "island.sound.volume",
+		label: "sound.volume.label",
+		description: "sound.volume.desc",
+		default: 75,
+	} satisfies SettingDef<number>,
+};
+
 /**
  * Which monitor the island lives on (applied by the backend, `display.rs`).
  * `monitor` is "primary" (follows Windows' primary monitor) or a monitor id
@@ -324,4 +357,16 @@ export const appearanceSettings = {
 		description: "appearance.idleClock.desc",
 		default: true,
 	} satisfies SettingDef,
+	settingsTheme: {
+		key: "appearance.settingsTheme",
+		label: "appearance.settingsTheme.label",
+		description: "appearance.settingsTheme.desc",
+		default: "auto" as "auto" | "dark",
+	} satisfies SettingDef<"auto" | "dark">,
+	scale: {
+		key: "appearance.scale",
+		label: "appearance.scale.label",
+		description: "appearance.scale.desc",
+		default: 100,
+	} satisfies SettingDef<number>,
 };

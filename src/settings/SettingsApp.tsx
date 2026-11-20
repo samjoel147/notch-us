@@ -6,14 +6,16 @@ import {
 	PaletteIcon,
 	PuzzleIcon,
 	SettingsIcon,
+	Volume2Icon,
 } from "lucide-react";
 import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import { useSyncLocale, useT } from "../core/i18n";
-import { useSettings } from "../core/settings";
+import { appearanceSettings, readSetting, useSettings } from "../core/settings";
 import { useActiveTheme } from "../core/theme";
 import { NavItem, NavSection } from "./components/NavItem";
+import { SettingsSearch } from "./components/SettingsSearch";
 import { TitleBar } from "./components/TitleBar";
 import { AboutPage } from "./pages/AboutPage";
 import { AppearancePage } from "./pages/AppearancePage";
@@ -24,6 +26,7 @@ import { ModulesPage } from "./pages/ModulesPage";
 import { PluginPage } from "./pages/plugins/PluginPage";
 import { PluginsPage } from "./pages/plugins/PluginsPage";
 import { ShortcutsPage } from "./pages/ShortcutsPage";
+import { SoundPage } from "./pages/SoundPage";
 
 /**
  * Settings window: frameless, with a sidebar in two groups — the app itself
@@ -37,16 +40,25 @@ export function SettingsApp() {
 	useSyncLocale();
 	useActiveTheme();
 
+	const settingsThemePref = readSetting(values, appearanceSettings.settingsTheme);
+	const forceDark = settingsThemePref === "dark";
+
 	return (
 		<MemoryRouter>
-			<div className="flex h-full flex-col" data-settings>
+			<div
+				className="flex h-full flex-col bg-island text-text"
+				data-settings
+				data-settings-force-dark={forceDark ? "true" : "false"}
+			>
 				<TitleBar />
 				<div className="flex min-h-0 flex-1">
 					<nav className="flex w-53 flex-none flex-col gap-0.5 px-2.5 pt-2 pb-4">
+						<SettingsSearch />
 						<NavSection label={t("settings.section.app")} />
 						<NavItem to="/" icon={<SettingsIcon size={15} />} label={t("settings.general")} />
 						<NavItem to="/appearance" icon={<PaletteIcon size={15} />} label={t("appearance.title")} />
 						<NavItem to="/behavior" icon={<MousePointerClickIcon size={15} />} label={t("behavior.title")} />
+						<NavItem to="/sound" icon={<Volume2Icon size={15} />} label={t("sound.title") || "Sound & Haptics"} />
 						<NavSection label={t("settings.section.island")} />
 						{/* Stays highlighted on each module's own page too. */}
 						<NavItem to="/modules" end={false} icon={<LayoutGridIcon size={14} />} label={t("modules.title")} />
@@ -55,12 +67,13 @@ export function SettingsApp() {
 						<div className="flex-1" />
 						<NavItem to="/about" icon={<InfoIcon size={15} />} label={t("settings.about.title")} />
 					</nav>
-					<main className="min-w-0 flex-1 overflow-y-auto rounded-tl-xl bg-[#121217] shadow-[inset_1px_1px_0_var(--hairline)] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-3 [&::-webkit-scrollbar-thumb]:border-solid [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-white/12 [&::-webkit-scrollbar-thumb]:bg-clip-padding">
+					<main className="min-w-0 flex-1 overflow-y-auto rounded-tl-xl bg-card border-l border-t border-hairline shadow-inner [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-3 [&::-webkit-scrollbar-thumb]:border-solid [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-white/12 [&::-webkit-scrollbar-thumb]:bg-clip-padding">
 						<Page>
 							<Routes>
 								<Route index element={<GeneralPage values={values} />} />
 								<Route path="appearance" element={<AppearancePage values={values} />} />
 								<Route path="behavior" element={<BehaviorPage values={values} />} />
+								<Route path="sound" element={<SoundPage values={values} />} />
 								<Route path="modules" element={<ModulesPage values={values} />} />
 								<Route path="modules/:id" element={<ModulePage values={values} />} />
 								<Route path="shortcuts" element={<ShortcutsPage values={values} />} />

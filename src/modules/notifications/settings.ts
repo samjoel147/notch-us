@@ -1,6 +1,12 @@
 import type { SettingDef } from "../../core/settings";
 
 export const notificationSettings = {
+	doNotDisturb: {
+		key: "module.notifications.doNotDisturb",
+		label: "notifications.settings.doNotDisturb.label",
+		description: "notifications.settings.doNotDisturb.desc",
+		default: false,
+	} satisfies SettingDef<boolean>,
 	quickReply: {
 		key: "module.notifications.quickReply",
 		label: "notifications.settings.quickReply.label",
@@ -31,9 +37,24 @@ export const notificationSettings = {
 		description: "notifications.settings.reactionPills.desc",
 		default: ["👍", "❤️", "OK!", "On my way", "Can't talk now"],
 	} satisfies SettingDef<string[]>,
+	showSoundDeck: {
+		key: "module.notifications.showSoundDeck",
+		label: "notifications.settings.showSoundDeck.label",
+		description: "notifications.settings.showSoundDeck.desc",
+		default: true,
+	} satisfies SettingDef<boolean>,
+	privacyMode: {
+		key: "module.notifications.privacyMode",
+		label: "notifications.settings.privacyMode.label",
+		description: "notifications.settings.privacyMode.desc",
+		default: false,
+	} satisfies SettingDef<boolean>,
 };
 
 export const notificationToggleSettings: SettingDef<boolean>[] = [
+	notificationSettings.doNotDisturb,
+	notificationSettings.showSoundDeck,
+	notificationSettings.privacyMode,
 	notificationSettings.quickReply,
 	notificationSettings.smartClipboard,
 	notificationSettings.autoDismissOnReply,

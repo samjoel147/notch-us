@@ -15,7 +15,7 @@ import { useT } from "../../core/i18n";
 import { moduleEnabled, readSetting, useSettings } from "../../core/settings";
 import type { IslandModule, ModuleView } from "../../core/types";
 import { ActivityCard } from "./components/ActivityCard";
-import { ActivityCompactLeft, ActivityCompactRight } from "./components/ActivityCompact";
+import { ActivityCompactLeft, ActivityCompactRight, getAlertKind } from "./components/ActivityCompact";
 import { ApiSettings } from "./components/ApiSettings";
 import { activitySettings, SOURCE_SETTING } from "./settings";
 import { ACTIVITIES_PROVIDER, type ActivitiesState, type Activity } from "./types";
@@ -30,12 +30,34 @@ const MODULE_SOURCES: Record<string, string> = {
 	monitor: "monitor",
 };
 
+function getCompactWidth(a: Activity): number {
+	const kind = getAlertKind(a);
+	switch (kind) {
+		case "keyboard":
+			return 270;
+		case "airplane":
+			return 280;
+		case "volume":
+		case "brightness":
+			return 300;
+		case "battery":
+		case "wifi":
+		case "resource":
+		case "bluetooth":
+			return 330;
+		default:
+			return a.style === "level" ? 300 : 340;
+	}
+}
+
 export const activitiesModule: IslandModule = {
 	id: "activities",
 	title: "activities.title",
 	settingsIcon: <RefreshCwIcon size={14} />,
-	settings: Object.values(activitySettings),
+	settings: [],
 	SettingsSection: ApiSettings,
+	settingsSectionCards: true,
+	shortcut: "mute",
 	useHiddenSettings() {
 		const state = useProvider<ActivitiesState>(ACTIVITIES_PROVIDER);
 		return state?.hasBattery === false ? [activitySettings.battery.key] : [];
@@ -47,6 +69,25 @@ export const activitiesModule: IslandModule = {
 		const shown = (a: Activity) => {
 			const owner = MODULE_SOURCES[a.source];
 			if (owner) return readSetting(settings, moduleEnabled({ id: owner, title: "activities.title" }));
+
+			// Granular 12 pop notification alert controls
+			if (a.id.includes("caps") && !readSetting(settings, activitySettings.capsLock)) return false;
+			if (a.id.includes("num") && !readSetting(settings, activitySettings.numLock)) return false;
+			if (a.id.includes("power_saver") && !readSetting(settings, activitySettings.powerSaver)) return false;
+			if (a.id.includes("charging") && !readSetting(settings, activitySettings.charging)) return false;
+			if (
+				(a.id.includes("battery.low") || a.title?.toLowerCase().includes("low battery")) &&
+				!readSetting(settings, activitySettings.lowBattery)
+			)
+				return false;
+			if (a.source === "volume" && !readSetting(settings, activitySettings.volume)) return false;
+			if (a.source === "brightness" && !readSetting(settings, activitySettings.brightness)) return false;
+			if (a.source === "network" && !readSetting(settings, activitySettings.wifi)) return false;
+			if (a.id.includes("airplane") && !readSetting(settings, activitySettings.airplane)) return false;
+			if (a.source === "resource" && !readSetting(settings, activitySettings.resource)) return false;
+			if (a.source === "bluetooth" && !readSetting(settings, activitySettings.bluetooth)) return false;
+			if (a.source === "privacy" && !readSetting(settings, activitySettings.privacy)) return false;
+
 			return readSetting(settings, SOURCE_SETTING[a.source] ?? activitySettings.api);
 		};
 		const items = (state?.items ?? []).filter(shown);
@@ -67,7 +108,7 @@ export const activitiesModule: IslandModule = {
 			compact: top && {
 				left: <ActivityCompactLeft activity={top} />,
 				right: <ActivityCompactRight activity={top} />,
-				width: top.style === "level" ? 300 : 340,
+				width: getCompactWidth(top),
 			},
 			expanded: alert ? (
 				<div className="flex h-full flex-col gap-1 overflow-y-auto [scrollbar-width:none]">
@@ -83,7 +124,13 @@ export const activitiesModule: IslandModule = {
 			),
 			expandedSize: alert
 				? { width: 560, height: alert.progress != null || alert.subtitle ? 128 : 104 }
-				: { width: 560, height: 40 + Math.min(Math.max(ongoing.length, 1), MAX_ROWS) * ROW },
+				: {
+						width: 560,
+						height:
+							40 +
+							Math.min(Math.max(ongoing.length, 1), MAX_ROWS) * ROW +
+							(ongoing.some((a) => a.id === "privacy-mic") ? 48 : 0),
+					},
 			// Alerts that ask for it (notifications, low battery, "Claude answered") open the island.
 			activityKey: alert?.expand ? `${alert.id}:${alert.updatedAt}` : undefined,
 		};

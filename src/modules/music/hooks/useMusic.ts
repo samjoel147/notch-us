@@ -27,6 +27,17 @@ export interface MusicState {
 	appDevice: string | null;
 	/** Every active application with an audio session. */
 	apps?: AppVolumeSession[];
+	/** Active audio output endpoints. */
+	devices?: AudioDevice[];
+}
+
+export type AudioDeviceKind = "headphones" | "speakers" | "display" | "bluetooth";
+
+export interface AudioDevice {
+	id: string;
+	name: string;
+	kind: AudioDeviceKind;
+	isDefault: boolean;
 }
 
 export interface AppVolumeSession {
@@ -56,6 +67,8 @@ export const musicAction = (action: "toggle" | "next" | "previous" | "seek" | "f
 export const setVolume = (
 	change: ({ target: "system" } | { target: "app"; appId: string } | { target: "pid"; pid: number }) & Partial<Volume>,
 ) => providerAction(MUSIC_PROVIDER, "volume", change);
+
+export const setAudioDevice = (deviceId: string) => providerAction(MUSIC_PROVIDER, "device", { deviceId });
 
 export function useMusic() {
 	const music = useProvider<MusicState>(MUSIC_PROVIDER);

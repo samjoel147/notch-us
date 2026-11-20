@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from "react";
+import { useAppearance } from "../../core/appearance";
 import { cn } from "../../core/cn";
 import { type FrameContext, registerFrame } from "../../core/plugins/host";
 import type { PluginInfo } from "../../core/plugins/types";
@@ -24,6 +25,8 @@ export function PluginFrame({
 	className?: string;
 }) {
 	const ref = useRef<HTMLIFrameElement>(null);
+	const look = useAppearance();
+	const isLight = look.theme === "light" || look.theme === "glass-light";
 
 	// Before the page's first script runs, so its "hello" finds us.
 	useLayoutEffect(() => {
@@ -42,7 +45,7 @@ export function PluginFrame({
 			sandbox="allow-scripts"
 			referrerPolicy="no-referrer"
 			// Same scheme as the plugin's page, or Chromium paints the frame opaque.
-			style={{ colorScheme: "dark" }}
+			style={{ colorScheme: isLight ? "light" : "dark" }}
 			className={cn("block border-0 bg-transparent", className)}
 		/>
 	);

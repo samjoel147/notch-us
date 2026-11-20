@@ -14,6 +14,7 @@ import { useIslandDrag } from "../core/useIslandDrag";
 import { modules } from "../modules";
 import { requestAskFocus } from "../modules/ask/store";
 import { requestFindFocus } from "../modules/find/store";
+import { RhythmAura } from "../modules/music/components/RhythmAura";
 import { AmbientBubbles, SecondaryBubble } from "./island/Bubbles";
 import { islandContent } from "./island/content";
 import { GlassProbes } from "./island/GlassProbes";
@@ -134,6 +135,8 @@ export function Island() {
 								</motion.span>
 							</>
 						)}
+
+						<RhythmAura />
 
 						<Surface g={g} big={big} look={look} transition={transition} contentKey={content.key} rim={rim}>
 							{content.node}

@@ -11,9 +11,9 @@
 	--color-card: var(--card);
 	--color-accent: var(--accent);
 	--color-specular: var(--specular);
-	--color-danger: #ff6b63;
-	--color-ok: #34c759;
-	--color-warn: #ffbd2e;
+	--color-danger: var(--danger, #ff6b63);
+	--color-ok: var(--ok, #34c759);
+	--color-warn: var(--warn, #ffbd2e);
 	--animate-hydration-pulse: hydration-pulse 1.5s ease-in-out infinite;
 	--animate-gh-pulse: gh-pulse 1.6s ease-in-out infinite;
 	--animate-spin-fast: spin 0.9s linear infinite;
@@ -68,6 +68,9 @@
 	--hairline: rgba(255, 255, 255, 0.08);
 	--card: rgba(255, 255, 255, 0.055);
 	--accent: #a0a4ff;
+	--danger: #ff6b63;
+	--ok: #34c759;
+	--warn: #ffbd2e;
 	--specular: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 	--glass-sheen: none;
 	--island-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.75), 0 2px 8px -2px rgba(0, 0, 0, 0.5);
@@ -100,41 +103,41 @@
 }
 
 :root[data-theme="glass-light"] {
-	--island: rgba(250, 250, 252, 0.88);
-	--surface-elevated: rgba(255, 255, 255, 0.82);
-	--surface-control: rgba(255, 255, 255, 0.9);
+	--island: rgba(255, 255, 255, 0.74);
+	--surface-elevated: rgba(255, 255, 255, 0.85);
+	--surface-control: rgba(0, 0, 0, 0.04);
 	--card: rgba(255, 255, 255, 0.8);
-	--text: #141417;
-	--text-dim: #50505a;
-	--text-faint: #71717a;
-	--hairline: rgba(40, 40, 50, 0.12);
+	--text: #09090b;
+	--text-dim: #334155;
+	--text-faint: #64748b;
+	--hairline: rgba(0, 0, 0, 0.08);
 	--accent: #007aff;
-	--progress-track: rgba(24, 24, 27, 0.1);
+	--progress-track: rgba(0, 0, 0, 0.08);
 	--specular:
-		inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1), inset 0 0 0 1px rgba(255, 255, 255, 0.85),
-		inset 0 -1px 1px 0 rgba(0, 0, 0, 0.06);
-	--glass-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.45) 40%, transparent 100%);
+		inset 0 1.5px 1px 0 rgba(255, 255, 255, 1), inset 0 0 0 1px rgba(255, 255, 255, 0.75),
+		inset 0 -1px 1px 0 rgba(0, 0, 0, 0.04);
+	--glass-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.12) 35%, transparent 100%);
 	--island-shadow:
-		0 16px 48px rgba(25, 25, 40, 0.12), 0 4px 14px -3px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.85);
+		0 20px 50px -12px rgba(0, 0, 0, 0.15), 0 4px 16px -4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.85);
 	--island-shadow-big:
-		0 24px 60px -8px rgba(25, 25, 40, 0.16), 0 8px 24px -4px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.9);
+		0 32px 70px -16px rgba(0, 0, 0, 0.2), 0 8px 24px -4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.9);
 }
 
 :root[data-theme="light"] {
 	--island: #ffffff;
 	--surface-elevated: #ffffff;
 	--surface-control: #f4f4f5;
-	--card: #f7f7f9;
-	--text: #18181b;
+	--card: #f5f6f9;
+	--text: #09090b;
 	--text-dim: #52525b;
 	--text-faint: #71717a;
-	--hairline: #e4e4e7;
+	--hairline: #e5e7eb;
 	--accent: #0066cc;
-	--progress-track: #e4e4e7;
-	--specular: inset 0 1px 0 #ffffff, inset 0 0 0 1px #e4e4e7;
+	--progress-track: #e5e7eb;
+	--specular: inset 0 1px 0 #ffffff, inset 0 0 0 1px #e5e7eb;
 	--glass-sheen: none;
-	--island-shadow: 0 12px 36px rgba(24, 24, 27, 0.1), 0 2px 8px -2px rgba(0, 0, 0, 0.05), 0 0 0 1px #e4e4e7;
-	--island-shadow-big: 0 24px 50px -12px rgba(24, 24, 27, 0.14), 0 6px 18px -4px rgba(0, 0, 0, 0.07), 0 0 0 1px #e4e4e7;
+	--island-shadow: 0 12px 36px rgba(24, 24, 27, 0.08), 0 2px 8px -2px rgba(0, 0, 0, 0.04), 0 0 0 1px #e5e7eb;
+	--island-shadow-big: 0 24px 50px -12px rgba(24, 24, 27, 0.12), 0 6px 18px -4px rgba(0, 0, 0, 0.06), 0 0 0 1px #e5e7eb;
 }
 
 :root[data-theme="cyberpunk"] {
@@ -197,49 +200,137 @@
 /* Comprehensive Light mode adjustments (applies to both glass-light and light) */
 :root[data-light="true"] {
 	color-scheme: light;
+	--danger: #dc2626;
+	--ok: #15803d;
+	--warn: #b45309;
 }
 
 /* Accessibility contrast boosts for pastel icons on light backgrounds */
 :root[data-light="true"] svg[stroke="#f5c542"],
 :root[data-light="true"] svg[color="#f5c542"],
-:root[data-light="true"] [stroke="#f5c542"] {
+:root[data-light="true"] svg[stroke="#eab308"],
+:root[data-light="true"] [stroke="#f5c542"],
+:root[data-light="true"] [stroke="#eab308"],
+:root[data-light="true"] [color="#f5c542"],
+:root[data-light="true"] [color="#eab308"] {
 	stroke: #b45309;
+	color: #b45309;
 }
+
 :root[data-light="true"] svg[stroke="#30d158"],
+:root[data-light="true"] svg[stroke="#30D158"],
 :root[data-light="true"] svg[color="#30d158"],
-:root[data-light="true"] [stroke="#30d158"] {
+:root[data-light="true"] svg[color="#30D158"],
+:root[data-light="true"] [stroke="#30d158"],
+:root[data-light="true"] [stroke="#30D158"],
+:root[data-light="true"] [color="#30d158"],
+:root[data-light="true"] [color="#30D158"] {
 	stroke: #15803d;
+	color: #15803d;
 }
+
 :root[data-light="true"] svg[stroke="#45c4e6"],
 :root[data-light="true"] svg[color="#45c4e6"],
-:root[data-light="true"] [stroke="#45c4e6"] {
+:root[data-light="true"] svg[stroke="#38bdf8"],
+:root[data-light="true"] [stroke="#45c4e6"],
+:root[data-light="true"] [stroke="#38bdf8"],
+:root[data-light="true"] [color="#45c4e6"],
+:root[data-light="true"] [color="#38bdf8"] {
 	stroke: #0284c7;
+	color: #0284c7;
 }
 
-/* Glass-light card elevation and optical materials */
+:root[data-light="true"] svg[stroke="#ff9f0a"],
+:root[data-light="true"] svg[stroke="#ea580c"],
+:root[data-light="true"] svg[stroke="#fb923c"],
+:root[data-light="true"] svg[color="#ff9f0a"],
+:root[data-light="true"] svg[color="#ea580c"],
+:root[data-light="true"] svg[color="#fb923c"],
+:root[data-light="true"] [stroke="#ff9f0a"],
+:root[data-light="true"] [stroke="#ea580c"],
+:root[data-light="true"] [color="#ff9f0a"],
+:root[data-light="true"] [color="#ea580c"] {
+	stroke: #c2410c;
+	color: #c2410c;
+}
+
+:root[data-light="true"] svg[stroke="#a0a4ff"],
+:root[data-light="true"] svg[stroke="#8b92ff"],
+:root[data-light="true"] svg[color="#a0a4ff"],
+:root[data-light="true"] svg[color="#8b92ff"],
+:root[data-light="true"] [stroke="#a0a4ff"],
+:root[data-light="true"] [color="#a0a4ff"] {
+	stroke: #6d28d9;
+	color: #6d28d9;
+}
+
+/* Glass-light: 65% semi-frosted floating ceramic cards with cut-crystal specular top rims */
 :root[data-theme="glass-light"] .bg-card {
+	background-color: rgba(255, 255, 255, 0.65);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
 	box-shadow:
-		0 4px 16px rgba(25, 25, 40, 0.05),
-		inset 0 0 0 1px rgba(255, 255, 255, 0.95);
+		0 4px 18px rgba(25, 25, 40, 0.06),
+		inset 0 1.5px 1px 0 rgba(255, 255, 255, 1);
+	border-color: rgba(255, 255, 255, 0.75);
 }
 
-/* Solid light card elevation */
+/* Solid light: 100% opaque ceramic card tiles with tactile physical elevation */
 :root[data-theme="light"] .bg-card {
+	background-color: #f5f6f9;
 	box-shadow:
 		0 2px 8px rgba(0, 0, 0, 0.04),
-		inset 0 0 0 1px #e6e6ea;
+		inset 0 0 0 1px #e5e7eb;
+	border-color: #e5e7eb;
 }
 
-/* Solid light disables heavy backdrop blur */
+/* Glass-dark card elevation */
+:root[data-theme="glass-dark"] .bg-card {
+	box-shadow:
+		0 4px 18px rgba(0, 0, 0, 0.4),
+		inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* Cyberpunk neon card elevation */
+:root[data-theme="cyberpunk"] .bg-card {
+	box-shadow:
+		0 0 14px -2px rgba(0, 240, 255, 0.2),
+		inset 0 0 0 1px rgba(0, 240, 255, 0.35);
+}
+
+/* Midnight card elevation */
+:root[data-theme="midnight"] .bg-card {
+	box-shadow:
+		0 4px 16px rgba(0, 0, 0, 0.45),
+		inset 0 1px 0 rgba(56, 189, 248, 0.25);
+}
+
+/* Sunset card elevation */
+:root[data-theme="sunset"] .bg-card {
+	box-shadow:
+		0 4px 16px rgba(0, 0, 0, 0.45),
+		inset 0 1px 0 rgba(251, 146, 60, 0.25);
+}
+
+/* Aurora card elevation */
+:root[data-theme="aurora"] .bg-card {
+	box-shadow:
+		0 4px 16px rgba(0, 0, 0, 0.45),
+		inset 0 1px 0 rgba(52, 211, 153, 0.25);
+}
+
+/* Solid light: 100% opaque architectural white, zero desktop bleed */
 :root[data-theme="light"] .bg-island {
+	background-color: #ffffff;
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 }
 
-/* Glass-light premium VisionOS frosted blur */
+/* Glass-light: 74% translucent VisionOS crystal glass with native DWM backdrop refraction */
 :root[data-theme="glass-light"] .bg-island {
-	backdrop-filter: blur(28px) saturate(145%);
-	-webkit-backdrop-filter: blur(28px) saturate(145%);
+	background-color: rgba(255, 255, 255, 0.74);
+	backdrop-filter: blur(28px) saturate(160%);
+	-webkit-backdrop-filter: blur(28px) saturate(160%);
 }
 
 /* Map white background fractions to clean subtle translucent dark surfaces */
@@ -346,14 +437,11 @@ body:has([data-pip]) {
 }
 html:has([data-settings]),
 body:has([data-settings]) {
-	background: #0c0c10;
+	background: var(--island, #0c0c10);
 }
 
-/* Settings window: Always preserve dark theme contrast regardless of island theme */
-[data-settings],
-:root[data-theme] [data-settings],
-:root[data-light] [data-settings],
-html[data-theme] [data-settings] {
+/* Settings window: Supports both dynamic island theme matching and force-dark mode */
+html:root [data-settings][data-settings-force-dark="true"] {
 	--text: #f5f5f7;
 	--text-dim: rgba(245, 245, 247, 0.7);
 	--text-faint: rgba(245, 245, 247, 0.5);
@@ -363,29 +451,21 @@ html[data-theme] [data-settings] {
 	color: #f5f5f7;
 }
 
-[data-settings] *,
-:root[data-theme] [data-settings] *,
-:root[data-light] [data-settings] * {
+html:root [data-settings][data-settings-force-dark="true"] * {
 	--text: #f5f5f7;
 	--text-dim: rgba(245, 245, 247, 0.7);
 	--text-faint: rgba(245, 245, 247, 0.5);
 }
 
-[data-settings] .text-text,
-:root[data-theme] [data-settings] .text-text,
-:root[data-light] [data-settings] .text-text {
+html:root [data-settings][data-settings-force-dark="true"] .text-text {
 	color: #f5f5f7;
 }
 
-[data-settings] .text-text-dim,
-:root[data-theme] [data-settings] .text-text-dim,
-:root[data-light] [data-settings] .text-text-dim {
+html:root [data-settings][data-settings-force-dark="true"] .text-text-dim {
 	color: rgba(245, 245, 247, 0.7);
 }
 
-[data-settings] .text-text-faint,
-:root[data-theme] [data-settings] .text-text-faint,
-:root[data-light] [data-settings] .text-text-faint {
+html:root [data-settings][data-settings-force-dark="true"] .text-text-faint {
 	color: rgba(245, 245, 247, 0.5);
 }
 

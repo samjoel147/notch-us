@@ -4,28 +4,39 @@ import { art, defineMock, provider, svgArt } from "./kit";
 
 const tracks = [
 	{
-		title: "Midnight City (Extended Version)",
+		title: "Midnight City (Purple Aura)",
 		artist: "M83",
 		album: "Hurry Up, We're Dreaming",
 		durationMs: 283_000,
-		thumbnail: art,
-	},
-	{
-		title: "Blinding Lights",
-		artist: "The Weeknd",
-		album: "After Hours",
-		durationMs: 200_000,
 		thumbnail: svgArt(
-			"<defs><linearGradient id='g' x1='0' y1='1' x2='1' y2='0'><stop offset='0' stop-color='#e8173c'/><stop offset='1' stop-color='#ffb02e'/></linearGradient></defs><rect width='120' height='120' fill='url(#g)'/><rect x='34' y='34' width='52' height='52' rx='10' fill='rgba(0,0,0,.3)'/>",
+			"<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#8b5cf6'/><stop offset='1' stop-color='#6366f1'/></linearGradient></defs><rect width='120' height='120' fill='url(#g)'/><circle cx='60' cy='60' r='26' fill='rgba(255,255,255,0.22)'/><circle cx='60' cy='60' r='12' fill='rgba(0,0,0,0.3)'/>",
 		),
 	},
 	{
-		title: "Starboy",
-		artist: "The Weeknd ft. Daft Punk",
-		album: "Starboy",
+		title: "Solar Flare (Orange Aura)",
+		artist: "Tycho",
+		album: "Epoch (Deluxe)",
+		durationMs: 200_000,
+		thumbnail: svgArt(
+			"<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#f97316'/><stop offset='1' stop-color='#ea580c'/></linearGradient></defs><rect width='120' height='120' fill='url(#g)'/><circle cx='60' cy='60' r='26' fill='rgba(255,255,255,0.22)'/><circle cx='60' cy='60' r='12' fill='rgba(0,0,0,0.3)'/>",
+		),
+	},
+	{
+		title: "Ocean Waves (Blue Aura)",
+		artist: "Deep Blue",
+		album: "Cerulean Horizons",
 		durationMs: 230_000,
 		thumbnail: svgArt(
-			"<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#1ed760'/><stop offset='1' stop-color='#0055ff'/></linearGradient></defs><rect width='120' height='120' fill='url(#g)'/><circle cx='60' cy='60' r='26' fill='rgba(0,0,0,.4)'/>",
+			"<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#0284c7'/><stop offset='1' stop-color='#38bdf8'/></linearGradient></defs><rect width='120' height='120' fill='url(#g)'/><circle cx='60' cy='60' r='26' fill='rgba(255,255,255,0.22)'/><circle cx='60' cy='60' r='12' fill='rgba(0,0,0,0.3)'/>",
+		),
+	},
+	{
+		title: "Cyber Mirage (Emerald & Rose)",
+		artist: "Synthwave Collective",
+		album: "Neon Dreams",
+		durationMs: 215_000,
+		thumbnail: svgArt(
+			"<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#10b981'/><stop offset='1' stop-color='#f43f5e'/></linearGradient></defs><rect width='120' height='120' fill='url(#g)'/><circle cx='60' cy='60' r='26' fill='rgba(255,255,255,0.22)'/><circle cx='60' cy='60' r='12' fill='rgba(0,0,0,0.3)'/>",
 		),
 	},
 	{
@@ -152,6 +163,10 @@ export function playTrack(index: number, atMs = 0) {
 	state.set((s) => ({ ...s, ...tracks[track], positionMs: atMs, positionAt: Date.now() }));
 }
 
+if (typeof window !== "undefined") {
+	window.__playTrack = playTrack;
+}
+
 function setPlaying(playing: boolean) {
 	state.set((s) => ({ ...s, playing, positionMs: position(), positionAt: Date.now() }));
 }
@@ -224,6 +239,7 @@ export const music = defineMock({
 			toggle: () => setPlaying(!state.get().playing),
 			next: () => playTrack(track + 1),
 			previous: () => playTrack(track - 1),
+			playTrack: (index: unknown) => playTrack(Number(index)),
 			seek: (ms) => state.set((s) => ({ ...s, positionMs: Number(ms), positionAt: Date.now() })),
 			volume: (change) => {
 				const { target, level, muted } = change as {

@@ -43,10 +43,10 @@ export const THEMES: ThemeDef[] = [
 		desc: "appearance.theme.glassLightDesc",
 		isLight: true,
 		isGlass: true,
-		previewBg: "linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(230, 238, 252, 0.88) 100%)",
+		previewBg: "linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(215, 230, 255, 0.5) 100%)",
 		previewBorder: "rgba(255, 255, 255, 0.95)",
 		previewAccent: "#007aff",
-		glassTint: "rgba(250, 250, 252, 0.88)",
+		glassTint: "rgba(255, 255, 255, 0.74)",
 	},
 	{
 		id: "dark",
@@ -64,8 +64,8 @@ export const THEMES: ThemeDef[] = [
 		desc: "appearance.theme.lightDesc",
 		isLight: true,
 		isGlass: false,
-		previewBg: "linear-gradient(135deg, #f5f5f7 0%, #ffffff 100%)",
-		previewBorder: "rgba(0, 0, 0, 0.12)",
+		previewBg: "linear-gradient(135deg, #ffffff 0%, #f4f5f8 100%)",
+		previewBorder: "#e5e7eb",
 		previewAccent: "#0066cc",
 	},
 	{

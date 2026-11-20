@@ -100,9 +100,8 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 			<li
 				key={e.id}
 				className={cn(
-					"flex h-6 cursor-default items-center gap-2 rounded-[7px] bg-white/4 pr-1 pl-2 text-[12px] shadow-[inset_2.5px_0_0_var(--cal-color)] hover:bg-white/8",
-					e.id === highlight &&
-						"bg-[color-mix(in_srgb,var(--cal-color)_18%,transparent)] hover:bg-[color-mix(in_srgb,var(--cal-color)_18%,transparent)]",
+					"flex h-7.5 cursor-default items-center gap-2 rounded-xl bg-card border border-hairline/60 border-l-[3px] border-l-[var(--cal-color)] px-2.5 text-[12px] shadow-xs hover:border-hairline transition-all duration-200",
+					e.id === highlight && "bg-accent/15 border-accent/30",
 				)}
 				style={{ "--cal-color": colors.get(e.calendar) ?? "#8E8E93" } as React.CSSProperties}
 				title={[e.title, e.location].filter(Boolean).join("\n")}
@@ -110,17 +109,17 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 			>
 				<span
 					className={cn(
-						"min-w-9.5 flex-none text-[11px] font-[650] text-text-faint tabular-nums",
-						live && "text-(--cal-color)",
+						"min-w-10 flex-none text-[11px] font-bold text-text-dim tabular-nums",
+						live && "text-accent font-extrabold",
 					)}
 				>
 					{e.allDay ? t("calendar.allDay") : e.start < startOfDay(focus).getTime() ? "…" : hourFormat.format(e.start)}
 				</span>
-				<span className="min-w-0 flex-1 truncate font-[550] text-text-dim">{e.title || t("calendar.untitled")}</span>
+				<span className="min-w-0 flex-1 truncate font-medium text-text">{e.title || t("calendar.untitled")}</span>
 				{joinable && (
 					<button
 						type="button"
-						className="h-4.5 flex-none rounded-[9px] bg-(--cal-color) px-2 text-[10.5px] font-bold text-white"
+						className="h-5 flex-none rounded-full bg-accent px-2.5 text-[10.5px] font-bold text-white shadow-xs hover:brightness-110"
 						onClick={(ev) => {
 							ev.stopPropagation();
 							openLink(e.meetingUrl);
@@ -143,37 +142,39 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 			>
 				<span
 					className={cn(
-						"font-[Segoe_UI_Variable_Display,Segoe_UI,sans-serif] text-[44px]/none font-[650] tracking-[-0.02em] tabular-nums",
-						hasSources && "text-[36px]/none",
+						"text-[40px]/none font-black text-text tracking-tight tabular-nums",
+						hasSources && "text-[34px]/none",
 					)}
 				>
 					{time}
-					<span className="ml-1 text-[16px] font-semibold text-text-faint">{seconds}</span>
+					<span className="ml-1.5 text-[15px] font-bold text-text-dim">{seconds}</span>
 				</span>
-				<span className="text-[13.5px] font-semibold text-text-dim first-letter:uppercase">{longDate}</span>
-				<span className="text-[12px] text-text-faint first-letter:uppercase">
+				<span className="text-[13px] font-bold text-text-dim first-letter:uppercase">{longDate}</span>
+				<span className="text-[11.5px] font-semibold text-text-dim first-letter:uppercase">
 					{selected && !sameDay(selected, today) ? relative : t("clock.week", { n: isoWeek(focus) })}
 				</span>
 				{hasSources && (
 					<ul className="mt-1.5 flex min-w-0 list-none flex-col gap-0.5">
 						{shown.map(row)}
 						{dayEvents.length > shown.length && (
-							<li className="pl-2 text-[11px] text-text-faint">
+							<li className="pl-2 text-[11px] font-medium text-text-dim">
 								{t("calendar.more", { n: dayEvents.length - shown.length })}
 							</li>
 						)}
-						{dayEvents.length === 0 && <li className="pl-2 text-[11px] text-text-faint">{t("calendar.free")}</li>}
+						{dayEvents.length === 0 && (
+							<li className="pl-2 text-[11px] font-medium text-text-dim">{t("calendar.free")}</li>
+						)}
 					</ul>
 				)}
 			</div>
 
 			<div className="flex w-63 flex-none flex-col justify-center gap-1" data-scroll onWheel={onWheel}>
 				<div className="flex h-5.5 items-center gap-1">
-					<span className="flex-1 text-[13px] font-[650] first-letter:uppercase">{monthLabel}</span>
+					<span className="flex-1 text-[13px] font-bold text-text first-letter:uppercase">{monthLabel}</span>
 					{(!onCurrentMonth || selected) && (
 						<button
 							type="button"
-							className="h-5 rounded-[10px] bg-[rgba(255,69,58,0.14)] px-2 text-[11px] font-[650] text-[#ff453a]"
+							className="h-5 rounded-[10px] bg-accent/15 px-2 text-[11px] font-bold text-accent hover:bg-accent/25 transition-colors cursor-pointer"
 							onClick={goToday}
 						>
 							{t("clock.today")}
@@ -181,7 +182,7 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 					)}
 					<button
 						type="button"
-						className="size-5.5 rounded-full text-[17px] leading-none text-text-dim hover:bg-white/8"
+						className="size-5.5 rounded-full text-[17px] leading-none text-text-dim hover:text-text hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
 						title={t("clock.prev")}
 						onClick={() => shift(-1)}
 					>
@@ -189,7 +190,7 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 					</button>
 					<button
 						type="button"
-						className="size-5.5 rounded-full text-[17px] leading-none text-text-dim hover:bg-white/8"
+						className="size-5.5 rounded-full text-[17px] leading-none text-text-dim hover:text-text hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
 						title={t("clock.next")}
 						onClick={() => shift(1)}
 					>
@@ -199,18 +200,18 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 				<div className="grid grid-cols-7 gap-x-0.5 gap-y-px">
 					{weekdays.map((w, i) => (
 						// biome-ignore lint/suspicious/noArrayIndexKey: weekday labels can repeat (narrow format), and the order is fixed
-						<span key={`w${i}`} className="h-3.5 text-center text-[10px] font-[650] text-text-faint uppercase">
+						<span key={`w${i}`} className="h-3.5 text-center text-[10.5px] font-extrabold text-text-dim uppercase">
 							{w}
 						</span>
 					))}
 					{days.slice(0, rows * 7).map((d) => {
 						const isToday = sameDay(d, today);
 						const classes = cn(
-							"relative h-5.25 rounded-[7px] text-[11.5px] font-[550] text-text-dim tabular-nums hover:bg-white/8",
-							(d.getDay() === 0 || d.getDay() === 6) && "text-text-faint",
-							d.getMonth() !== month.getMonth() && "opacity-35",
-							selected && sameDay(d, selected) && "text-text shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.5)]",
-							isToday && "bg-[#ff453a] font-[750] text-white hover:bg-[#ff453a]",
+							"relative h-5.25 rounded-[7px] text-[11.5px] font-semibold text-text tabular-nums hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer",
+							(d.getDay() === 0 || d.getDay() === 6) && "text-accent font-extrabold",
+							d.getMonth() !== month.getMonth() && "opacity-45 text-text-dim",
+							selected && sameDay(d, selected) && "shadow-[inset_0_0_0_1.5px_var(--accent)] font-bold",
+							isToday && "bg-accent font-black text-white hover:bg-accent shadow-xs",
 						);
 						const marks = dots.get(d.toDateString());
 						return (

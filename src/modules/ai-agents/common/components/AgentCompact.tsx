@@ -88,10 +88,7 @@ export function AgentCompactRight({ hot }: { hot: AgentSessionRef }) {
 	const end = running ? now : (session.finishedAt ?? now);
 
 	return (
-		<span
-			className="text-[12.5px] font-[650] text-text-dim tabular-nums"
-			style={{ color: running ? hot.agent.color : undefined }}
-		>
+		<span className={cn("text-[12.5px] font-[650] tabular-nums", running ? "text-accent" : "text-text-dim")}>
 			{formatElapsed(end - session.turnStartedAt)}
 		</span>
 	);

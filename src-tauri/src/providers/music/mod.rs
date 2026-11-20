@@ -53,6 +53,8 @@ pub struct MusicState {
     pub app_device: Option<String>,
     /// Every active application with an audio session.
     pub apps: Vec<volume::AppVolumeSession>,
+    /// Active audio output devices.
+    pub devices: Vec<volume::AudioDevice>,
 }
 
 #[derive(Default)]
@@ -87,6 +89,14 @@ impl Provider for MusicProvider {
             } else {
                 volume::set(&payload).map_err(|e| e.to_string())?;
             }
+            return Ok(Value::Null);
+        }
+        if action == "device" || action == "set_device" || action == "setDevice" {
+            let device_id = payload["deviceId"]
+                .as_str()
+                .or_else(|| payload.as_str())
+                .unwrap_or_default();
+            volume::set_default_device(device_id).map_err(|e| e.to_string())?;
             return Ok(Value::Null);
         }
         if action.starts_with("spotify") {

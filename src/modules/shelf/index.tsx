@@ -1,6 +1,6 @@
 import { FolderIcon } from "lucide-react";
 /**
- * Shelf — like the notch apps on the Mac: drag files or folders onto the
+ * Shelf — like the notch apps on the Mac: drag files, images, or links onto the
  * island and it keeps them for a moment (by reference, nothing is copied).
  * Drag them out to any app, double-click to open, or ask Claude about them.
  * Backend: `src-tauri/src/providers/shelf.rs`.
@@ -10,20 +10,23 @@ import { draggingFiles } from "../../core/island";
 import type { IslandModule, ModuleView } from "../../core/types";
 import { SHELF_PROVIDER, type ShelfState } from "./actions";
 import { ShelfPanel } from "./components/ShelfPanel";
+import { shelfSettings } from "./settings";
 
 const SHELF_BLUE = "#64D2FF";
-const PER_ROW = 5;
-const ROW = 100;
+const PER_ROW = 4;
+const ROW_HEIGHT = 110;
 
 export const shelfModule: IslandModule = {
 	id: "shelf",
 	title: "shelf.title",
 	settingsIcon: <FolderIcon size={14} />,
+	settings: Object.values(shelfSettings),
 	useView(): ModuleView {
 		const state = useProvider<ShelfState>(SHELF_PROVIDER);
 		const dragging = draggingFiles.use();
 		const count = state?.items.length ?? 0;
-		const rows = Math.min(2, Math.max(1, Math.ceil(count / PER_ROW)));
+		const rows = Math.min(3, Math.max(1, Math.ceil(count / PER_ROW)));
+		const height = count === 0 ? 190 : Math.min(390, Math.max(220, 72 + rows * ROW_HEIGHT));
 
 		return {
 			active: false,
@@ -33,7 +36,7 @@ export const shelfModule: IslandModule = {
 			accent: SHELF_BLUE,
 			icon: <FolderIcon size={14} color={SHELF_BLUE} />,
 			expanded: <ShelfPanel state={state} />,
-			expandedSize: { width: 560, height: 54 + rows * ROW },
+			expandedSize: { width: 580, height },
 		};
 	},
 };

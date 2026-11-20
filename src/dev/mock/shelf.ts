@@ -1,18 +1,33 @@
+import type { ShelfItem } from "../../modules/shelf/actions";
 import { art, defineMock, provider } from "./kit";
 
-type Item = { path: string; name: string; isDir: boolean; ext: string; thumb: string | null };
-
-const fromPath = (path: string): Item => {
-	const name = path.split(/[/]/).pop() ?? path;
+const fromPath = (
+	path: string,
+	options: { size?: number; kind?: ShelfItem["kind"]; thumb?: string | null; isDir?: boolean } = {},
+): ShelfItem => {
+	const normalized = path.replace(/\\/g, "/");
+	const name = normalized.split("/").pop() ?? path;
 	const dot = name.lastIndexOf(".");
-	return { path, name, isDir: dot < 1, ext: dot < 1 ? "" : name.slice(dot + 1), thumb: null };
+	const isDir = options.isDir ?? dot < 1;
+	const ext = isDir ? "" : name.slice(dot + 1).toLowerCase();
+	return {
+		path,
+		name,
+		isDir,
+		ext,
+		size: isDir ? 0 : (options.size ?? 2_450_000),
+		kind: isDir
+			? "folder"
+			: (options.kind ?? (ext === "png" || ext === "jpg" ? "image" : ext === "pdf" ? "document" : "file")),
+		thumb: options.thumb ?? null,
+	};
 };
 
 const state = provider("shelf", {
 	items: [
-		fromPath("C:UsersmeDesktop\report.pdf"),
-		fromPath("C:UsersmePictures"),
-		{ ...fromPath("C:UsersmeDesktopcover.png"), thumb: art },
+		fromPath("C:/Users/Alex/Documents/Quarterly_Report.pdf", { size: 3_820_000, kind: "document" }),
+		fromPath("C:/Users/Alex/Pictures/Wallpapers", { isDir: true }),
+		fromPath("C:/Users/Alex/Design/Cover_Asset.png", { size: 5_120_000, kind: "image", thumb: art }),
 	],
 });
 
@@ -24,12 +39,14 @@ export const shelf = defineMock({
 			kind: "button",
 			label: "Add file",
 			run: () =>
-				state.set((s) => ({ items: [...s.items, fromPath(`C:UsersmeDownloads\file-${s.items.length + 1}.zip`)] })),
+				state.set((s) => ({
+					items: [...s.items, fromPath(`C:/Users/Alex/Downloads/file-${s.items.length + 1}.zip`)],
+				})),
 		},
 	],
 	actions: {
 		shelf: {
-			add: (paths) => state.set((s) => ({ items: [...s.items, ...(paths as string[]).map(fromPath)] })),
+			add: (paths) => state.set((s) => ({ items: [...s.items, ...(paths as string[]).map((p) => fromPath(p))] })),
 			remove: (path) => state.set((s) => ({ items: s.items.filter((i) => i.path !== path) })),
 			clear: () => state.set({ items: [] }),
 		},

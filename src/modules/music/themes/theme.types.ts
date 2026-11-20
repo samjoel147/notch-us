@@ -64,5 +64,8 @@ export interface ThemeCompositionContext {
 	providerGlowColor: string;
 	artworkVibrant?: string;
 	artworkMuted?: string;
+	artworkSecondary?: string;
+	artworkComplementary?: string;
+	artworkBackgroundCompatible?: string;
 	isPlaying: boolean;
 }

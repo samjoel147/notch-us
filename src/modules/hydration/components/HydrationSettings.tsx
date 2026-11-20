@@ -3,10 +3,11 @@ import { Divider, Row } from "../../../components/ui/card";
 import { NumberField, Select } from "../../../components/ui/form";
 import { useT } from "../../../core/i18n";
 import { setSetting, useSetting } from "../../../core/settings";
-import { hydrationInterval, hydrationSnooze } from "../settings";
+import { hydrationGoal, hydrationInterval, hydrationSnooze } from "../settings";
 
 const INTERVALS = [15, 30, 45, 60, 90, 120];
 const SNOOZES = [5, 10, 15, 30];
+const GOALS = [4, 6, 8, 10, 12, 16];
 const CUSTOM = "custom";
 const MAX_MINUTES = 1440;
 
@@ -15,6 +16,7 @@ export function HydrationSettings() {
 	const t = useT();
 	const interval = useSetting(hydrationInterval);
 	const snooze = useSetting(hydrationSnooze);
+	const goal = useSetting(hydrationGoal);
 	return (
 		<>
 			<DurationRow
@@ -31,6 +33,14 @@ export function HydrationSettings() {
 				value={snooze}
 				options={SNOOZES}
 				onChange={(value) => setSetting(hydrationSnooze, value)}
+			/>
+			<Divider />
+			<DurationRow
+				label={t("hydration.goal.label")}
+				description={t("hydration.goal.desc")}
+				value={goal}
+				options={GOALS}
+				onChange={(value) => setSetting(hydrationGoal, value)}
 			/>
 		</>
 	);

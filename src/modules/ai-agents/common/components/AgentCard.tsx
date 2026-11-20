@@ -15,6 +15,7 @@ export function AgentCard({ agent, snapshot, now }: { agent: AgentDefinition; sn
 	const t = snapshot.tokensToday;
 	const total = t ? formatTokens(t.input + t.output + t.cacheRead + t.cacheWrite) : "--";
 	const responses = snapshot.usage?.daily.at(-1)?.responses ?? t?.messages;
+	const isBusy = snapshot.sessions.some((s) => s.status === "working" || s.status === "waiting");
 
 	// The card is only mounted while the panel is visible.
 	const { refreshLimits } = snapshot;
@@ -31,6 +32,15 @@ export function AgentCard({ agent, snapshot, now }: { agent: AgentDefinition; sn
 				<div className="flex items-center gap-2 text-(--agent)">
 					<agent.Icon size={18} />
 					<span className="text-[15px] font-[650] text-text">{agent.name}</span>
+					{isBusy && (
+						<span className="relative flex size-2">
+							<span
+								className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+								style={{ backgroundColor: agent.color }}
+							/>
+							<span className="relative inline-flex size-2 rounded-full" style={{ backgroundColor: agent.color }} />
+						</span>
+					)}
 					{snapshot.model && (
 						<span className="ml-auto rounded-full bg-[color-mix(in_srgb,var(--agent)_18%,transparent)] px-2 py-0.5 text-[11px] font-[650] text-(--agent)">
 							{snapshot.model}
@@ -77,7 +87,7 @@ export function AgentCard({ agent, snapshot, now }: { agent: AgentDefinition; sn
 					<span className="text-[11px] text-text-faint">{snapshot.metricsHint ?? tr("agents.noSessions")}</span>
 				)}
 				{t && (
-					<dl className="mt-1 grid grid-cols-[auto_auto] gap-x-3 gap-y-0.5 text-[11.5px] [&_dd]:text-right [&_dd]:text-text-dim [&_dd]:tabular-nums [&_dt]:text-text-faint">
+					<dl className="mt-1 grid grid-cols-[auto_auto] gap-x-3 gap-y-0.5 text-[11.5px] [&_dd]:text-right [&_dd]:text-text-dim [&_dd]:tabular-nums [&_dt]:text-text-dim">
 						<dt>{tr("agents.tokens.input")}</dt>
 						<dd>{formatTokens(t.input)}</dd>
 						<dt>{tr("agents.tokens.output")}</dt>

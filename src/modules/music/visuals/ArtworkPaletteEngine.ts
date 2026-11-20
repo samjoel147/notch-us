@@ -3,6 +3,8 @@ export interface ArtworkPalette {
 	vibrant: string;
 	muted: string;
 	secondary: string;
+	complementary: string;
+	backgroundCompatible: string;
 	glow: string;
 	luminance: number;
 	saturation: number;
@@ -12,16 +14,18 @@ export interface ArtworkPalette {
 }
 
 const DEFAULT_PALETTE: ArtworkPalette = {
-	dominant: "rgb(139, 146, 255)",
-	vibrant: "rgb(160, 164, 255)",
-	muted: "rgb(100, 105, 180)",
-	secondary: "rgb(120, 130, 220)",
-	glow: "rgba(139, 146, 255, 0.4)",
+	dominant: "rgb(200, 205, 220)",
+	vibrant: "rgb(215, 220, 235)",
+	muted: "rgb(120, 125, 140)",
+	secondary: "rgb(150, 155, 170)",
+	complementary: "rgb(180, 190, 210)",
+	backgroundCompatible: "rgba(200, 205, 220, 0.12)",
+	glow: "rgba(215, 220, 235, 0.35)",
 	luminance: 0.5,
-	saturation: 0.4,
+	saturation: 0.2,
 	isDark: false,
 	isLight: false,
-	isMonochrome: false,
+	isMonochrome: true,
 };
 
 const paletteCache = new Map<string, ArtworkPalette>();
@@ -31,13 +35,16 @@ const paletteCache = new Map<string, ArtworkPalette>();
  */
 export async function extractArtworkPalette(
 	src: string | null | undefined,
-	providerFallbackColor = "#8b92ff",
+	providerFallbackColor = "rgb(215, 220, 235)",
 ): Promise<ArtworkPalette> {
 	if (!src) {
 		return {
 			...DEFAULT_PALETTE,
 			dominant: providerFallbackColor,
 			vibrant: providerFallbackColor,
+			secondary: providerFallbackColor,
+			complementary: providerFallbackColor,
+			backgroundCompatible: `${providerFallbackColor}18`,
 			glow: `${providerFallbackColor}66`,
 		};
 	}
@@ -67,8 +74,30 @@ export async function extractArtworkPalette(
 	});
 }
 
+interface ColorBucket {
+	count: number;
+	sumR: number;
+	sumG: number;
+	sumB: number;
+	r: number;
+	g: number;
+	b: number;
+	sat: number;
+	lum: number;
+	score: number;
+}
+
+function colorDistance(r1: number, g1: number, b1: number, r2: number, g2: number, b2: number): number {
+	// Redmean color distance for perceptual color separation
+	const rmean = (r1 + r2) / 2;
+	const dr = r1 - r2;
+	const dg = g1 - g2;
+	const db = b1 - b2;
+	return Math.sqrt((((512 + rmean) * dr * dr) >> 8) + 4 * dg * dg + (((767 - rmean) * db * db) >> 8));
+}
+
 function analyzeImage(img: HTMLImageElement, fallbackColor: string): ArtworkPalette {
-	const size = 32;
+	const size = 48; // 2,304 sample pixels for high-fidelity clustering
 	const canvas = document.createElement("canvas");
 	canvas.width = canvas.height = size;
 	const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -80,14 +109,12 @@ function analyzeImage(img: HTMLImageElement, fallbackColor: string): ArtworkPale
 	let totalR = 0;
 	let totalG = 0;
 	let totalB = 0;
-	let maxSat = 0;
-	let minSat = 1;
-	let vibrantR = 0;
-	let vibrantG = 0;
-	let vibrantB = 0;
-	let vibrantWeight = 0;
 	let totalLuminance = 0;
+	let maxSat = 0;
 	const pixelCount = data.length / 4;
+
+	// 5-bit color buckets (32 x 32 x 32)
+	const buckets = new Map<number, ColorBucket>();
 
 	for (let i = 0; i < data.length; i += 4) {
 		const r = data[i];
@@ -98,63 +125,149 @@ function analyzeImage(img: HTMLImageElement, fallbackColor: string): ArtworkPale
 		totalG += g;
 		totalB += b;
 
-		// Relative luminance (sRGB / Rec. 709)
+		// Perceptual relative luminance (sRGB / Rec. 709)
 		const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 		totalLuminance += lum;
 
-		// Saturation in perceptual HSL
+		// Perceptual saturation
 		const max = Math.max(r, g, b);
 		const min = Math.min(r, g, b);
 		const sat = max === 0 ? 0 : (max - min) / max;
-		maxSat = Math.max(maxSat, sat);
-		minSat = Math.min(minSat, sat);
+		if (sat > maxSat) maxSat = sat;
 
-		// Weight by saturation and mid-luminance for vibrant extraction
-		const lumWeight = 1 - Math.abs(lum - 0.5) * 1.5;
-		const weight = Math.max(0.01, sat * sat * lumWeight);
+		// Skip extreme black (< 5%) or blinding specular glare (> 95%) for bucket analysis
+		if (lum < 0.05 || lum > 0.95) continue;
 
-		vibrantR += r * weight;
-		vibrantG += g * weight;
-		vibrantB += b * weight;
-		vibrantWeight += weight;
+		// Quantize into 5-bit key
+		const key = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
+		let bucket = buckets.get(key);
+		if (!bucket) {
+			bucket = { count: 0, sumR: 0, sumG: 0, sumB: 0, r: 0, g: 0, b: 0, sat: 0, lum: 0, score: 0 };
+			buckets.set(key, bucket);
+		}
+		bucket.count++;
+		bucket.sumR += r;
+		bucket.sumG += g;
+		bucket.sumB += b;
 	}
 
 	const avgLum = totalLuminance / pixelCount;
 	const avgR = Math.round(totalR / pixelCount);
 	const avgG = Math.round(totalG / pixelCount);
 	const avgB = Math.round(totalB / pixelCount);
-
-	const vR = vibrantWeight > 0 ? Math.round(vibrantR / vibrantWeight) : avgR;
-	const vG = vibrantWeight > 0 ? Math.round(vibrantG / vibrantWeight) : avgG;
-	const vB = vibrantWeight > 0 ? Math.round(vibrantB / vibrantWeight) : avgB;
-
-	const isDark = avgLum < 0.18;
-	const isLight = avgLum > 0.82;
 	const isMonochrome = maxSat < 0.12;
 
-	// If predominantly black or monochrome, boost with provider color
-	let vibrantColor = `rgb(${vR}, ${vG}, ${vB})`;
-	if (isDark || isMonochrome) {
-		vibrantColor = fallbackColor;
-	} else if (isLight) {
-		// Darken slightly for light artwork so it doesn't wash out
-		vibrantColor = `rgb(${Math.round(vR * 0.75)}, ${Math.round(vG * 0.75)}, ${Math.round(vB * 0.75)})`;
+	// Process and score all populated buckets
+	const candidates: ColorBucket[] = [];
+	for (const bucket of buckets.values()) {
+		bucket.r = Math.round(bucket.sumR / bucket.count);
+		bucket.g = Math.round(bucket.sumG / bucket.count);
+		bucket.b = Math.round(bucket.sumB / bucket.count);
+
+		const max = Math.max(bucket.r, bucket.g, bucket.b);
+		const min = Math.min(bucket.r, bucket.g, bucket.b);
+		bucket.sat = max === 0 ? 0 : (max - min) / max;
+		bucket.lum = (0.2126 * bucket.r + 0.7152 * bucket.g + 0.0722 * bucket.b) / 255;
+
+		// Score prioritizes rich, well-saturated mid-luminance colors
+		const lumWeight = 1 - Math.abs(bucket.lum - 0.5) * 1.3;
+		bucket.score = bucket.count * bucket.sat ** 1.4 * Math.max(0.1, lumWeight);
+
+		if (bucket.sat > 0.15) {
+			candidates.push(bucket);
+		}
+	}
+
+	// Sort candidates by perceptual vibrancy score descending
+	candidates.sort((a, b) => b.score - a.score);
+
+	// Primary vibrant color: top-scoring cluster
+	let pR = avgR;
+	let pG = avgG;
+	let pB = avgB;
+
+	if (candidates.length > 0) {
+		pR = candidates[0].r;
+		pG = candidates[0].g;
+		pB = candidates[0].b;
+	}
+
+	// Secondary distinct color: find the next highest cluster with genuine color separation (ΔE >= 65)
+	let sR = pR;
+	let sG = pG;
+	let sB = pB;
+	let foundDistinctSecondary = false;
+
+	for (let i = 1; i < candidates.length; i++) {
+		const c = candidates[i];
+		const dist = colorDistance(pR, pG, pB, c.r, c.g, c.b);
+		if (dist >= 65) {
+			sR = c.r;
+			sG = c.g;
+			sB = c.b;
+			foundDistinctSecondary = true;
+			break;
+		}
+	}
+
+	// If no distinct second cluster found, derive a harmonic split (golden ratio hue shift or luminance lift)
+	if (!foundDistinctSecondary) {
+		if (isMonochrome) {
+			sR = Math.min(255, Math.round(pR * 1.25 + 20));
+			sG = Math.min(255, Math.round(pG * 1.25 + 20));
+			sB = Math.min(255, Math.round(pB * 1.25 + 20));
+		} else {
+			// Perceptual harmonic hue offset
+			sR = Math.round(pR * 0.7 + pG * 0.3);
+			sG = Math.round(pG * 0.7 + pB * 0.3);
+			sB = Math.round(pB * 0.7 + pR * 0.3);
+		}
+	}
+
+	// Tertiary accent: find third distinct cluster
+	let tR = pR;
+	let tG = pG;
+	let tB = pB;
+	for (let i = 1; i < candidates.length; i++) {
+		const c = candidates[i];
+		const distP = colorDistance(pR, pG, pB, c.r, c.g, c.b);
+		const distS = colorDistance(sR, sG, sB, c.r, c.g, c.b);
+		if (distP >= 50 && distS >= 50) {
+			tR = c.r;
+			tG = c.g;
+			tB = c.b;
+			break;
+		}
+	}
+
+	// Fallback handling for pure monochrome / slate
+	let vibrantColor = `rgb(${pR}, ${pG}, ${pB})`;
+	let secondaryColor = `rgb(${sR}, ${sG}, ${sB})`;
+	let complementaryColor = `rgb(${tR}, ${tG}, ${tB})`;
+
+	if (isMonochrome) {
+		const mono = fallbackColor && fallbackColor !== "rgb(215, 220, 235)" ? fallbackColor : "rgb(215, 220, 235)";
+		vibrantColor = mono;
+		secondaryColor = mono;
+		complementaryColor = mono;
 	}
 
 	const dominantColor = `rgb(${avgR}, ${avgG}, ${avgB})`;
-	const mutedColor = `rgb(${Math.round(avgR * 0.8 + 30)}, ${Math.round(avgG * 0.8 + 30)}, ${Math.round(avgB * 0.8 + 30)})`;
-	const secondaryColor = `rgb(${Math.round(vR * 0.6 + avgR * 0.4)}, ${Math.round(vG * 0.6 + avgG * 0.4)}, ${Math.round(vB * 0.6 + avgB * 0.4)})`;
+	const mutedColor = `rgb(${Math.round(avgR * 0.85 + 20)}, ${Math.round(avgG * 0.85 + 20)}, ${Math.round(avgB * 0.85 + 20)})`;
+	const backgroundCompatible = `rgba(${avgR}, ${avgG}, ${avgB}, 0.16)`;
 
 	return {
 		dominant: dominantColor,
 		vibrant: vibrantColor,
 		muted: mutedColor,
 		secondary: secondaryColor,
-		glow: `rgba(${vR}, ${vG}, ${vB}, 0.42)`,
+		complementary: complementaryColor,
+		backgroundCompatible,
+		glow: isMonochrome ? "rgba(215, 220, 235, 0.25)" : `rgba(${pR}, ${pG}, ${pB}, 0.35)`,
 		luminance: avgLum,
 		saturation: maxSat,
-		isDark,
-		isLight,
+		isDark: avgLum < 0.18,
+		isLight: avgLum > 0.82,
 		isMonochrome,
 	};
 }

@@ -21,6 +21,7 @@
     general: "General",
     minimize: "Minimize",
     close: "Close",
+    searchPlaceholder: "Search settings...",
     module: {
       label: "Show in the island",
       desc: "Turn off to hide this module completely.",
@@ -209,6 +210,9 @@
     backToIsland: "Back to the island",
     // Volume sliders: the player's and the whole computer's
     computer: "Computer",
+    audioOutput: "Audio Output",
+    switchOutput: "Switch audio output",
+    noOutputDevices: "No active output devices found",
     mixer: "Audio mixer",
     otherApps: "Other apps",
     noAudioApps: "No applications currently playing sound",
@@ -283,6 +287,12 @@
       desc: "How long to wait after choosing Snooze.",
       action: "Snooze",
     },
+    goal: {
+      label: "Daily water goal",
+      desc: "Target number of glasses to drink per day.",
+    },
+    glasses: "{count} of {total} glasses",
+    logGlass: "+1 Glass",
   },
 
   // Pomodoro & Focus Assist module
@@ -384,6 +394,14 @@
 	peekOnLimitsReset: {
       label: "Expand when the limit resets",
       desc: "When the request limit of the plan resets and can be used again.",
+    },
+    pulseAnimation: {
+      label: "Active Heartbeat Wave Pulse",
+      desc: "Show live pulsing indicator on tab while an agent is running.",
+    },
+    completionAlert: {
+      label: "Agent Completion Pop Alert",
+      desc: "Briefly pop an alert in the island when an AI agent finishes its turn.",
     },
     status: {
       working: "Working",
@@ -668,9 +686,49 @@
       label: "Clock at rest",
       desc: "Shows the time in the island when nothing else is going on.",
     },
+    settingsTheme: {
+      label: "Settings Window Theme",
+      desc: "Choose whether Settings dynamically reflects the active island theme or stays dark.",
+      auto: "Match Island Theme",
+      dark: "Always Dark",
+    },
+    scale: {
+      label: "Island Dimension Scale",
+      desc: "Adjust the overall scale and proportion of the dynamic island.",
+    },
     hide: {
       label: "Hide the island",
       desc: "Keeps it hidden until you bring it back, even after restarting. Clicking the tray icon does the same.",
+    },
+  },
+
+  // Sound & Haptics
+  sound: {
+    title: "Sound & Haptics",
+    enabled: {
+      label: "Sound Effects",
+      desc: "Play audio chimes and cues for system events and alerts.",
+    },
+    alerts: {
+      label: "Pop Alert Chimes",
+      desc: "Play audio chime when pop notifications appear.",
+    },
+    volumeClicks: {
+      label: "Volume Adjustment Clicks",
+      desc: "Play subtle click feedback when adjusting volume.",
+    },
+    timerChimes: {
+      label: "Timer & Pomodoro Chimes",
+      desc: "Play completion sound when Pomodoro work or break ends.",
+    },
+    volume: {
+      label: "Alert Volume",
+      desc: "Master volume for dynamic island sound effects.",
+    },
+    outputDevice: {
+      label: "Audio Output Device",
+      desc: "Default playback device for island notifications and audio.",
+      systemDefault: "System Default",
     },
   },
 
@@ -678,6 +736,63 @@
   activities: {
     title: "Live Activities",
     empty: "Nothing going on right now",
+    popAlerts: {
+      title: "Dynamic Island Pop Notifications (12 Occasions)",
+    },
+    duration: {
+      label: "Alert Display Duration",
+      desc: "How long temporary notifications take over the compact island before smoothly retracting.",
+    },
+    alert: {
+      charging: {
+        label: "Charging Plugged / Unplugged",
+        desc: "Liquid battery fill and emerald lightning bolt aura.",
+      },
+      lowBattery: {
+        label: "Low Battery & Critical Heartbeat",
+        desc: "Amber and crimson pulse alert when battery reaches low thresholds.",
+      },
+      powerSaver: {
+        label: "Battery Saver Mode",
+        desc: "Energy leaf badge and soft green glow on power saver toggle.",
+      },
+      volume: {
+        label: "Volume OSD & Mute Slash",
+        desc: "Fluid spring-loaded volume bar and animated mute slash.",
+      },
+      brightness: {
+        label: "Brightness Adjustment",
+        desc: "Sun ray dial glyph and smooth percentage slider.",
+      },
+      capsLock: {
+        label: "Caps Lock Mechanical Keycap",
+        desc: "3D keycap with illuminated green physical LED diode.",
+      },
+      numLock: {
+        label: "Num Lock Mechanical Keycap",
+        desc: "Numeric keypad keycap with illuminated LED diode.",
+      },
+      wifi: {
+        label: "Wi-Fi Connected & Disconnected",
+        desc: "Radiating signal wave arcs with network SSID label.",
+      },
+      airplane: {
+        label: "Airplane Mode",
+        desc: "Aerodynamic gliding airplane silhouette with vapor trail.",
+      },
+      resource: {
+        label: "High CPU & RAM Load Spike",
+        desc: "Warning tachometer pulse when CPU or RAM exceeds 90%.",
+      },
+      bluetooth: {
+        label: "Bluetooth Peripherals & Audio",
+        desc: "AirPods, headphones, and mouse glyphs with battery capsule.",
+      },
+      privacy: {
+        label: "Privacy Sentinel",
+        desc: "Microphone and camera hardware usage alert.",
+      },
+    },
     volume: {
       label: "Volume",
       desc: "A level bar when the volume changes.",
@@ -694,6 +809,10 @@
       label: "Other apps",
       desc: "Notifications and live activities sent by scripts and apps through the local API.",
     },
+    privacy: {
+      label: "Microphone & camera privacy",
+      desc: "Ambient indicators and one-click mute when apps capture audio or video.",
+    },
     server: {
       title: "Local API",
       desc: "Any app or script on this computer can show notifications and live activities (downloads, timers, builds…).",
@@ -707,6 +826,13 @@
     title: "Notifications",
     clear: "Clear",
     empty: "No notifications",
+    soundControl: {
+      volume: "Master volume",
+      outputDevice: "Sound output",
+      mute: "Mute",
+      unmute: "Unmute",
+      dnd: "Do Not Disturb",
+    },
     // {app}: the app that sent it
     open: "Open {app}",
     access: {
@@ -723,6 +849,10 @@
       openDeveloper: "Open developer settings",
     },
     settings: {
+      doNotDisturb: {
+        label: "Do Not Disturb",
+        desc: "Silence incoming notification alerts and sounds.",
+      },
       quickReply: {
         label: "In-island quick reply",
         desc: "Reply directly to WhatsApp, Teams, Instagram and Telegram inside the Dynamic Island.",
@@ -738,6 +868,14 @@
       platformBadges: {
         label: "Platform brand badges",
         desc: "Displays recognizable platform emblems and sender avatar indicators.",
+      },
+      showSoundDeck: {
+        label: "Sound Control Deck",
+        desc: "Show master volume slider and audio device switcher in notification panel.",
+      },
+      privacyMode: {
+        label: "Privacy Mode",
+        desc: "Hide notification preview contents when island is collapsed.",
       },
       reactionPills: {
         label: "Quick reaction chips",
@@ -781,7 +919,7 @@
     stop: "Stop the answer",
     new: "New conversation",
     copy: "Copy answer",
-    copied: "Copied ✓",
+    copied: "Copied",
     remove: "Remove",
     screenshot: "Attach a screenshot of the window you were using",
     notFound: "Claude Code wasn't found on this computer. Install the Claude Code CLI or its VS Code extension and try again.",
@@ -816,15 +954,51 @@
     empty: "Keep files here, then drag them anywhere.",
     hint: "Drag out to use · double-click opens",
     drop: "Drop to keep it here",
-    clear: "Clear",
+    dropOverlay: "Drop files, images, or links to stash",
+    clear: "Clear All",
     ask: "Ask Claude about this",
     remove: "Remove from the shelf",
+    copyFile: "Copy File",
+    copyPath: "Copy Path",
+    copied: "Copied!",
+    openFile: "Open File",
+    showInFolder: "Show in Folder",
+    viewGrid: "Grid view",
+    viewList: "List view",
+    copyAllPaths: "Copy All Paths",
+    pathsCopied: "All paths copied!",
+    itemCount: "{n} items staged",
+    itemCountOne: "1 item staged",
+    autoClear: {
+      label: "Auto-Clear After Drag Out",
+      desc: "Automatically remove staged items once dragged to another app.",
+    },
+    confirmClear: {
+      label: "Confirm Clear All",
+      desc: "Ask for confirmation before clearing all staged items.",
+    },
+    defaultGrid: {
+      label: "Default Grid View",
+      desc: "Display staged items in a grid rather than a list.",
+    },
   },
 
   // Clipboard module
   clipboard: {
     title: "Clipboard",
     copied: "Copied",
+    captureColors: {
+      label: "Detect CSS Color Swatches",
+      desc: "Detect hex and rgb color codes and show interactive color swatches.",
+    },
+    historyLimit: {
+      label: "History Capacity Limit",
+      desc: "Maximum number of items retained in clipboard history.",
+    },
+    clearOnQuit: {
+      label: "Clear on Exit",
+      desc: "Wipe clipboard history when the application closes for security.",
+    },
     screenshot: "Screenshot",
     // {w}, {h}: size in pixels
     picture: "Picture {w}×{h}",
@@ -834,6 +1008,8 @@
     chars: "{n} characters",
     empty: "Copy something and it shows up here.",
     hint: "Click to copy again · drag pictures and files out",
+    searchPlaceholder: "Search clipboard...",
+    noResults: "No matching items found",
     clear: "Clear",
     copy: "Copy again",
     copiedAgain: "Copied!",
@@ -913,6 +1089,18 @@
     alerts: {
       label: "Alerts",
       desc: "Warns when the CPU or the memory stays maxed out for 30 seconds, and says which app is behind it.",
+    },
+    cpuThreshold: {
+      label: "CPU Spike Alert Threshold",
+      desc: "Trigger an alert when CPU usage exceeds this percentage.",
+    },
+    ramThreshold: {
+      label: "RAM Spike Alert Threshold",
+      desc: "Trigger an alert when memory usage exceeds this percentage.",
+    },
+    pollRate: {
+      label: "Hardware Polling Refresh Rate",
+      desc: "Frequency in seconds of hardware metrics refresh.",
     },
   },
 
@@ -1141,6 +1329,7 @@
       integrity: "Integrity",
       verified: "Every file matches what was installed",
       unverified: "Not checked in developer mode",
+      tampered: "Tampered",
       uninstall: "Remove",
       uninstallConfirm: "Click again to remove",
     },

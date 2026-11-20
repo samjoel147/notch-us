@@ -1,3 +1,4 @@
+import { PencilIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { RimRing } from "../../components/island/Rim";
 import { Block, Card, card, Desc, Row } from "../../components/ui/card";
@@ -24,6 +25,8 @@ import {
 import { THEMES, type ThemeId } from "../../core/theme";
 import { useGlassSupported } from "../../core/useGlass";
 import { Title } from "../components/Heading";
+import { SegmentedRow } from "../components/SegmentedRow";
+import { SliderRow } from "../components/SliderRow";
 import { Toggle, ToggleRow } from "../components/Toggle";
 
 const STYLES: {
@@ -254,6 +257,32 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 			</motion.section>
 
 			<Card>
+				<SliderRow
+					def={appearanceSettings.scale}
+					value={readSetting(values, appearanceSettings.scale)}
+					min={85}
+					max={115}
+					step={5}
+					unit="%"
+					label={t("appearance.scale.label") || "Island Dimension Scale"}
+					desc={t("appearance.scale.desc") || "Adjust the overall scale and proportion of the dynamic island."}
+				/>
+				<SegmentedRow
+					def={appearanceSettings.settingsTheme}
+					value={readSetting(values, appearanceSettings.settingsTheme)}
+					options={[
+						{ value: "auto", label: t("appearance.settingsTheme.auto") || "Match Island Theme" },
+						{ value: "dark", label: t("appearance.settingsTheme.dark") || "Always Dark" },
+					]}
+					label={t("appearance.settingsTheme.label") || "Settings Window Theme"}
+					desc={
+						t("appearance.settingsTheme.desc") ||
+						"Choose whether this Settings window dynamically reflects the active island theme or stays dark."
+					}
+				/>
+			</Card>
+
+			<Card>
 				<Row as="label" label={t("appearance.hide.label")} desc={t("appearance.hide.desc")}>
 					<Toggle checked={hidden} onChange={(v) => setSetting(ISLAND_HIDDEN_KEY, v)} />
 				</Row>
@@ -318,7 +347,7 @@ function Swatch({
 				)}
 				style={{ background: fill }}
 			>
-				{edit && "✎"}
+				{edit && <PencilIcon size={10} className="text-white" />}
 			</span>
 		</button>
 	);

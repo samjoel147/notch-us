@@ -10,8 +10,11 @@
 	},
 	"shortcuts": { "increment": "Count up" },
 	"panel": {
-		"add": "Add {step}",
+		"title": "Tally Counter",
+		"add": "+{step}",
+		"add5": "+5",
+		"sub1": "-1",
 		"reset": "Reset",
-		"hint": "Count up from anywhere with a shortcut (Settings → Shortcuts)."
+		"hint": "Count up with shortcut (Settings → Shortcuts)"
 	}
 }

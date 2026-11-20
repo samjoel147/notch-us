@@ -5,14 +5,19 @@
 	},
 	"module": { "title": "Água" },
 	"settings": {
-		"every": { "label": "Lembrar a cada", "desc": "Minutos entre os lembretes." }
+		"every": { "label": "Lembrar a cada", "desc": "Minutos entre os lembretes." },
+		"goal": { "label": "Meta diária", "desc": "Meta de copos a beber por dia." }
 	},
-	"units": { "min": "min" },
+	"units": { "min": "min", "glasses": "copos" },
 	"compact": { "due": "Hora de beber água" },
 	"panel": {
+		"title": "Monitor de Hidratação",
 		"today": "copos hoje",
 		"due": "Hora de beber água!",
-		"drink": "Bebi um copo",
-		"next": "Próximo lembrete às {time}"
+		"drink": "+1 Copo",
+		"bottle": "+Garrafa",
+		"undo": "Desfazer",
+		"next": "Próximo lembrete às {time}",
+		"progress": "{count} de {target} copos ({pct}%)"
 	}
 }

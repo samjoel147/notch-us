@@ -20,7 +20,10 @@ static LOCALES: LazyLock<Vec<(&'static str, Map<String, Value>)>> = LazyLock::ne
         .map(|(code, json)| {
             (
                 *code,
-                serde_json::from_str(json).expect("invalid locale JSON"),
+                serde_json::from_str(json).unwrap_or_else(|e| {
+                    eprintln!("Failed to parse locale JSON: {e}");
+                    Map::new()
+                }),
             )
         })
         .collect()

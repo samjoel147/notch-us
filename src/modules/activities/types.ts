@@ -18,12 +18,28 @@ export interface Activity {
 	updatedAt: number;
 }
 
+export interface CapturingApp {
+	pid: number;
+	name: string;
+	icon: string | null;
+	kind: "mic" | "camera" | "both";
+	peak: number;
+}
+
+export interface PrivacyState {
+	micActive: boolean;
+	cameraActive: boolean;
+	micMuted: boolean;
+	apps: CapturingApp[];
+}
+
 export interface ActivitiesState {
 	/** Highest priority first. */
 	items: Activity[];
 	apiPort: number | null;
 	/** False on desktops without a battery. */
 	hasBattery: boolean;
+	privacy?: PrivacyState;
 }
 
 export const ACTIVITIES_PROVIDER = "activities";

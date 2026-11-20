@@ -89,12 +89,13 @@ mod imp {
     use std::ffi::OsString;
     use std::os::windows::ffi::OsStringExt;
 
-    use tauri::{AppHandle, Emitter};
-    use windows::Win32::Foundation::POINTL;
+    use tauri::{AppHandle, Emitter, Manager};
+    use windows::Win32::Foundation::{HGLOBAL, POINTL};
     use windows::Win32::System::Com::{DVASPECT_CONTENT, FORMATETC, IDataObject, TYMED_HGLOBAL};
+    use windows::Win32::System::Memory::{GlobalLock, GlobalSize, GlobalUnlock};
     use windows::Win32::System::Ole::{
-        CF_HDROP, DROPEFFECT, DROPEFFECT_COPY, DROPEFFECT_NONE, IDropTarget, IDropTarget_Impl,
-        ReleaseStgMedium,
+        CF_DIB, CF_HDROP, CF_UNICODETEXT, DROPEFFECT, DROPEFFECT_COPY, DROPEFFECT_NONE,
+        IDropTarget, IDropTarget_Impl, ReleaseStgMedium,
     };
     use windows::Win32::System::SystemServices::MODIFIERKEYS_FLAGS;
     use windows::Win32::UI::Shell::{DragQueryFileW, HDROP};
@@ -105,7 +106,7 @@ mod imp {
     #[implement(IDropTarget)]
     pub struct Target {
         app: AppHandle,
-        /// The dragged thing holds files (text, links… aren't taken).
+        /// The dragged thing holds files, links, or images.
         files: Cell<bool>,
     }
 
@@ -122,8 +123,26 @@ mod imp {
         }
     }
 
+    /// Checks if the data object holds files, URLs, or images.
+    fn droppable(data: Option<&IDataObject>) -> bool {
+        let Some(data) = data else {
+            return false;
+        };
+        let check = |cf: u16| {
+            let format = FORMATETC {
+                cfFormat: cf,
+                ptd: std::ptr::null_mut(),
+                dwAspect: DVASPECT_CONTENT.0,
+                lindex: -1,
+                tymed: TYMED_HGLOBAL.0 as u32,
+            };
+            unsafe { data.QueryGetData(&format) }.is_ok()
+        };
+        check(CF_HDROP.0) || check(CF_UNICODETEXT.0) || check(CF_DIB.0)
+    }
+
     /// Paths in the data object, if it carries files.
-    fn paths(data: Ref<IDataObject>) -> Option<Vec<String>> {
+    fn paths(data: Option<&IDataObject>) -> Option<Vec<String>> {
         let format = FORMATETC {
             cfFormat: CF_HDROP.0,
             ptd: std::ptr::null_mut(),
@@ -131,11 +150,11 @@ mod imp {
             lindex: -1,
             tymed: TYMED_HGLOBAL.0 as u32,
         };
-        let data = data.as_ref()?;
+        let data = data?;
         let mut medium = unsafe { data.GetData(&format) }.ok()?;
         let hdrop = HDROP(unsafe { medium.u.hGlobal.0 });
         let count = unsafe { DragQueryFileW(hdrop, u32::MAX, None) };
-        let paths = (0..count)
+        let paths: Vec<String> = (0..count)
             .map(|i| {
                 let len = unsafe { DragQueryFileW(hdrop, i, None) } as usize;
                 let mut buf = vec![0u16; len + 1];
@@ -149,6 +168,133 @@ mod imp {
         Some(paths)
     }
 
+    fn extract_text_or_url(app: &AppHandle, data: Option<&IDataObject>) -> Option<String> {
+        let format = FORMATETC {
+            cfFormat: CF_UNICODETEXT.0,
+            ptd: std::ptr::null_mut(),
+            dwAspect: DVASPECT_CONTENT.0,
+            lindex: -1,
+            tymed: TYMED_HGLOBAL.0 as u32,
+        };
+        let data = data?;
+        let mut medium = unsafe { data.GetData(&format) }.ok()?;
+        let global = HGLOBAL(unsafe { medium.u.hGlobal.0 });
+        let size = unsafe { GlobalSize(global) };
+        if size == 0 {
+            unsafe { ReleaseStgMedium(&mut medium) };
+            return None;
+        }
+        let max_len = size / 2;
+        let ptr = unsafe { GlobalLock(global) } as *const u16;
+        if ptr.is_null() {
+            unsafe { ReleaseStgMedium(&mut medium) };
+            return None;
+        }
+        let mut len = 0;
+        unsafe {
+            while len < max_len && *ptr.add(len) != 0 {
+                len += 1;
+            }
+        }
+        let slice = unsafe { std::slice::from_raw_parts(ptr, len) };
+        let text = OsString::from_wide(slice).to_string_lossy().into_owned();
+        let _ = unsafe { GlobalUnlock(global) };
+        unsafe { ReleaseStgMedium(&mut medium) };
+
+        let trimmed = text.trim();
+        if trimmed.is_empty() {
+            return None;
+        }
+
+        let stash_dir = app
+            .path()
+            .app_data_dir()
+            .unwrap_or_else(|_| std::env::temp_dir())
+            .join("shelf_stash");
+        let _ = std::fs::create_dir_all(&stash_dir);
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis();
+
+        if trimmed.starts_with("http://") || trimmed.starts_with("https://") {
+            let sanitized: String = trimmed
+                .chars()
+                .map(|c| if c.is_alphanumeric() || c == '.' || c == '-' { c } else { '_' })
+                .take(30)
+                .collect();
+            let file_name = format!("{}_{}.url", sanitized, timestamp);
+            let file_path = stash_dir.join(file_name);
+            let content = format!("[InternetShortcut]\r\nURL={}\r\n", trimmed);
+            if std::fs::write(&file_path, content).is_ok() {
+                return Some(file_path.to_string_lossy().into_owned());
+            }
+        } else {
+            let file_name = format!("note_{}.txt", timestamp);
+            let file_path = stash_dir.join(file_name);
+            if std::fs::write(&file_path, trimmed).is_ok() {
+                return Some(file_path.to_string_lossy().into_owned());
+            }
+        }
+        None
+    }
+
+    fn extract_image(app: &AppHandle, data: Option<&IDataObject>) -> Option<String> {
+        let format = FORMATETC {
+            cfFormat: CF_DIB.0,
+            ptd: std::ptr::null_mut(),
+            dwAspect: DVASPECT_CONTENT.0,
+            lindex: -1,
+            tymed: TYMED_HGLOBAL.0 as u32,
+        };
+        let data = data?;
+        let mut medium = unsafe { data.GetData(&format) }.ok()?;
+        let global = HGLOBAL(unsafe { medium.u.hGlobal.0 });
+        let size = unsafe { GlobalSize(global) };
+        if size == 0 {
+            unsafe { ReleaseStgMedium(&mut medium) };
+            return None;
+        }
+        let ptr = unsafe { GlobalLock(global) } as *const u8;
+        if ptr.is_null() {
+            unsafe { ReleaseStgMedium(&mut medium) };
+            return None;
+        }
+        let bytes = unsafe { std::slice::from_raw_parts(ptr, size) };
+        let pic = crate::providers::clipboard::image::from_dib(bytes);
+        let _ = unsafe { GlobalUnlock(global) };
+        unsafe { ReleaseStgMedium(&mut medium) };
+
+        let pic = pic?;
+        let png = crate::providers::clipboard::image::encode_png(&pic).ok()?;
+        let stash_dir = app
+            .path()
+            .app_data_dir()
+            .unwrap_or_else(|_| std::env::temp_dir())
+            .join("shelf_stash");
+        let _ = std::fs::create_dir_all(&stash_dir);
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis();
+        let file_path = stash_dir.join(format!("dropped_image_{}.png", timestamp));
+        std::fs::write(&file_path, png).ok()?;
+        Some(file_path.to_string_lossy().into_owned())
+    }
+
+    fn extract_all(app: &AppHandle, data: Option<&IDataObject>) -> Option<Vec<String>> {
+        if let Some(p) = paths(data).filter(|p| !p.is_empty()) {
+            return Some(p);
+        }
+        if let Some(text_item) = extract_text_or_url(app, data) {
+            return Some(vec![text_item]);
+        }
+        if let Some(img) = extract_image(app, data) {
+            return Some(vec![img]);
+        }
+        None
+    }
+
     impl IDropTarget_Impl for Target_Impl {
         fn DragEnter(
             &self,
@@ -157,7 +303,7 @@ mod imp {
             _pt: &POINTL,
             effect: *mut DROPEFFECT,
         ) -> windows::core::Result<()> {
-            let files = incoming(paths(data).is_some_and(|p| !p.is_empty()));
+            let files = incoming(droppable(data.as_ref()));
             self.files.set(files);
             if files {
                 self.emit(DropEvent::Enter);
@@ -207,7 +353,7 @@ mod imp {
                 unsafe { *effect = DROPEFFECT_NONE };
                 return Ok(());
             }
-            match paths(data) {
+            match extract_all(&self.app, data.as_ref()) {
                 Some(paths) if !paths.is_empty() => {
                     self.emit(DropEvent::Drop { paths });
                     unsafe { *effect = DROPEFFECT_COPY };

@@ -7,12 +7,30 @@
 	</head>
 	<body>
 		<main>
-			<output id="glasses">0</output>
-			<div class="text">
-				<p id="label"></p>
-				<p id="next" class="island-faint"></p>
+			<div class="ring-container">
+				<svg class="progress-ring" viewBox="0 0 88 88" aria-hidden="true">
+					<circle class="ring-bg" cx="44" cy="44" r="36" />
+					<circle class="ring-fill" id="ring" cx="44" cy="44" r="36" />
+				</svg>
+				<div class="ring-center">
+					<output id="glasses">0</output>
+					<span class="ring-unit">glasses</span>
+				</div>
 			</div>
-			<button id="drink" class="island-button" data-tone="accent"></button>
+
+			<div class="info-section">
+				<div class="text-group">
+					<h3 id="panel-title" class="tracker-title"></h3>
+					<p id="goal-status" class="goal-text"></p>
+					<p id="next" class="reminder-text island-faint"></p>
+				</div>
+
+				<div class="actions">
+					<button id="drink" class="island-button" data-tone="accent"></button>
+					<button id="bottle" class="island-button"></button>
+					<button id="undo" class="island-button text-btn" title="Undo"></button>
+				</div>
+			</div>
 		</main>
 	</body>
 </html>

@@ -1,7 +1,9 @@
 [package]
 name = "dynamic-island"
 version = "0.5.0"
-description = "Island for Windows"
+description = "Notch Us - Island for Windows"
+authors = ["Sam Joel"]
+repository = "https://github.com/samjoel147/notch-us"
 license = "GPL-3.0-or-later"
 edition = "2024"
 rust-version = "1.98"
@@ -99,6 +101,7 @@ windows = { version = "0.62", features = [
   "System",
   "Win32_System_Threading",
   "Win32_UI_Shell",
+  "Win32_UI_Shell_PropertiesSystem",
   "Win32_UI_Shell_Common",
   "Win32_UI_Input_KeyboardAndMouse",
   "Win32_UI_WindowsAndMessaging",

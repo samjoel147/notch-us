@@ -3,12 +3,12 @@
  * panel looks at home in the island without any framework. Override freely.
  */
 :root {
-	--island-bg: #000;
+	--island-bg: #000000;
 	--island-text: #f5f5f7;
-	--island-text-dim: rgba(245, 245, 247, 0.56);
-	--island-text-faint: rgba(245, 245, 247, 0.32);
-	--island-hairline: rgba(255, 255, 255, 0.07);
-	--island-card: rgba(255, 255, 255, 0.055);
+	--island-text-dim: rgba(245, 245, 247, 0.7);
+	--island-text-faint: rgba(245, 245, 247, 0.45);
+	--island-hairline: rgba(255, 255, 255, 0.08);
+	--island-card: rgba(255, 255, 255, 0.06);
 	--island-accent: #a0a4ff;
 	--island-danger: #ff6b63;
 	--island-ok: #34c759;
@@ -16,13 +16,53 @@
 	--island-radius: 12px;
 	--island-font: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
 	--island-mono: "Cascadia Code", Consolas, monospace;
-	/* The island is dark: a light scheme would paint the frame white. */
 	color-scheme: dark;
 	font-family: var(--island-font);
 	font-size: 13px;
 	font-feature-settings: "tnum" 1;
 	color: var(--island-text);
 	-webkit-font-smoothing: antialiased;
+}
+
+:root[data-light="true"] {
+	--island-bg: #ffffff;
+	--island-text: #09090b;
+	--island-text-dim: #334155;
+	--island-text-faint: #475569;
+	--island-hairline: rgba(0, 0, 0, 0.08);
+	--island-card: #f5f6f9;
+	--island-accent: #0066cc;
+	--island-danger: #dc2626;
+	--island-ok: #15803d;
+	--island-warn: #b45309;
+	color-scheme: light;
+}
+
+:root[data-theme="glass-light"] {
+	--island-bg: rgba(255, 255, 255, 0.74);
+	--island-text: #09090b;
+	--island-text-dim: #1e293b;
+	--island-text-faint: #334155;
+	--island-hairline: rgba(0, 0, 0, 0.08);
+	--island-card: rgba(255, 255, 255, 0.8);
+	--island-accent: #007aff;
+	--island-danger: #dc2626;
+	--island-ok: #15803d;
+	--island-warn: #b45309;
+	color-scheme: light;
+}
+
+:root[data-theme="cyberpunk"] {
+	--island-accent: #00f0ff;
+}
+:root[data-theme="midnight"] {
+	--island-accent: #38bdf8;
+}
+:root[data-theme="sunset"] {
+	--island-accent: #fb923c;
+}
+:root[data-theme="aurora"] {
+	--island-accent: #34d399;
 }
 
 *,
@@ -55,15 +95,36 @@ button {
 	border-radius: 10px;
 	background: rgba(255, 255, 255, 0.1);
 	font-weight: 600;
-	transition: background 0.15s;
+	transition: all 0.15s ease;
 }
 .island-button:hover {
 	background: rgba(255, 255, 255, 0.16);
+}
+.island-button:active {
+	transform: scale(0.97);
 }
 .island-button[data-tone="accent"] {
 	background: var(--island-accent);
 	color: #000;
 }
+
+:root[data-light="true"] .island-button {
+	background: rgba(0, 0, 0, 0.05);
+	color: var(--island-text);
+	border: 1px solid var(--island-hairline);
+}
+:root[data-light="true"] .island-button:hover {
+	background: rgba(0, 0, 0, 0.09);
+}
+:root[data-light="true"] .island-button[data-tone="accent"] {
+	background: var(--island-accent);
+	color: #ffffff;
+	border: 0;
+}
+:root[data-light="true"] .island-button[data-tone="accent"]:hover {
+	filter: brightness(1.08);
+}
+
 .island-card {
 	border-radius: var(--island-radius);
 	background: var(--island-card);

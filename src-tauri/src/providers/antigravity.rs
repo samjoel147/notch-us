@@ -54,10 +54,12 @@ struct LocalServer {
 
 /// The default per-user install.
 fn default_executable() -> PathBuf {
-    PathBuf::from(std::env::var_os("LOCALAPPDATA").unwrap_or_default())
-        .join("Programs")
-        .join("Antigravity")
-        .join("Antigravity.exe")
+    let local = PathBuf::from(std::env::var_os("LOCALAPPDATA").unwrap_or_default());
+    let ide_path = local.join("Programs").join("Antigravity IDE").join("Antigravity IDE.exe");
+    if ide_path.is_file() {
+        return ide_path;
+    }
+    local.join("Programs").join("Antigravity").join("Antigravity.exe")
 }
 
 /// The exe set in the settings, else the default install.

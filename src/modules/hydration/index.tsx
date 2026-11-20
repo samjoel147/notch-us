@@ -7,7 +7,7 @@ import type { IslandModule, ModuleView } from "../../core/types";
 import { HydrationBubble } from "./components/HydrationBubble";
 import { HydrationPanel } from "./components/HydrationPanel";
 import { HydrationSettings } from "./components/HydrationSettings";
-import { hydrationInterval, hydrationSettings, hydrationSnooze } from "./settings";
+import { hydrationGoal, hydrationInterval, hydrationSettings, hydrationSnooze } from "./settings";
 
 const MINUTE = 60_000;
 
@@ -100,6 +100,7 @@ export const hydrationModule: IslandModule = {
 		const showBubble = useSetting(hydrationSettings.showBubble);
 		const interval = useSetting(hydrationInterval);
 		const snooze = useSetting(hydrationSnooze);
+		const goal = useSetting(hydrationGoal);
 		const timer = useHydrationTimer(interval, snooze, autoStart, enabled);
 
 		return {
@@ -125,6 +126,7 @@ export const hydrationModule: IslandModule = {
 					deadline={timer.deadline}
 					pausedRemaining={timer.pausedRemaining}
 					due={timer.due}
+					goal={goal}
 					onConfirm={timer.confirm}
 					onSnooze={timer.snooze}
 					onStart={timer.start}

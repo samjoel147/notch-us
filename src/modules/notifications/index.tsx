@@ -7,12 +7,13 @@ import { BellIcon } from "lucide-react";
 import { Badge } from "../../components/Glyph";
 import { Marquee } from "../../components/Marquee";
 import { useProvider } from "../../core/bridge";
+import { readSetting, useSettings } from "../../core/settings";
 import type { IslandModule, ModuleView } from "../../core/types";
 import { useNow } from "../ai-agents/common/format";
 import { NotificationsPanel } from "./components/NotificationsPanel";
 import { NotificationsSettings } from "./components/NotificationsSettings";
 import { identifyPlatform } from "./platforms";
-import { notificationToggleSettings } from "./settings";
+import { notificationSettings, notificationToggleSettings } from "./settings";
 import { NOTIFICATION_BLUE, NOTIFICATIONS_PROVIDER, type NotificationsState } from "./types";
 
 /** Unread notifications this recent keep a spot in the compact island. */
@@ -27,6 +28,7 @@ export const notificationsModule: IslandModule = {
 	SettingsSection: NotificationsSettings,
 	useView(): ModuleView {
 		const state = useProvider<NotificationsState>(NOTIFICATIONS_PROVIDER);
+		const settings = useSettings();
 		const items = state?.items ?? [];
 		const now = useNow(30_000, items.length > 0);
 		const unread = items.filter((i) => !i.read);
@@ -34,6 +36,7 @@ export const notificationsModule: IslandModule = {
 		const recent = !!latest && !latest.read && now - latest.receivedAt < UNREAD_WINDOW_MS;
 		const platform = latest ? identifyPlatform(latest.app, latest.aumid) : null;
 		const accent = platform ? platform.brandColor : NOTIFICATION_BLUE;
+		const showSoundDeck = readSetting(settings, notificationSettings.showSoundDeck);
 
 		return {
 			active: recent,
@@ -67,7 +70,7 @@ export const notificationsModule: IslandModule = {
 				width: 340,
 			},
 			expanded: <NotificationsPanel state={state} />,
-			expandedSize: { width: 560, height: 72 + Math.min(Math.max(items.length, 1), 4) * ROW },
+			expandedSize: { width: 560, height: (showSoundDeck ? 156 : 100) + Math.min(Math.max(items.length, 1), 4) * ROW },
 		};
 	},
 };

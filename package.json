@@ -2,6 +2,13 @@
 	"name": "windows-island",
 	"private": true,
 	"version": "0.5.0",
+	"description": "Notch Us - Intelligent Dynamic Island & AI Command Center for Windows",
+	"author": "Sam Joel",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/samjoel147/notch-us.git"
+	},
+	"homepage": "https://github.com/samjoel147/notch-us#readme",
 	"license": "GPL-3.0-or-later",
 	"type": "module",
 	"scripts": {

@@ -104,6 +104,10 @@
 		switch (msg.type) {
 			case "init":
 				info = { ...info, ...msg.data };
+				if (msg.data.theme) {
+					document.documentElement.dataset.theme = msg.data.theme;
+					document.documentElement.dataset.light = String(msg.data.isLight);
+				}
 				initialized = true;
 				for (const queued of queue.splice(0)) post(queued);
 				resolveReady(island);
@@ -117,7 +121,10 @@
 				break;
 			}
 			case "event":
-				if (msg.name === "locale") {
+				if (msg.name === "theme") {
+					document.documentElement.dataset.theme = msg.data.theme;
+					document.documentElement.dataset.light = String(msg.data.isLight);
+				} else if (msg.name === "locale") {
 					info.locale = msg.data.locale;
 					info.messages = msg.data.messages;
 				} else if (msg.name === "settings") {

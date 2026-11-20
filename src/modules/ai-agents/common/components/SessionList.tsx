@@ -1,3 +1,4 @@
+import { ZapIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "../../../../core/cn";
 import { useT } from "../../../../core/i18n";
@@ -66,10 +67,13 @@ export function SessionList({ items, now, showAgent }: { items: AgentSessionRef[
 								</span>
 							)}
 							<span
-								className="min-w-14 text-right text-[12px] font-semibold text-text-faint tabular-nums"
-								style={{ color: running ? agent.color : undefined }}
+								className={cn(
+									"min-w-14 text-right text-[12px] font-semibold tabular-nums inline-flex items-center justify-end gap-1",
+									running ? "text-accent font-bold animate-pulse" : "text-text-dim",
+								)}
 							>
-								{time}
+								{running && <ZapIcon size={11} className="shrink-0 fill-current" />}
+								<span>{time}</span>
 							</span>
 						</motion.li>
 					);

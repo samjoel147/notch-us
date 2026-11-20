@@ -1,0 +1,302 @@
+/**
+ * Notch Pop — Music Player Scoped Stylesheet
+ * Design Direction: Liquid Aura × Obsidian × Dynamic Canvas
+ *
+ * Scoped under .notch-music-player namespace to prevent style leakage.
+ */
+
+/* 1. Semantic Player Tokens (Inherits Global Theme & Injected Theme Tokens) */
+.notch-music-player {
+	--player-text: var(--music-text-primary, var(--text));
+	--player-text-dim: var(--music-text-secondary, var(--text-dim));
+	--player-text-muted: var(--music-text-muted, var(--text-faint));
+	--player-border: var(--music-border, var(--hairline));
+	--player-card: var(--music-control-surface, var(--card));
+	--player-specular: var(--music-specular, var(--specular));
+
+	position: relative;
+	width: 100%;
+	height: 100%;
+	contain: layout style;
+	font-feature-settings:
+		"tnum" 1,
+		"cv11" 1;
+}
+
+/* 2. Main Player Container & Unified Smoked Glass Surface */
+/* Integrated seamlessly with the island container — zero nested stacked cards */
+.notch-music-player__container {
+	position: relative;
+	display: flex;
+	width: 100%;
+	height: 100%;
+	align-items: center;
+	gap: 1.125rem;
+	padding: 0;
+	background: transparent;
+}
+
+/* Living Fluid Mesh Canvas — Full-Surface Dual-Tone Dynamic Splash */
+/* Full bleed negative insets ensure the dynamic canvas extends edge-to-edge across the notch capsule */
+.notch-music-player__fluid-canvas {
+	position: absolute;
+	top: -3.5rem;
+	left: -1.5rem;
+	right: -1.5rem;
+	bottom: -3.75rem;
+	pointer-events: none;
+	overflow: hidden;
+	contain: paint;
+	will-change: background, opacity;
+	transition:
+		background 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+		opacity 0.6s ease;
+}
+
+/* Layer 2: Artwork Colour Wash spanning across entire player */
+.notch-music-player__surface-wash {
+	position: absolute;
+	top: -3.5rem;
+	left: -1.5rem;
+	right: -1.5rem;
+	bottom: -3.75rem;
+	pointer-events: none;
+	transition:
+		background 0.9s cubic-bezier(0.2, 0.8, 0.2, 1),
+		opacity 0.7s ease;
+	will-change: background, opacity;
+}
+
+/* 3. Liquid Aura Layered Atmospheric Lighting */
+.notch-music-player__atmosphere {
+	position: absolute;
+	top: -3.5rem;
+	left: -1.5rem;
+	right: -1.5rem;
+	bottom: -3.75rem;
+	pointer-events: none;
+	overflow: hidden;
+	z-index: 0;
+}
+
+.notch-music-player__atmosphere-glow {
+	position: absolute;
+	top: 50%;
+	left: 0;
+	width: 13.5rem;
+	height: 13.5rem;
+	transform: translate(-12%, -50%);
+	border-radius: 9999px;
+	filter: blur(44px);
+	pointer-events: none;
+	transition:
+		background 0.9s cubic-bezier(0.2, 0.8, 0.2, 1),
+		opacity 0.7s ease;
+	will-change: transform, opacity;
+}
+
+.notch-music-player__atmosphere-glow-secondary {
+	position: absolute;
+	top: 45%;
+	right: 0;
+	width: 15rem;
+	height: 11rem;
+	transform: translate(10%, -45%);
+	border-radius: 9999px;
+	filter: blur(48px);
+	pointer-events: none;
+	transition:
+		background 0.9s cubic-bezier(0.2, 0.8, 0.2, 1),
+		opacity 0.7s ease;
+	will-change: transform, opacity;
+}
+
+/* 4. Region A: Album Artwork */
+.notch-music-player__artwork-container {
+	position: relative;
+	flex: 0 0 auto;
+	width: 5.75rem;
+	height: 5.75rem;
+	z-index: 1;
+}
+
+.notch-music-player__artwork {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	border-radius: 1rem;
+	overflow: hidden;
+	box-shadow:
+		0 14px 32px -6px rgba(0, 0, 0, 0.75),
+		0 4px 14px -2px var(--artwork-glow, rgba(0, 0, 0, 0.35)),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+	transition:
+		transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+		box-shadow 0.3s ease;
+}
+
+.notch-music-player__artwork-sheen {
+	position: absolute;
+	inset: 0 0 auto 0;
+	height: 48%;
+	border-top-left-radius: inherit;
+	border-top-right-radius: inherit;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 40%, transparent 100%);
+	pointer-events: none;
+	opacity: 0.6;
+	transition: opacity 0.3s ease;
+}
+
+.notch-music-player__artwork:hover .notch-music-player__artwork-sheen {
+	opacity: 0.85;
+}
+
+/* 5. Region B & C: Content Grid and Internal Alignment */
+.notch-music-player__content {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	flex: 1 1 0%;
+	min-width: 0;
+	height: 100%;
+	max-height: 8.125rem;
+	padding: 0.125rem 0;
+	z-index: 1;
+}
+
+/* Header: Title, Artist, Visualizer, Source Badge */
+.notch-music-player__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	min-width: 0;
+	width: 100%;
+}
+
+.notch-music-player__metadata {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-width: 0;
+	flex: 1 1 0%;
+	line-height: 1.25;
+}
+
+.notch-music-player__title {
+	font-size: 1.0625rem;
+	line-height: 1.3;
+	font-weight: 650;
+	letter-spacing: -0.018em;
+	color: var(--player-text, var(--text));
+}
+
+.notch-music-player__subtitle {
+	font-size: 0.8125rem;
+	line-height: 1.25;
+	font-weight: 500;
+	color: var(--player-text-dim, var(--text-dim));
+	margin-top: 0.125rem;
+}
+
+/* Source Badge */
+.notch-music-player__badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	border-radius: 9999px;
+	padding: 0.25rem 0.625rem;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	transition: all 0.2s ease;
+}
+
+.notch-music-player__badge:hover {
+	transform: scale(1.03);
+}
+
+.notch-music-player__badge:active {
+	transform: scale(0.97);
+}
+
+/* Timeline */
+.notch-music-player__timeline {
+	width: 100%;
+	user-select: none;
+}
+
+/* Footer: Controls & Volume */
+.notch-music-player__footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	width: 100%;
+	height: 2.75rem;
+}
+
+/* Primary Play Button Lighting & Specular */
+.notch-music-player__play-btn {
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 9999px;
+	border: 1px solid var(--player-border, var(--hairline));
+	background: var(--player-card, var(--card));
+	color: var(--player-text, var(--text));
+	box-shadow:
+		var(--player-specular, var(--specular)),
+		0 4px 18px -2px var(--play-glow, rgba(0, 0, 0, 0.25));
+	transition:
+		transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+		background-color 0.2s ease,
+		box-shadow 0.2s ease;
+}
+
+.notch-music-player__play-btn:hover {
+	background: var(--player-card, var(--card));
+	box-shadow:
+		var(--player-specular, var(--specular)),
+		0 6px 22px -2px var(--play-glow, rgba(0, 0, 0, 0.35));
+}
+
+.notch-music-player__play-btn:active {
+	transform: scale(0.94);
+}
+
+/* Secondary Controls (Previous / Next) */
+.notch-music-player__sec-btn {
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9999px;
+	color: var(--player-text-dim, var(--text-dim));
+	transition: all 0.2s ease;
+}
+
+.notch-music-player__sec-btn:hover {
+	color: var(--player-text, var(--text));
+	background: var(--player-card, var(--card));
+	transform: scale(1.08);
+}
+
+.notch-music-player__sec-btn:active {
+	transform: scale(0.92);
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+	.notch-music-player,
+	.notch-music-player * {
+		animation-duration: 0.01ms;
+		animation-iteration-count: 1;
+		transition-duration: 0.01ms;
+	}
+}

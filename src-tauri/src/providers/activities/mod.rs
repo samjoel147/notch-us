@@ -10,6 +10,7 @@
 mod api;
 mod battery;
 mod bluetooth;
+mod keyboard;
 pub mod privacy;
 mod volume;
 
@@ -92,12 +93,15 @@ struct ActivitiesState {
     api_port: Option<u16>,
     /// False on desktops: the battery alerts setting is hidden.
     has_battery: bool,
+    /// Privacy Sentinel state: active mic/camera and mute state.
+    privacy: privacy::PrivacyState,
 }
 
 struct Inner {
     hub: Arc<Hub>,
     items: Mutex<HashMap<String, Activity>>,
     api_port: Mutex<Option<u16>>,
+    privacy: Mutex<privacy::PrivacyState>,
 }
 
 /// Handle to the shared activity list, usable from any provider.
@@ -156,11 +160,32 @@ impl Activities {
         self.publish();
     }
 
+    pub fn update_privacy(&self, state: privacy::PrivacyState) {
+        let mut priv_lock = self.0.privacy.lock().unwrap();
+        if *priv_lock == state {
+            return;
+        }
+        *priv_lock = state;
+        drop(priv_lock);
+        self.publish();
+    }
+
+    pub fn update_privacy_mute(&self, muted: bool) {
+        let mut priv_lock = self.0.privacy.lock().unwrap();
+        if priv_lock.mic_muted == muted {
+            return;
+        }
+        priv_lock.mic_muted = muted;
+        drop(priv_lock);
+        self.publish();
+    }
+
     fn publish(&self) {
         let state = ActivitiesState {
             items: sorted(&self.0.items.lock().unwrap()),
             api_port: *self.0.api_port.lock().unwrap(),
             has_battery: battery::present(),
+            privacy: self.0.privacy.lock().unwrap().clone(),
         };
         self.0.hub.publish(ID, &state);
     }
@@ -204,6 +229,7 @@ impl Provider for ActivitiesProvider {
             hub,
             items: Mutex::default(),
             api_port: Mutex::default(),
+            privacy: Mutex::default(),
         }));
         let _ = HANDLE.set(activities.clone());
         activities.publish();
@@ -225,6 +251,8 @@ impl Provider for ActivitiesProvider {
         std::thread::spawn(move || battery::watch(watcher));
         let watcher = activities.clone();
         std::thread::spawn(move || privacy::watch(watcher));
+        let watcher = activities.clone();
+        std::thread::spawn(move || keyboard::watch(watcher));
         std::thread::spawn(move || bluetooth::watch(activities));
     }
 
@@ -243,6 +271,10 @@ impl Provider for ActivitiesProvider {
             }
             "toggleMic" => {
                 privacy::toggle_mic_mute();
+            }
+            "setMicMute" => {
+                let muted = payload.as_bool().unwrap_or(false);
+                privacy::set_mic_mute(muted);
             }
             _ => return Err(format!("{ID}: unknown action '{action}'")),
         }
