@@ -259,7 +259,7 @@ export function AskPanel({ state }: { state: AskState | undefined }) {
 			)}
 
 			<div
-				className="flex items-end gap-1.5 rounded-[18px] bg-surface-control border border-hairline/80 p-1.25 shadow-xs"
+				className="flex items-end gap-1.5 rounded-[18px] bg-surface-control border border-hairline/80 p-1.25 shadow-xs shrink-0"
 				data-no-drag
 			>
 				<IconButton title={t("ask.screenshot")} onClick={screenshot}>

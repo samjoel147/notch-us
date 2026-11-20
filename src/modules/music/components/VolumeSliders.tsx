@@ -65,6 +65,30 @@ export function VolumeSliders({ music }: { music: MusicState | undefined }) {
 	const devices = music.devices ?? [];
 	const activeDevice = devices.find((d) => d.isDefault) ?? devices[0];
 
+	// Primary volume slider in footer: System master volume takes precedence, fallback to player app volume
+	const isMasterVolume = Boolean(music.volume);
+	const primaryVolume = music.volume ?? music.appVolume;
+	const primaryName = isMasterVolume
+		? activeDevice?.name || t("music.computer")
+		: music.appDevice
+			? `${music.appName} · ${music.appDevice}`
+			: music.appName;
+	const primaryIcon = isMasterVolume ? (
+		getDeviceIcon(activeDevice?.kind ?? "speakers", 13)
+	) : music.appIcon ? (
+		<img src={music.appIcon} alt="" draggable={false} className="size-3.5" />
+	) : (
+		<MusicIcon size={12} />
+	);
+
+	const handlePrimaryVolumeChange = (change: Partial<Volume>) => {
+		if (isMasterVolume) {
+			setVolume({ target: "system", ...change });
+		} else if (music.appId) {
+			setVolume({ target: "app", appId: music.appId, ...change });
+		}
+	};
+
 	const otherApps = (music.apps ?? []).filter((app) => {
 		const appName = music.appName?.toLowerCase() || "";
 		const currentStem = music.appId?.toLowerCase() || "";
@@ -72,38 +96,25 @@ export function VolumeSliders({ music }: { music: MusicState | undefined }) {
 		return !appName.includes(targetName) && !currentStem.includes(targetName);
 	});
 
-	return (
-		<div className="relative flex items-center gap-1.5 select-none" data-no-drag>
-			{music.appVolume && (
-				<VolumeSlider
-					name={music.appDevice ? `${music.appName} · ${music.appDevice}` : music.appName}
-					volume={music.appVolume}
-					icon={
-						music.appIcon ? (
-							<img src={music.appIcon} alt="" draggable={false} className="size-3.5" />
-						) : (
-							<MusicIcon size={12} />
-						)
-					}
-					onChange={(change) => setVolume({ target: "app", appId: music.appId, ...change })}
-				/>
-			)}
+	const hasMixer = (isMasterVolume && Boolean(music.appVolume)) || otherApps.length > 0;
 
-			{music.volume && (
+	return (
+		<div className="relative flex items-center gap-1.5 select-none shrink-0" data-no-drag>
+			{primaryVolume && (
 				<VolumeSlider
-					name={activeDevice?.name || t("music.computer")}
-					volume={music.volume}
-					icon={getDeviceIcon(activeDevice?.kind ?? "speakers", 13)}
-					onChange={(change) => setVolume({ target: "system", ...change })}
+					name={primaryName}
+					volume={primaryVolume}
+					icon={primaryIcon}
+					onChange={handlePrimaryVolumeChange}
 				/>
 			)}
 
 			{devices.length > 0 && (
-				<div ref={routerRef} className="relative">
+				<div ref={routerRef} className="relative shrink-0">
 					<button
 						type="button"
 						className={cn(
-							"flex h-7 max-w-28 sm:max-w-32 items-center gap-1.5 rounded-[12px] bg-card hover:bg-white/10 dark:hover:bg-white/15 border border-hairline px-2 shadow-xs text-text-dim transition-all duration-200 active:scale-95",
+							"flex h-7 max-w-26 sm:max-w-28 items-center gap-1.5 rounded-[12px] bg-card hover:bg-white/10 dark:hover:bg-white/15 border border-hairline px-2 shadow-xs text-text-dim transition-all duration-200 active:scale-95 shrink-0",
 							showDeviceRouter && "bg-white/[0.18] text-text ring-1 ring-accent/40 border-hairline",
 						)}
 						title={activeDevice ? `${activeDevice.name} · ${t("music.switchOutput")}` : t("music.audioOutput")}
@@ -160,12 +171,12 @@ export function VolumeSliders({ music }: { music: MusicState | undefined }) {
 				</div>
 			)}
 
-			{otherApps.length > 0 && (
-				<div ref={mixerRef} className="relative">
+			{hasMixer && (
+				<div ref={mixerRef} className="relative shrink-0">
 					<button
 						type="button"
 						className={cn(
-							"grid size-7 place-items-center rounded-[12px] bg-card hover:bg-white/10 dark:hover:bg-white/15 border border-hairline shadow-xs text-text-dim transition-all duration-200 active:scale-92",
+							"grid size-7 place-items-center rounded-[12px] bg-card hover:bg-white/10 dark:hover:bg-white/15 border border-hairline shadow-xs text-text-dim transition-all duration-200 active:scale-92 shrink-0",
 							showMixer && "bg-white/[0.18] text-text border-hairline",
 						)}
 						title={t("music.mixer") || "Audio mixer"}
@@ -178,10 +189,25 @@ export function VolumeSliders({ music }: { music: MusicState | undefined }) {
 					</button>
 
 					{showMixer && (
-						<div className="absolute right-0 bottom-full mb-2 flex max-h-48 w-56 flex-col gap-1.5 overflow-y-auto rounded-2xl bg-island p-2 shadow-2xl backdrop-blur-xl border border-hairline z-50 text-text">
+						<div className="absolute right-0 bottom-full mb-2 flex max-h-56 w-60 flex-col gap-1.5 overflow-y-auto rounded-2xl bg-island p-2 shadow-2xl backdrop-blur-xl border border-hairline z-50 text-text">
 							<span className="px-1.5 text-[11px] font-semibold text-text-faint">
-								{t("music.otherApps") || "Other apps"}
+								{t("music.mixer") || "Audio mixer"}
 							</span>
+							{/* Current playing app volume in mixer if master is on the main bar */}
+							{isMasterVolume && music.appVolume && (
+								<VolumeSlider
+									name={music.appDevice ? `${music.appName} · ${music.appDevice}` : music.appName}
+									volume={music.appVolume}
+									icon={
+										music.appIcon ? (
+											<img src={music.appIcon} alt="" draggable={false} className="size-3.5" />
+										) : (
+											<MusicIcon size={12} />
+										)
+									}
+									onChange={(change) => setVolume({ target: "app", appId: music.appId, ...change })}
+								/>
+							)}
 							{otherApps.map((app) => (
 								<VolumeSlider
 									key={app.pid}
@@ -245,7 +271,7 @@ export function VolumeSlider({
 	const percent = Math.round(shown.level * 100);
 	return (
 		<div
-			className="flex h-7 min-w-0 flex-[0_1_auto] items-center gap-1.5 rounded-[12px] bg-card hover:bg-white/10 dark:hover:bg-white/15 border border-hairline shadow-xs pr-2 pl-1.5 transition-colors duration-200"
+			className="flex h-7 shrink-0 items-center gap-1.5 rounded-[12px] bg-card hover:bg-white/10 dark:hover:bg-white/15 border border-hairline shadow-xs pr-2 pl-1.5 transition-colors duration-200"
 			onClick={(e) => e.stopPropagation()}
 		>
 			<button
@@ -261,7 +287,7 @@ export function VolumeSlider({
 			</button>
 
 			<div
-				className="group/track flex h-full w-14 min-w-6 flex-[0_1_auto] cursor-pointer touch-none items-center outline-none"
+				className="group/track flex h-full w-16 sm:w-18 min-w-8 flex-none cursor-pointer touch-none items-center outline-none"
 				role="slider"
 				tabIndex={0}
 				title={`${name} · ${percent}%`}

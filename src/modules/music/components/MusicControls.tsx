@@ -14,7 +14,7 @@ interface MusicControlsProps {
 
 export function MusicControls({ playing, capabilities, accentColor }: MusicControlsProps) {
 	return (
-		<div className="flex items-center gap-1.5 select-none h-11">
+		<div className="flex items-center gap-1.5 select-none h-11 shrink-0 flex-none">
 			{/* Skip Previous */}
 			<CtrlButton
 				disabled={!capabilities.canSkipPrevious}
@@ -94,7 +94,7 @@ function CtrlButton({
 		<motion.button
 			title={title}
 			className={cn(
-				"relative grid place-items-center rounded-full transition-all duration-200 disabled:pointer-events-none disabled:opacity-25",
+				"relative grid place-items-center rounded-full shrink-0 flex-none transition-all duration-200 disabled:pointer-events-none disabled:opacity-25",
 				big
 					? "size-11 text-text border border-hairline bg-card hover:bg-white/10 dark:hover:bg-white/18 active:scale-95 shadow-sm"
 					: "size-8 text-text-dim hover:text-text hover:bg-card active:scale-90",

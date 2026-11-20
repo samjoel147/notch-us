@@ -62,7 +62,7 @@ export const askModule: IslandModule = {
 					}
 				: undefined,
 			expanded: <AskPanel state={state} />,
-			expandedSize: { width: 560, height: messages ? 340 : attachments.length ? 190 : 150 },
+			expandedSize: { width: 560, height: messages ? 350 : attachments.length ? 275 : 238 },
 		};
 	},
 };

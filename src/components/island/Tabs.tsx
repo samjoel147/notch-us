@@ -12,10 +12,10 @@ const tabs = tv({
 		/** Base row holding the dock capsule and floating edge action buttons. */
 		base: "relative mb-2.5 flex items-center gap-1.5 pr-9.5",
 		capsule: "flex items-center gap-1",
-		tab: "relative flex h-7.5 items-center gap-1.75 rounded-[15px] pr-3 pl-2 text-[13px] font-semibold text-text-dim transition-colors duration-200 hover:text-text",
+		tab: "relative flex h-7.5 items-center gap-1.75 rounded-[15px] pr-3 pl-2 text-[13px] font-semibold text-text-dim whitespace-nowrap shrink-0 select-none transition-colors duration-200 hover:text-text",
 		pill: "absolute inset-0 rounded-[inherit] bg-white/10 shadow-[inset_0_0_0_1px_var(--hairline)]",
-		part: "relative grid place-items-center [&_svg]:size-4 [&_img]:size-4.5",
-		dot: "relative size-1.25 rounded-full bg-ok",
+		part: "relative flex items-center justify-center whitespace-nowrap shrink-0 [&_svg]:size-4 [&_img]:size-4.5",
+		dot: "relative size-1.25 rounded-full bg-ok shrink-0",
 		extra: "ml-auto flex items-center gap-1.5",
 		actions: "ml-auto flex items-center gap-1",
 		gear: "grid size-7.5 place-items-center rounded-full text-text-dim transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/8 hover:text-text",
@@ -82,7 +82,7 @@ export function Tabs({
 							type="button"
 							key={module.id}
 							className={s.tab({ active: selected })}
-							title={t(module.title)}
+							title={selected && !iconsOnly ? undefined : t(module.title)}
 							style={{ "--tab-accent": view.accent || "var(--accent)" } as CSSProperties}
 							onClick={() => onSelect(module.id)}
 						>

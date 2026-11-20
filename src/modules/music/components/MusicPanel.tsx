@@ -399,7 +399,7 @@ function MusicPanelContent({
 					{/* Row 3: Playback Controls on Left, Volume Controls on Right */}
 					<div className="notch-music-player__footer">
 						{/* Playback Controls (Previous, Play/Pause, Next share exact centerline) */}
-						<div className="flex items-center h-full">
+						<div className="flex items-center shrink-0 flex-none h-full">
 							<MusicControls
 								playing={session.playback.status === "playing"}
 								capabilities={session.capabilities}
@@ -408,7 +408,7 @@ function MusicPanelContent({
 						</div>
 
 						{/* Volume Control Group (isolated from window dragging) */}
-						<div className="flex min-w-0 flex-1 justify-end gap-1.5 items-center h-full" data-no-drag>
+						<div className="flex min-w-0 flex-1 justify-end gap-1.5 items-center shrink-0 h-full" data-no-drag>
 							<VolumeSliders music={music} />
 						</div>
 					</div>
