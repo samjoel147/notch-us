@@ -1,19 +1,8 @@
 name: Website
 
-# Builds website/ (Astro) and publishes it to GitHub Pages. Runs when the site,
-# the privacy policy, the screenshots or the app version (shown in the footer)
-# change on main. Needs Settings → Pages → Source set to "GitHub Actions".
+# Builds website/ (Astro) and publishes it to GitHub Pages.
+# Triggered manually via the Actions tab. Needs Settings → Pages → Source set to "GitHub Actions".
 on:
-  push:
-    branches: ["main"]
-    paths:
-      - "website/**"
-      - "docs/privacy/**"
-      - "docs/screenshots/**"
-      - "docs/social-preview.png"
-      - "src-tauri/icons/**"
-      - "package.json"
-      - ".github/workflows/website.yml"
   workflow_dispatch:
 
 concurrency:
