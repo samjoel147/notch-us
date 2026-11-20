@@ -1,7 +1,8 @@
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
-	site: "https://island.heyyczer.com",
+	site: "https://samjoel147.github.io",
+	base: "/notch-us",
 	trailingSlash: "ignore",
 	i18n: {
 		defaultLocale: "en",
