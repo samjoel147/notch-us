@@ -377,7 +377,7 @@ mod tests {
         );
         assert_eq!(
             url_display_name("https://example.com/a/very/long/path/that/exceeds/twenty/four/chars"),
-            Some("example.com/a/very/long/path/that/…".to_string())
+            Some("example.com/a/very/long/path/that…".to_string())
         );
         assert_eq!(url_display_name("not a url"), None);
     }
