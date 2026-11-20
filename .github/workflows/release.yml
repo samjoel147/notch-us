@@ -137,6 +137,7 @@ jobs:
           gh release upload "v$version" $zip --clobber
 
   msix:
+    if: ${{ vars.MSIX_IDENTITY_NAME != '' }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
